@@ -236,16 +236,15 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
 
         {/* Bottom CTA */}
         <motion.div
-          className="mt-16 gradient-primary p-8 md:p-12 rounded-3xl shadow-2xl relative overflow-hidden"
+          className="mt-16 bg-[#25231f] p-8 md:p-12 rounded-3xl shadow-2xl relative overflow-hidden border border-[#c8a96e]/35"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
         >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#b08a57] via-[#e2c896] to-[#b08a57]" />
           <div className="relative z-10 text-center">
-            <h3 className="text-3xl md:text-4xl text-[#2f2f2d] mb-4 font-bold">{t('detail_cta_title')}</h3>
-            <p className="text-[#77756f] text-lg mb-8 max-w-2xl mx-auto">
+            <h3 className="text-3xl md:text-4xl text-white mb-4 font-bold">{t('detail_cta_title')}</h3>
+            <p className="text-[#f3efe8] text-lg mb-8 max-w-2xl mx-auto">
               {model.category === 'sales'
                 ? t('detail_cta_desc_sales')
                 : t('detail_cta_desc_other')}
@@ -254,7 +253,7 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
               <Button
                 size="lg"
                 onClick={() => onNavigate('contact', { model: model.name })}
-                className="gradient-secondary text-white hover:shadow-xl hover:scale-105 transition-all duration-300 text-lg px-10 py-6"
+                className="bg-white text-[#1c1c1a] hover:bg-[#f8f7f3] hover:shadow-xl hover:scale-105 transition-all duration-300 text-lg px-10 py-6 border border-white"
               >
                 <Phone className="mr-2" size={22} />
                 {t('detail_contact_btn')}
@@ -263,7 +262,7 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
                 <Button
                   size="lg"
                   onClick={() => onNavigate('configurator')}
-                  className="bg-white text-[#2f2f2d] hover:bg-white/90 hover:shadow-xl hover:scale-105 transition-all duration-300 text-lg px-10 py-6 border-2 border-[#b08a57]"
+                  className="bg-[#b08a57] text-white hover:bg-[#9a7445] hover:shadow-xl hover:scale-105 transition-all duration-300 text-lg px-10 py-6 border border-[#e2c896]/60"
                 >
                   <Sparkles className="mr-2" size={22} />
                   {t('detail_configure_now')}
