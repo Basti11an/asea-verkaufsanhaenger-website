@@ -7,17 +7,24 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Plus, Pencil, Trash2, Check, X, ImageIcon } from 'lucide-react';
 import { useAdminData, AdminReference } from '../../context/AdminDataContext';
 
-let nextId = 200;
-
 const MODELLE = ['Verkaufsanhänger', 'Kühlanhänger', 'Messe- und Präsentationsanhänger'];
 
 export function ReferenzenTab() {
-  // All reads/writes go directly through context → visible=true ones show on public pages
-  const { references: refs, setReferences: setRefs } = useAdminData();
+  const {
+    references: refs,
+    referencesLoading,
+    referencesError,
+    createReference,
+    updateReference,
+    deleteReference,
+  } = useAdminData();
 
   const [editState, setEditState] = useState<Record<number, Partial<AdminReference>>>({});
   const [deleteTarget, setDeleteTarget] = useState<AdminReference | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<number | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const publishedRefs = refs.filter((ref) => ref.status !== 'pending').sort((a, b) => b.id - a.id);
 
   const startEdit = (ref: AdminReference) => {
     setEditState((prev) => ({ ...prev, [ref.id]: { ...ref } }));
@@ -27,41 +34,77 @@ export function ReferenzenTab() {
     setEditState((prev) => { const n = { ...prev }; delete n[id]; return n; });
   };
 
-  const saveEdit = (id: number) => {
-    setRefs((prev) => prev.map((r) => r.id === id ? { ...r, ...editState[id] } : r));
-    cancelEdit(id);
-    toast.success('Gespeichert ✓ — Änderungen sind jetzt live', { duration: 2000 });
+  const saveEdit = async (id: number) => {
+    setSavingId(id);
+
+    try {
+      await updateReference(id, editState[id]);
+      cancelEdit(id);
+      toast.success('Gespeichert - Änderungen sind jetzt live', { duration: 2000 });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Speichern fehlgeschlagen';
+      toast.error(message);
+    } finally {
+      setSavingId(null);
+    }
   };
 
   const handleEditChange = (id: number, field: keyof AdminReference, value: any) => {
     setEditState((prev) => ({ ...prev, [id]: { ...(prev[id] ?? {}), [field]: value } }));
   };
 
-  const handleToggleSichtbar = (id: number, val: boolean) => {
-    setRefs((prev) => prev.map((r) => r.id === id ? { ...r, sichtbar: val } : r));
-    toast.success(val ? 'Sichtbar ✓' : 'Ausgeblendet ✓', { duration: 1500 });
+  const handleToggleSichtbar = async (id: number, val: boolean) => {
+    setSavingId(id);
+
+    try {
+      await updateReference(id, { sichtbar: val });
+      toast.success(val ? 'Sichtbar' : 'Ausgeblendet', { duration: 1500 });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Änderung fehlgeschlagen';
+      toast.error(message);
+    } finally {
+      setSavingId(null);
+    }
   };
 
-  const handleDelete = (ref: AdminReference) => {
-    setRefs((prev) => prev.filter((r) => r.id !== ref.id));
-    setDeleteTarget(null);
-    toast.success(`„${ref.kundenname}" gelöscht`);
+  const handleDelete = async (ref: AdminReference) => {
+    setSavingId(ref.id);
+
+    try {
+      await deleteReference(ref.id);
+      setDeleteTarget(null);
+      toast.success(`"${ref.kundenname}" gelöscht`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Löschen fehlgeschlagen';
+      toast.error(message);
+    } finally {
+      setSavingId(null);
+    }
   };
 
-  const handleAdd = () => {
-    const id = nextId++;
-    const newRef: AdminReference = {
-      id,
-      kundenname: '',
-      ort: '',
-      modell: 'Verkaufsanhänger',
-      jahr: new Date().getFullYear(),
-      beschreibung: '',
-      bildUrl: '',
-      sichtbar: true,
-    };
-    setRefs((prev) => [newRef, ...prev]);
-    setEditState((prev) => ({ ...prev, [id]: { ...newRef } }));
+  const handleAdd = async () => {
+    setIsCreating(true);
+
+    try {
+      const newRef = await createReference({
+        kundenname: '',
+        ort: '',
+        modell: 'Verkaufsanhänger',
+        jahr: new Date().getFullYear(),
+        beschreibung: '',
+        bildUrl: '',
+        sichtbar: true,
+        status: 'approved',
+        kontaktEmail: '',
+        kontaktTelefon: '',
+      });
+      setEditState((prev) => ({ ...prev, [newRef.id]: { ...newRef } }));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Referenz konnte nicht angelegt werden';
+      toast.error(message);
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
@@ -69,17 +112,30 @@ export function ReferenzenTab() {
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-lg font-semibold text-[#2f2f2d]">
           Kundenreferenzen
-          <span className="ml-2 text-sm font-normal text-gray-400">({refs.length} Einträge)</span>
+          <span className="ml-2 text-sm font-normal text-gray-400">({publishedRefs.length} Einträge)</span>
         </h2>
         <Button
           size="sm"
           onClick={handleAdd}
+          disabled={isCreating}
           className="bg-[#77756f] hover:bg-[#2f2f2d] text-white h-8 text-xs"
         >
           <Plus size={14} className="mr-1.5" />
-          Neue Referenz hinzufügen
+          {isCreating ? 'Wird angelegt...' : 'Neue Referenz hinzufügen'}
         </Button>
       </div>
+
+      {referencesLoading && (
+        <div className="mb-4 rounded-lg border border-[#b08a57]/20 bg-[#b08a57]/10 px-4 py-3 text-sm text-[#2f2f2d]">
+          Referenzen werden aus Supabase geladen...
+        </div>
+      )}
+
+      {referencesError && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          Supabase-Hinweis: {referencesError}
+        </div>
+      )}
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -97,7 +153,7 @@ export function ReferenzenTab() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {refs.map((ref) => {
+              {publishedRefs.map((ref) => {
                 const isEditing = ref.id in editState;
                 const draft = editState[ref.id] ?? {};
                 return (
@@ -187,7 +243,7 @@ export function ReferenzenTab() {
                       <Switch
                         checked={ref.sichtbar}
                         onCheckedChange={(val) => handleToggleSichtbar(ref.id, val)}
-                        disabled={isEditing}
+                        disabled={isEditing || savingId === ref.id}
                       />
                     </td>
                     <td className="px-4 py-2.5">
@@ -198,6 +254,7 @@ export function ReferenzenTab() {
                               variant="ghost"
                               size="sm"
                               onClick={() => saveEdit(ref.id)}
+                              disabled={savingId === ref.id}
                               className="h-7 w-7 p-0 hover:bg-emerald-50 hover:text-emerald-600"
                               title="Speichern"
                             >
@@ -228,6 +285,7 @@ export function ReferenzenTab() {
                               variant="ghost"
                               size="sm"
                               onClick={() => setDeleteTarget(ref)}
+                              disabled={savingId === ref.id}
                               className="h-7 w-7 p-0 hover:bg-red-50 hover:text-red-500"
                               title="Löschen"
                             >
@@ -271,6 +329,7 @@ export function ReferenzenTab() {
             <Button
               size="sm"
               className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={deleteTarget ? savingId === deleteTarget.id : false}
               onClick={() => handleDelete(deleteTarget!)}
             >
               Löschen

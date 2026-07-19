@@ -1,6 +1,7 @@
 import { Toaster } from 'sonner';
 import { ModelleTab } from '../admin/ModelleTab';
 import { ReferenzenTab } from '../admin/ReferenzenTab';
+import { EingaengeTab } from '../admin/EingaengeTab';
 
 interface MessagesPageProps {
   activeTab: string;
@@ -18,8 +19,12 @@ export function MessagesPage({ activeTab }: MessagesPageProps) {
         <ModelleTab />
       </div>
 
-<div className={activeTab === 'referenzen' ? '' : 'hidden'}>
+      <div className={activeTab === 'referenzen' ? '' : 'hidden'}>
         <ReferenzenTab />
+      </div>
+
+      <div className={activeTab === 'eingaenge' ? '' : 'hidden'}>
+        <EingaengeTab />
       </div>
     </div>
   );

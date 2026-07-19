@@ -11,6 +11,7 @@ interface AdminHeaderProps {
 const TABS = [
   { id: 'modelle', label: 'Modelle' },
   { id: 'referenzen', label: 'Referenzen' },
+  { id: 'eingaenge', label: 'Eingänge' },
 ];
 
 export function AdminHeader({ activeTab, setActiveTab, onNavigate, onLogout }: AdminHeaderProps) {

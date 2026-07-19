@@ -1,6 +1,14 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
+import {
+  createReferenceInSupabase,
+  deleteReferenceFromSupabase,
+  fetchReferencesFromSupabase,
+  submitReferenceToSupabase,
+  updateReferenceInSupabase,
+} from '../lib/referencesRepository';
 
-// ─── Shared types ────────────────────────────────────────────────────────────
+export type ReferenceStatus = 'approved' | 'pending' | 'rejected';
 
 export interface AdminModel {
   id: number;
@@ -28,9 +36,11 @@ export interface AdminReference {
   beschreibung: string;
   bildUrl: string;
   sichtbar: boolean;
+  status: ReferenceStatus;
+  kontaktEmail: string;
+  kontaktTelefon: string;
+  createdAt?: string;
 }
-
-// ─── Initial data (single source of truth) ───────────────────────────────────
 
 const INITIAL_MODELS: AdminModel[] = [
   {
@@ -74,15 +84,13 @@ const INITIAL_EQUIPMENT: AdminEquipment[] = [
 ];
 
 const INITIAL_REFERENCES: AdminReference[] = [
-  { id: 1, kundenname: 'Würstelstand Huber', ort: 'Wien', modell: 'Verkaufsanhänger', jahr: 2023, beschreibung: 'Mobiler Würstelstand im Wiener Prater – täglich im Einsatz.', bildUrl: 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-85.jpg', sichtbar: true },
-  { id: 2, kundenname: 'Café Moser', ort: 'Salzburg', modell: 'Messe- und Präsentationsanhänger', jahr: 2022, beschreibung: 'Café-Präsentationen bei Events und Stadtfesten in Salzburg.', bildUrl: 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-4-2.jpg', sichtbar: true },
-  { id: 3, kundenname: 'Getränke Steinbauer', ort: 'Linz', modell: 'Kühlanhänger', jahr: 2024, beschreibung: 'Frischlieferungen von Getränken an Gastronomiebetriebe im Großraum Linz.', bildUrl: 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-2-1.jpg', sichtbar: true },
-  { id: 4, kundenname: 'Imbiss Kowalski', ort: 'Graz', modell: 'Verkaufsanhänger', jahr: 2023, beschreibung: 'Schnellimbiss am Hauptplatz Graz – beliebt bei Marktbesuchern.', bildUrl: 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-10.jpg', sichtbar: true },
-  { id: 5, kundenname: 'Bäckerei Pichler', ort: 'Wels', modell: 'Verkaufsanhänger', jahr: 2022, beschreibung: 'Frische Backwaren direkt vom Anhänger auf dem Wochenmarkt.', bildUrl: 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-86.jpg', sichtbar: false },
-  { id: 6, kundenname: 'Eventservice Huemer', ort: 'Innsbruck', modell: 'Messe- und Präsentationsanhänger', jahr: 2024, beschreibung: 'Professionelle Event-Bewirtung bei Tiroler Outdoor-Veranstaltungen.', bildUrl: 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-5.jpg', sichtbar: true },
+  { id: 1, kundenname: 'Würstelstand Huber', ort: 'Wien', modell: 'Verkaufsanhänger', jahr: 2023, beschreibung: 'Mobiler Würstelstand im Wiener Prater - täglich im Einsatz.', bildUrl: 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-85.jpg', sichtbar: true, status: 'approved', kontaktEmail: '', kontaktTelefon: '' },
+  { id: 2, kundenname: 'Café Moser', ort: 'Salzburg', modell: 'Messe- und Präsentationsanhänger', jahr: 2022, beschreibung: 'Café-Präsentationen bei Events und Stadtfesten in Salzburg.', bildUrl: 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-4-2.jpg', sichtbar: true, status: 'approved', kontaktEmail: '', kontaktTelefon: '' },
+  { id: 3, kundenname: 'Getränke Steinbauer', ort: 'Linz', modell: 'Kühlanhänger', jahr: 2024, beschreibung: 'Frischlieferungen von Getränken an Gastronomiebetriebe im Großraum Linz.', bildUrl: 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-2-1.jpg', sichtbar: true, status: 'approved', kontaktEmail: '', kontaktTelefon: '' },
+  { id: 4, kundenname: 'Imbiss Kowalski', ort: 'Graz', modell: 'Verkaufsanhänger', jahr: 2023, beschreibung: 'Schnellimbiss am Hauptplatz Graz - beliebt bei Marktbesuchern.', bildUrl: 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-10.jpg', sichtbar: true, status: 'approved', kontaktEmail: '', kontaktTelefon: '' },
+  { id: 5, kundenname: 'Bäckerei Pichler', ort: 'Wels', modell: 'Verkaufsanhänger', jahr: 2022, beschreibung: 'Frische Backwaren direkt vom Anhänger auf dem Wochenmarkt.', bildUrl: 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-86.jpg', sichtbar: false, status: 'approved', kontaktEmail: '', kontaktTelefon: '' },
+  { id: 6, kundenname: 'Eventservice Huemer', ort: 'Innsbruck', modell: 'Messe- und Präsentationsanhänger', jahr: 2024, beschreibung: 'Professionelle Event-Bewirtung bei Tiroler Outdoor-Veranstaltungen.', bildUrl: 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-5.jpg', sichtbar: true, status: 'approved', kontaktEmail: '', kontaktTelefon: '' },
 ];
-
-// ─── Context ──────────────────────────────────────────────────────────────────
 
 interface AdminDataContextType {
   models: AdminModel[];
@@ -91,17 +99,137 @@ interface AdminDataContextType {
   setEquipment: React.Dispatch<React.SetStateAction<AdminEquipment[]>>;
   references: AdminReference[];
   setReferences: React.Dispatch<React.SetStateAction<AdminReference[]>>;
+  referencesLoading: boolean;
+  referencesError: string | null;
+  reloadReferences: () => Promise<void>;
+  createReference: (reference: Omit<AdminReference, 'id'>) => Promise<AdminReference>;
+  submitReference: (reference: Omit<AdminReference, 'id' | 'sichtbar' | 'status'>) => Promise<void>;
+  updateReference: (id: number, changes: Partial<AdminReference>) => Promise<AdminReference>;
+  deleteReference: (id: number) => Promise<void>;
 }
 
 const AdminDataContext = createContext<AdminDataContextType | null>(null);
+
+function nextLocalReferenceId(references: AdminReference[]) {
+  return references.length > 0 ? Math.max(...references.map((reference) => reference.id)) + 1 : 1;
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : 'Unbekannter Supabase-Fehler';
+}
 
 export function AdminDataProvider({ children }: { children: React.ReactNode }) {
   const [models, setModels] = useState<AdminModel[]>(INITIAL_MODELS);
   const [equipment, setEquipment] = useState<AdminEquipment[]>(INITIAL_EQUIPMENT);
   const [references, setReferences] = useState<AdminReference[]>(INITIAL_REFERENCES);
+  const [referencesLoading, setReferencesLoading] = useState(false);
+  const [referencesError, setReferencesError] = useState<string | null>(null);
+
+  const reloadReferences = useCallback(async () => {
+    if (!isSupabaseConfigured) return;
+
+    setReferencesLoading(true);
+    setReferencesError(null);
+
+    try {
+      const remoteReferences = await fetchReferencesFromSupabase();
+      setReferences(remoteReferences);
+    } catch (error) {
+      setReferencesError(getErrorMessage(error));
+    } finally {
+      setReferencesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void reloadReferences();
+
+    if (!isSupabaseConfigured || !supabase) return;
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      void reloadReferences();
+    });
+
+    return () => subscription.unsubscribe();
+  }, [reloadReferences]);
+
+  const createReference = async (reference: Omit<AdminReference, 'id'>) => {
+    if (isSupabaseConfigured) {
+      const savedReference = await createReferenceInSupabase(reference);
+      setReferences((prev) => [savedReference, ...prev]);
+      return savedReference;
+    }
+
+    const localReference = { ...reference, id: nextLocalReferenceId(references) };
+    setReferences((prev) => [localReference, ...prev]);
+    return localReference;
+  };
+
+  const submitReference = async (reference: Omit<AdminReference, 'id' | 'sichtbar' | 'status'>) => {
+    const pendingReference: Omit<AdminReference, 'id'> = {
+      ...reference,
+      sichtbar: false,
+      status: 'pending',
+    };
+
+    if (isSupabaseConfigured) {
+      await submitReferenceToSupabase(pendingReference);
+      return;
+    }
+
+    const localReference = { ...pendingReference, id: nextLocalReferenceId(references) };
+    setReferences((prev) => [localReference, ...prev]);
+  };
+
+  const updateReference = async (id: number, changes: Partial<AdminReference>) => {
+    if (isSupabaseConfigured) {
+      const savedReference = await updateReferenceInSupabase(id, changes);
+      setReferences((prev) => prev.map((reference) => (reference.id === id ? savedReference : reference)));
+      return savedReference;
+    }
+
+    let updatedReference: AdminReference | null = null;
+
+    setReferences((prev) =>
+      prev.map((reference) => {
+        if (reference.id !== id) return reference;
+        updatedReference = { ...reference, ...changes };
+        return updatedReference;
+      }),
+    );
+
+    if (!updatedReference) throw new Error('Referenz wurde nicht gefunden.');
+    return updatedReference;
+  };
+
+  const deleteReference = async (id: number) => {
+    if (isSupabaseConfigured) {
+      await deleteReferenceFromSupabase(id);
+    }
+
+    setReferences((prev) => prev.filter((reference) => reference.id !== id));
+  };
 
   return (
-    <AdminDataContext.Provider value={{ models, setModels, equipment, setEquipment, references, setReferences }}>
+    <AdminDataContext.Provider
+      value={{
+        models,
+        setModels,
+        equipment,
+        setEquipment,
+        references,
+        setReferences,
+        referencesLoading,
+        referencesError,
+        reloadReferences,
+        createReference,
+        submitReference,
+        updateReference,
+        deleteReference,
+      }}
+    >
       {children}
     </AdminDataContext.Provider>
   );

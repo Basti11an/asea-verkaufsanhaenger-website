@@ -1,4 +1,5 @@
-import { ArrowRight, Award, Users, Wrench, Phone, MapPin, CalendarDays, UserCircle2, CheckCircle2 } from 'lucide-react';
+import { useState, type FormEvent } from 'react';
+import { ArrowRight, Award, Users, Wrench, Phone, MapPin, CalendarDays, UserCircle2, CheckCircle2, Send, ImageIcon } from 'lucide-react';
 import { Button } from '../ui/button';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { motion } from 'motion/react';
@@ -10,9 +11,24 @@ interface HomePageProps {
 }
 
 export function HomePage({ onNavigate }: HomePageProps) {
-  const { references } = useAdminData();
+  const { references, submitReference } = useAdminData();
   const { t } = useLanguage();
-  const visibleRefs = references.filter((r) => r.sichtbar).slice(0, 6);
+  const visibleRefs = references
+    .filter((r) => r.sichtbar && r.status === 'approved')
+    .sort((a, b) => b.id - a.id)
+    .slice(0, 6);
+  const [referenceForm, setReferenceForm] = useState({
+    kundenname: '',
+    ort: '',
+    modell: 'Verkaufsanhänger',
+    jahr: new Date().getFullYear(),
+    beschreibung: '',
+    bildUrl: '',
+    kontaktEmail: '',
+    kontaktTelefon: '',
+  });
+  const [referenceFormState, setReferenceFormState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [referenceFormMessage, setReferenceFormMessage] = useState('');
 
   const features = [
     { icon: Award, titleKey: 'home_feature1_title' as const, descKey: 'home_feature1_desc' as const },
@@ -20,6 +36,38 @@ export function HomePage({ onNavigate }: HomePageProps) {
     { icon: Users, titleKey: 'home_feature3_title' as const, descKey: 'home_feature3_desc' as const },
     { icon: CheckCircle2, titleKey: 'home_feature4_title' as const, descKey: 'home_feature4_desc' as const },
   ];
+
+  const handleReferenceFieldChange = (field: keyof typeof referenceForm, value: string | number) => {
+    setReferenceForm((prev) => ({ ...prev, [field]: value }));
+    setReferenceFormState('idle');
+    setReferenceFormMessage('');
+  };
+
+  const handleReferenceSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setReferenceFormState('sending');
+    setReferenceFormMessage('');
+
+    try {
+      await submitReference(referenceForm);
+      setReferenceForm({
+        kundenname: '',
+        ort: '',
+        modell: 'Verkaufsanhänger',
+        jahr: new Date().getFullYear(),
+        beschreibung: '',
+        bildUrl: '',
+        kontaktEmail: '',
+        kontaktTelefon: '',
+      });
+      setReferenceFormState('success');
+      setReferenceFormMessage('Vielen Dank. Ihre Referenz wurde eingereicht und wird nach Prüfung veröffentlicht.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Die Referenz konnte nicht eingereicht werden.';
+      setReferenceFormState('error');
+      setReferenceFormMessage(message);
+    }
+  };
 
   return (
     <div>
@@ -281,24 +329,24 @@ export function HomePage({ onNavigate }: HomePageProps) {
       </section>
 
       {/* Referenzen Section */}
-      {visibleRefs.length > 0 && (
-        <section className="py-16 md:py-20 gradient-accent relative overflow-hidden">
-          <div className="absolute top-16 right-12 w-28 h-28 border-2 border-[#b08a57]/15 rounded-full pointer-events-none" />
-          <div className="absolute bottom-16 left-12 w-20 h-20 border-2 border-[#b08a57]/15 rounded-full pointer-events-none" />
+      <section className="py-16 md:py-20 gradient-accent relative overflow-hidden">
+        <div className="absolute top-16 right-12 w-28 h-28 border-2 border-[#b08a57]/15 rounded-full pointer-events-none" />
+        <div className="absolute bottom-16 left-12 w-20 h-20 border-2 border-[#b08a57]/15 rounded-full pointer-events-none" />
 
-          <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24 relative z-10">
-            <motion.div
-              className="text-center mb-10 md:mb-14"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-            >
-              <h2 className="text-2xl md:text-3xl lg:text-5xl text-[#2f2f2d] mb-3 md:mb-4">{t('home_refs_title')}</h2>
-              <p className="text-base md:text-xl text-[#77756f] max-w-xl mx-auto">{t('home_refs_subtitle')}</p>
-            </motion.div>
+        <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24 relative z-10">
+          <motion.div
+            className="text-center mb-10 md:mb-14"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-2xl md:text-3xl lg:text-5xl text-[#2f2f2d] mb-3 md:mb-4">{t('home_refs_title')}</h2>
+            <p className="text-base md:text-xl text-[#77756f] max-w-xl mx-auto">{t('home_refs_subtitle')}</p>
+          </motion.div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-7">
+          {visibleRefs.length > 0 && (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-7 mb-12 md:mb-16">
               {visibleRefs.map((ref, index) => (
                 <motion.div
                   key={ref.id}
@@ -346,9 +394,143 @@ export function HomePage({ onNavigate }: HomePageProps) {
                 </motion.div>
               ))}
             </div>
-          </div>
-        </section>
-      )}
+          )}
+
+          <motion.div
+            className="bg-white rounded-2xl border border-[#b08a57]/20 shadow-xl overflow-hidden"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+          >
+            <div className="grid lg:grid-cols-[0.78fr_1.22fr]">
+              <div className="bg-[#2f2f2d] text-white p-6 md:p-8 flex flex-col justify-between">
+                <div>
+                  <div className="w-11 h-11 rounded-xl bg-[#b08a57] flex items-center justify-center mb-5">
+                    <ImageIcon size={22} />
+                  </div>
+                  <h3 className="text-2xl md:text-3xl font-bold mb-3">Eigene Referenz einreichen</h3>
+                  <p className="text-white/75 leading-relaxed">
+                    Teilen Sie Ihre Erfahrung mit ASEA. Nach einer kurzen Prüfung im Admin-Bereich wird Ihre Referenz veröffentlicht.
+                  </p>
+                </div>
+                <p className="text-xs text-white/45 mt-6">
+                  Einreichungen werden nicht automatisch online gestellt.
+                </p>
+              </div>
+
+              <form onSubmit={handleReferenceSubmit} className="p-6 md:p-8">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-[#55524c] mb-1.5">Kundenname</label>
+                    <input
+                      value={referenceForm.kundenname}
+                      onChange={(event) => handleReferenceFieldChange('kundenname', event.target.value)}
+                      required
+                      className="w-full rounded-lg border border-[#dfd9cf] px-3 py-2.5 text-sm focus:outline-none focus:border-[#b08a57]"
+                      placeholder="z.B. Café Moser"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#55524c] mb-1.5">Ort</label>
+                    <input
+                      value={referenceForm.ort}
+                      onChange={(event) => handleReferenceFieldChange('ort', event.target.value)}
+                      required
+                      className="w-full rounded-lg border border-[#dfd9cf] px-3 py-2.5 text-sm focus:outline-none focus:border-[#b08a57]"
+                      placeholder="z.B. Salzburg"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#55524c] mb-1.5">Modell</label>
+                    <select
+                      value={referenceForm.modell}
+                      onChange={(event) => handleReferenceFieldChange('modell', event.target.value)}
+                      className="w-full rounded-lg border border-[#dfd9cf] px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-[#b08a57]"
+                    >
+                      <option>Verkaufsanhänger</option>
+                      <option>Kühlanhänger</option>
+                      <option>Messe- und Präsentationsanhänger</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#55524c] mb-1.5">Jahr</label>
+                    <input
+                      type="number"
+                      min="1990"
+                      max={new Date().getFullYear()}
+                      value={referenceForm.jahr}
+                      onChange={(event) => handleReferenceFieldChange('jahr', Number(event.target.value))}
+                      required
+                      className="w-full rounded-lg border border-[#dfd9cf] px-3 py-2.5 text-sm focus:outline-none focus:border-[#b08a57]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#55524c] mb-1.5">E-Mail für Rückfragen</label>
+                    <input
+                      type="email"
+                      value={referenceForm.kontaktEmail}
+                      onChange={(event) => handleReferenceFieldChange('kontaktEmail', event.target.value)}
+                      required
+                      className="w-full rounded-lg border border-[#dfd9cf] px-3 py-2.5 text-sm focus:outline-none focus:border-[#b08a57]"
+                      placeholder="name@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#55524c] mb-1.5">Telefon optional</label>
+                    <input
+                      value={referenceForm.kontaktTelefon}
+                      onChange={(event) => handleReferenceFieldChange('kontaktTelefon', event.target.value)}
+                      className="w-full rounded-lg border border-[#dfd9cf] px-3 py-2.5 text-sm focus:outline-none focus:border-[#b08a57]"
+                      placeholder="+43 ..."
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-[#55524c] mb-1.5">Bild-Link optional</label>
+                    <input
+                      type="url"
+                      value={referenceForm.bildUrl}
+                      onChange={(event) => handleReferenceFieldChange('bildUrl', event.target.value)}
+                      className="w-full rounded-lg border border-[#dfd9cf] px-3 py-2.5 text-sm focus:outline-none focus:border-[#b08a57]"
+                      placeholder="https://..."
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-[#55524c] mb-1.5">Beschreibung</label>
+                    <textarea
+                      value={referenceForm.beschreibung}
+                      onChange={(event) => handleReferenceFieldChange('beschreibung', event.target.value)}
+                      required
+                      rows={4}
+                      className="w-full rounded-lg border border-[#dfd9cf] px-3 py-2.5 text-sm focus:outline-none focus:border-[#b08a57] resize-none"
+                      placeholder="Erzählen Sie kurz, wie Sie Ihren Anhänger einsetzen."
+                    />
+                  </div>
+                </div>
+
+                {referenceFormMessage && (
+                  <div className={`mt-4 rounded-lg px-4 py-3 text-sm ${
+                    referenceFormState === 'success'
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                      : 'bg-red-50 text-red-700 border border-red-200'
+                  }`}>
+                    {referenceFormMessage}
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={referenceFormState === 'sending'}
+                  className="mt-5 w-full sm:w-auto bg-[#2f2f2d] hover:bg-[#1c1c1a] text-white px-8"
+                >
+                  <Send size={16} className="mr-2" />
+                  {referenceFormState === 'sending' ? 'Wird gesendet...' : 'Referenz einreichen'}
+                </Button>
+              </form>
+            </div>
+          </motion.div>
+        </div>
+      </section>
     </div>
   );
 }

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Lock, Eye, EyeOff, LogIn, Shield } from 'lucide-react';
+import { Lock, Eye, EyeOff, LogIn, Shield, Mail } from 'lucide-react';
 import { Button } from './ui/button';
+import { isSupabaseConfigured, supabase, supabaseAdminEmail } from '../lib/supabase';
 
 interface AdminLoginProps {
   onLogin: () => void;
@@ -9,26 +10,75 @@ interface AdminLoginProps {
 }
 
 export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
+  const [email, setEmail] = useState(supabaseAdminEmail);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [mode, setMode] = useState<'login' | 'register'>('login');
   const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setInfo('');
     setIsLoading(true);
 
-    // Simulate a brief loading delay for better UX
-    setTimeout(() => {
+    try {
+      if (isSupabaseConfigured && supabase) {
+        if (mode === 'register') {
+          const normalizedEmail = email.trim().toLowerCase();
+          const normalizedAdminEmail = supabaseAdminEmail.trim().toLowerCase();
+
+          if (normalizedEmail !== normalizedAdminEmail) {
+            throw new Error('Bitte verwenden Sie die hinterlegte Admin-E-Mail.');
+          }
+
+          if (password.length < 6) {
+            throw new Error('Das Passwort muss mindestens 6 Zeichen lang sein.');
+          }
+
+          const { data, error: signUpError } = await supabase.auth.signUp({
+            email: normalizedEmail,
+            password,
+          });
+
+          if (signUpError) throw signUpError;
+
+          if (data.session) {
+            onLogin();
+            return;
+          }
+
+          setInfo('Admin-Konto wurde angelegt. Falls Supabase eine E-Mail-Bestätigung verlangt, bestätige bitte den Link in deinem Postfach und melde dich danach an.');
+          setMode('login');
+          setPassword('');
+          return;
+        }
+
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (signInError) throw signInError;
+        onLogin();
+        return;
+      }
+
       if (password === '1234') {
         onLogin();
-      } else {
-        setError('Falsches Passwort. Bitte versuchen Sie es erneut.');
-        setPassword('');
+        return;
       }
+
+      setError('Falsches Passwort. Bitte versuchen Sie es erneut.');
+      setPassword('');
+    } catch (loginError) {
+      const message = loginError instanceof Error ? loginError.message : 'Anmeldung fehlgeschlagen.';
+      setError(message);
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   return (
@@ -64,7 +114,33 @@ export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
           {/* Login Form */}
           <div className="p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Password Input */}
+              {isSupabaseConfigured && (
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-[#77756f] mb-2">
+                    E-Mail
+                  </label>
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#77756f]">
+                      <Mail size={20} />
+                    </div>
+                    <input
+                      type="email"
+                      id="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setError('');
+                        setInfo('');
+                      }}
+                      className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-[#b08a57]/30 focus:border-[#b08a57] transition-all duration-300 focus:outline-none"
+                      placeholder="admin@example.com"
+                      required
+                      autoFocus
+                    />
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-[#77756f] mb-2">
                   Passwort
@@ -80,6 +156,7 @@ export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
                     onChange={(e) => {
                       setPassword(e.target.value);
                       setError('');
+                      setInfo('');
                     }}
                     className={`w-full pl-12 pr-12 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none ${
                       error
@@ -88,7 +165,7 @@ export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
                     }`}
                     placeholder="Geben Sie Ihr Passwort ein"
                     required
-                    autoFocus
+                    autoFocus={!isSupabaseConfigured}
                   />
                   <button
                     type="button"
@@ -100,21 +177,29 @@ export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
                 </div>
                 {error && (
                   <motion.p
-                    className="text-red-500 text-sm mt-2 flex items-center gap-1"
+                    className="text-red-500 text-sm mt-2"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
-                    <span>⚠️</span> {error}
+                    {error}
+                  </motion.p>
+                )}
+                {info && (
+                  <motion.p
+                    className="text-emerald-700 text-sm mt-2"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    {info}
                   </motion.p>
                 )}
               </div>
 
-              {/* Submit Button */}
               <Button
                 type="submit"
-                disabled={isLoading || !password}
+                disabled={isLoading || !password || (isSupabaseConfigured && !email)}
                 className={`w-full gradient-secondary text-white py-6 text-lg font-semibold transition-all duration-300 ${
-                  isLoading || !password
+                  isLoading || !password || (isSupabaseConfigured && !email)
                     ? 'opacity-50 cursor-not-allowed'
                     : 'hover:shadow-xl hover:scale-105'
                 }`}
@@ -127,13 +212,28 @@ export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
                 ) : (
                   <div className="flex items-center justify-center gap-2">
                     <LogIn size={20} />
-                    <span>Anmelden</span>
+                    <span>{mode === 'register' ? 'Admin-Konto erstellen' : 'Anmelden'}</span>
                   </div>
                 )}
               </Button>
             </form>
 
-            {/* Info Box */}
+            {isSupabaseConfigured && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMode((currentMode) => (currentMode === 'login' ? 'register' : 'login'));
+                  setError('');
+                  setInfo('');
+                }}
+                className="mt-4 w-full text-sm text-[#77756f] hover:text-[#b08a57] transition-colors"
+              >
+                {mode === 'login'
+                  ? 'Noch kein Admin-Konto? Hier erstellen'
+                  : 'Ich habe schon ein Konto - anmelden'}
+              </button>
+            )}
+
             <motion.div
               className="mt-6 p-4 rounded-xl bg-gradient-to-r from-[#b08a57]/10 to-transparent border-l-4 border-[#b08a57]"
               initial={{ opacity: 0 }}
@@ -141,13 +241,17 @@ export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
               transition={{ delay: 0.3 }}
             >
               <p className="text-sm text-[#77756f]">
-                <strong>Hinweis:</strong> Dieser Bereich ist nur für autorisierte Administratoren zugänglich.
+                <strong>Hinweis:</strong>{' '}
+                {isSupabaseConfigured
+                  ? mode === 'register'
+                    ? 'Das Konto darf nur mit der hinterlegten Admin-E-Mail erstellt werden.'
+                    : 'Die Anmeldung läuft über Supabase Auth.'
+                  : 'Supabase ist noch nicht konfiguriert. Lokal funktioniert vorerst das Demo-Passwort 1234.'}
               </p>
             </motion.div>
           </div>
         </div>
 
-        {/* Back Link */}
         <motion.div
           className="text-center mt-6"
           initial={{ opacity: 0 }}
@@ -158,7 +262,7 @@ export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
             onClick={() => onNavigate('home')}
             className="text-[#77756f] hover:text-[#b08a57] transition-colors duration-300 text-sm"
           >
-            ← Zurück zur Startseite
+            Zurück zur Startseite
           </button>
         </motion.div>
       </motion.div>

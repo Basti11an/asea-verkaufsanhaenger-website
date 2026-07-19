@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AdminDataProvider } from './context/AdminDataContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { Header } from './components/Header';
@@ -15,6 +15,7 @@ import { PrivacyPage } from './components/pages/PrivacyPage';
 import { MessagesPage } from './components/pages/MessagesPage';
 import { AdminLogin } from './components/AdminLogin';
 import { ConfiguratorPage } from './components/pages/ConfiguratorPage';
+import { isSupabaseConfigured, supabase } from './lib/supabase';
 
 function AppInner() {
   const [currentPage, setCurrentPage] = useState<string>('home');
@@ -30,7 +31,27 @@ function AppInner() {
     });
   };
 
-  const handleAdminLogout = () => {
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return;
+
+    supabase.auth.getSession().then(({ data }) => {
+      setIsAdminAuthenticated(Boolean(data.session));
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAdminAuthenticated(Boolean(session));
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleAdminLogout = async () => {
+    if (isSupabaseConfigured && supabase) {
+      await supabase.auth.signOut();
+    }
+
     setIsAdminAuthenticated(false);
     setAdminActiveTab('modelle');
     setCurrentPage('home');
