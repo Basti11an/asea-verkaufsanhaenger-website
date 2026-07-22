@@ -71,8 +71,8 @@ export const de = {
   home_cta_form: 'Kontaktformular',
 
   // Home – References
-  home_refs_title: 'Unsere Referenzen',
-  home_refs_subtitle: 'Ein Auszug aus unseren bisherigen Projekten.',
+  home_refs_title: 'Erfahrungen unserer Kunden',
+  home_refs_subtitle: 'Was unsere Kunden mit ASEA Anhängern erlebt haben.',
 
   // About – Hero
   about_hero_title: 'Über ASEA Verkaufsanhänger',

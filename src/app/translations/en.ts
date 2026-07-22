@@ -71,8 +71,8 @@ export const en = {
   home_cta_form: 'Contact Form',
 
   // Home – References
-  home_refs_title: 'Our References',
-  home_refs_subtitle: 'A selection of our past projects.',
+  home_refs_title: 'Customer Experiences',
+  home_refs_subtitle: 'What our customers have experienced with ASEA trailers.',
 
   // About – Hero
   about_hero_title: 'About ASEA Sales Trailers',

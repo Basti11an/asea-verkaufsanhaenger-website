@@ -5,6 +5,7 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
 import { useLanguage } from '../../context/LanguageContext';
+import { ReferenceSubmitPanel } from '../references/ReferenceSubmitPanel';
 
 export function ContactPage({ prefillData }: { prefillData?: any }) {
   const { t } = useLanguage();
@@ -294,6 +295,16 @@ export function ContactPage({ prefillData }: { prefillData?: any }) {
               </Button>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Experience Submission */}
+      <section className="py-16 md:py-20 bg-[#f8f7f3]">
+        <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24">
+          <ReferenceSubmitPanel
+            description="Haben Sie bereits mit ASEA gearbeitet? Reichen Sie Ihre Erfahrung hier ein. Nach der Prüfung im Admin-Bereich wird sie veröffentlicht."
+            buttonLabel="Bewertung schreiben"
+          />
         </div>
       </section>
     </div>

@@ -237,6 +237,54 @@ html {
   }
 }
 
+@keyframes referenceMarquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.reference-marquee {
+  width: 100%;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+.reference-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: referenceMarquee 38s linear infinite;
+}
+
+.reference-marquee-group {
+  display: flex;
+  gap: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+.reference-marquee:hover .reference-marquee-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reference-marquee {
+    overflow-x: auto;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .reference-marquee-track {
+    animation: none;
+  }
+
+  .reference-marquee-group[aria-hidden='true'] {
+    display: none;
+  }
+}
+
 /* Glass Morphism Utility Classes */
 .glass {
   background: rgba(255, 255, 255, 0.9);

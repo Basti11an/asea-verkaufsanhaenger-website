@@ -4,6 +4,9 @@ import { Button } from '../ui/button';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { motion } from 'motion/react';
 import { useLanguage } from '../../context/LanguageContext';
+import { useAdminData } from '../../context/AdminDataContext';
+import { ReferenceCard } from '../references/ReferenceCard';
+import { getApprovedReferencesForModel } from '../../lib/referenceUtils';
 
 interface Model {
   id: string;
@@ -28,8 +31,10 @@ interface ModelDetailPageProps {
 export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const { t } = useLanguage();
+  const { references } = useAdminData();
 
   const images = model.images || [model.image, model.image, model.image, model.image];
+  const modelReferences = getApprovedReferencesForModel(references, model.name, 2);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f8f7f3] to-white">
@@ -87,6 +92,17 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
                 </motion.button>
               ))}
             </div>
+
+            {modelReferences.length > 0 && (
+              <div className="mt-8">
+                <h2 className="text-2xl text-[#2f2f2d] font-bold mb-4">Erfahrungen zu diesem Anhänger</h2>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-1 gap-4">
+                  {modelReferences.map((reference) => (
+                    <ReferenceCard key={reference.id} reference={reference} compact />
+                  ))}
+                </div>
+              </div>
+            )}
           </motion.div>
 
           {/* Right Column - Product Info */}

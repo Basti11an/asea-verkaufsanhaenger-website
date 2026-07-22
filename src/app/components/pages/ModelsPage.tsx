@@ -4,6 +4,7 @@ import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { motion } from 'motion/react';
 import { useAdminData } from '../../context/AdminDataContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { ReferenceSubmitPanel } from '../references/ReferenceSubmitPanel';
 
 interface ModelsPageProps {
   onNavigate: (page: string, data?: any) => void;
@@ -275,6 +276,12 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
               ))}
             </div>
           )}
+
+          <ReferenceSubmitPanel
+            className="mt-10 md:mt-12"
+            description="Nutzen Sie einen ASEA Anhänger? Teilen Sie Ihre Erfahrung. Nach der Prüfung im Admin-Bereich wird sie veröffentlicht."
+            buttonLabel="Bewertung schreiben"
+          />
         </div>
       </section>
 
