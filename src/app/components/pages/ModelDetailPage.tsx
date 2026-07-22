@@ -7,6 +7,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useAdminData } from '../../context/AdminDataContext';
 import { ReferenceCard } from '../references/ReferenceCard';
 import { getApprovedReferencesForModel } from '../../lib/referenceUtils';
+import { getRevealAnimate, getRevealInitial, useTouchFriendlyMotion } from '../../lib/useTouchFriendlyMotion';
 
 interface Model {
   id: string;
@@ -32,6 +33,7 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const { t } = useLanguage();
   const { references } = useAdminData();
+  const touchFriendlyMotion = useTouchFriendlyMotion();
 
   const images = model.images || [model.image, model.image, model.image, model.image];
   const modelReferences = getApprovedReferencesForModel(references, model.name, 2);
@@ -55,8 +57,8 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
         <div className="grid lg:grid-cols-2 gap-12 mb-16">
           {/* Left Column - Images */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={getRevealInitial(touchFriendlyMotion, -30)}
+            animate={getRevealAnimate(touchFriendlyMotion)}
             transition={{ duration: 0.6 }}
           >
             <div className="glass rounded-3xl overflow-hidden shadow-2xl border border-[#b08a57]/20 mb-6">
@@ -107,8 +109,8 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
 
           {/* Right Column - Product Info */}
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={getRevealInitial(touchFriendlyMotion, 30)}
+            animate={getRevealAnimate(touchFriendlyMotion)}
             transition={{ duration: 0.6 }}
           >
             <div className="mb-8">
@@ -149,7 +151,7 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
               {model.category === 'sales' && (
                 <Button
                   size="lg"
-                  onClick={() => onNavigate('configurator')}
+                  onClick={() => onNavigate('configurator', { returnPage: 'model-detail', model })}
                   className="flex-1 gradient-primary text-[#2f2f2d] hover:shadow-xl hover:scale-105 transition-all duration-300 text-lg py-6 border-2 border-[#b08a57]"
                 >
                   <Sparkles className="mr-2" size={20} />
@@ -204,8 +206,8 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
                   <motion.div
                     key={index}
                     className="flex items-start gap-3"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    initial={getRevealInitial(touchFriendlyMotion, -20)}
+                    animate={getRevealAnimate(touchFriendlyMotion)}
                     transition={{ duration: 0.3, delay: 0.4 + index * 0.05 }}
                   >
                     <div className="w-6 h-6 gradient-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -235,8 +237,8 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
                   <motion.div
                     key={index}
                     className="flex items-start gap-3"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    initial={getRevealInitial(touchFriendlyMotion, -20)}
+                    animate={getRevealAnimate(touchFriendlyMotion)}
                     transition={{ duration: 0.3, delay: 0.5 + index * 0.05 }}
                   >
                     <div className="w-6 h-6 gradient-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -274,12 +276,12 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
                 <Phone className="mr-2" size={22} />
                 {t('detail_contact_btn')}
               </Button>
-              {model.category === 'sales' && (
-                <Button
-                  size="lg"
-                  onClick={() => onNavigate('configurator')}
-                  className="bg-white text-[#1c1c1a] hover:bg-[#f8f7f3] hover:shadow-xl hover:scale-105 transition-all duration-300 text-lg px-10 py-6 border border-white"
-                >
+                {model.category === 'sales' && (
+                  <Button
+                    size="lg"
+                    onClick={() => onNavigate('configurator', { returnPage: 'model-detail', model })}
+                    className="bg-white text-[#1c1c1a] hover:bg-[#f8f7f3] hover:shadow-xl hover:scale-105 transition-all duration-300 text-lg px-10 py-6 border border-white"
+                  >
                   <Sparkles className="mr-2" size={22} />
                   {t('detail_configure_now')}
                 </Button>

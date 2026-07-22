@@ -108,8 +108,8 @@ export function ReferenzenTab() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-5">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">
         <h2 className="text-lg font-semibold text-[#2f2f2d]">
           Kundenreferenzen
           <span className="ml-2 text-sm font-normal text-gray-400">({publishedRefs.length} Einträge)</span>
@@ -118,7 +118,7 @@ export function ReferenzenTab() {
           size="sm"
           onClick={handleAdd}
           disabled={isCreating}
-          className="bg-[#77756f] hover:bg-[#2f2f2d] text-white h-8 text-xs"
+          className="w-full sm:w-auto bg-[#77756f] hover:bg-[#2f2f2d] text-white h-8 text-xs"
         >
           <Plus size={14} className="mr-1.5" />
           {isCreating ? 'Wird angelegt...' : 'Neue Referenz hinzufügen'}
@@ -137,7 +137,176 @@ export function ReferenzenTab() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="lg:hidden space-y-4">
+        {publishedRefs.length === 0 ? (
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 text-center text-sm text-[#77756f]">
+            Noch keine Referenzen vorhanden.
+          </div>
+        ) : (
+          publishedRefs.map((ref) => {
+            const isEditing = ref.id in editState;
+            const draft = editState[ref.id] ?? {};
+
+            return (
+              <div
+                key={ref.id}
+                className={`bg-white rounded-xl border shadow-sm overflow-hidden ${isEditing ? 'border-[#b08a57]' : 'border-gray-200'}`}
+              >
+                <div className="h-40 bg-[#f8f7f3]">
+                  {ref.bildUrl ? (
+                    <button
+                      type="button"
+                      onClick={() => setPreviewImage(ref.bildUrl)}
+                      className="w-full h-full block overflow-hidden"
+                    >
+                      <img src={ref.bildUrl} alt={ref.kundenname} className="w-full h-full object-cover" />
+                    </button>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[#b08a57]/50">
+                      <ImageIcon size={42} />
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-4 space-y-4">
+                  {isEditing ? (
+                    <div className="grid gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Kunde</label>
+                        <Input
+                          value={draft.kundenname ?? ref.kundenname}
+                          onChange={(e) => handleEditChange(ref.id, 'kundenname', e.target.value)}
+                          className="text-sm border-[#b08a57]"
+                          placeholder="Kundenname"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Ort</label>
+                          <Input
+                            value={draft.ort ?? ref.ort}
+                            onChange={(e) => handleEditChange(ref.id, 'ort', e.target.value)}
+                            className="text-sm border-[#b08a57]"
+                            placeholder="Ort"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Jahr</label>
+                          <Input
+                            type="number"
+                            value={draft.jahr ?? ref.jahr}
+                            onChange={(e) => handleEditChange(ref.id, 'jahr', Number(e.target.value))}
+                            className="text-sm border-[#b08a57]"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Modell</label>
+                        <select
+                          value={draft.modell ?? ref.modell}
+                          onChange={(e) => handleEditChange(ref.id, 'modell', e.target.value)}
+                          className="w-full h-10 text-sm border border-[#b08a57] rounded-md px-3 bg-white"
+                        >
+                          {MODELLE.map((m) => <option key={m} value={m}>{m}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Beschreibung</label>
+                        <Input
+                          value={draft.beschreibung ?? ref.beschreibung}
+                          onChange={(e) => handleEditChange(ref.id, 'beschreibung', e.target.value)}
+                          className="text-sm border-[#b08a57]"
+                          placeholder="Kurzbeschreibung"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Bild-URL</label>
+                        <Input
+                          value={draft.bildUrl ?? ref.bildUrl}
+                          onChange={(e) => handleEditChange(ref.id, 'bildUrl', e.target.value)}
+                          className="text-xs border-[#b08a57] font-mono"
+                          placeholder="https://..."
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-[#2f2f2d] break-words">{ref.kundenname || 'Ohne Kundenname'}</h3>
+                          <p className="text-xs text-gray-500 break-words">{ref.modell}</p>
+                        </div>
+                        <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] ${ref.sichtbar ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
+                          {ref.sichtbar ? 'Sichtbar' : 'Ausgeblendet'}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-xs text-gray-500">{ref.ort} · {ref.jahr}</p>
+                      <p className="mt-3 text-sm text-[#55524c] leading-relaxed break-words">{ref.beschreibung || 'Keine Beschreibung angegeben.'}</p>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2">
+                    <span className="text-xs font-medium text-gray-500">Auf Website sichtbar</span>
+                    <Switch
+                      checked={ref.sichtbar}
+                      onCheckedChange={(val) => handleToggleSichtbar(ref.id, val)}
+                      disabled={isEditing || savingId === ref.id}
+                    />
+                  </div>
+
+                  {isEditing ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => saveEdit(ref.id)}
+                        disabled={savingId === ref.id}
+                        className="bg-emerald-700 hover:bg-emerald-800 text-white"
+                      >
+                        <Check size={14} className="mr-1.5" />
+                        Speichern
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => cancelEdit(ref.id)}
+                        className="text-gray-600"
+                      >
+                        <X size={14} className="mr-1.5" />
+                        Abbrechen
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => startEdit(ref)}
+                        className="border-[#b08a57]/40 text-[#2f2f2d]"
+                      >
+                        <Pencil size={14} className="mr-1.5" />
+                        Bearbeiten
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setDeleteTarget(ref)}
+                        disabled={savingId === ref.id}
+                        className="border-red-200 text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 size={14} className="mr-1.5" />
+                        Löschen
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      <div className="hidden lg:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -305,7 +474,7 @@ export function ReferenzenTab() {
 
       {/* Image Preview Dialog */}
       <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-md">
           <DialogHeader>
             <DialogTitle>Bildvorschau</DialogTitle>
           </DialogHeader>
@@ -317,7 +486,7 @@ export function ReferenzenTab() {
 
       {/* Delete Confirm Dialog */}
       <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-sm">
           <DialogHeader>
             <DialogTitle>Referenz löschen?</DialogTitle>
             <DialogDescription>

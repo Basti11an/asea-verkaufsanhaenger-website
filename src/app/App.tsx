@@ -64,7 +64,7 @@ function AppInner() {
       case 'about':
         return <AboutPage />;
       case 'configurator':
-        return <ConfiguratorPage onNavigate={handleNavigate} />;
+        return <ConfiguratorPage onNavigate={handleNavigate} navData={navData} />;
       case 'models':
         return <ModelsPage onNavigate={handleNavigate} />;
       case 'model-detail':

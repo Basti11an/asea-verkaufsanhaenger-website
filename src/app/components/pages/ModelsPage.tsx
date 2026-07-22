@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { useAdminData } from '../../context/AdminDataContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { ReferenceSubmitPanel } from '../references/ReferenceSubmitPanel';
+import { getRevealAnimate, getRevealInitial, useTouchFriendlyMotion } from '../../lib/useTouchFriendlyMotion';
 
 interface ModelsPageProps {
   onNavigate: (page: string, data?: any) => void;
@@ -189,6 +190,7 @@ const STATIC_DETAILS: Record<number, {
 export function ModelsPage({ onNavigate }: ModelsPageProps) {
   const { models: adminModels } = useAdminData();
   const { t } = useLanguage();
+  const touchFriendlyMotion = useTouchFriendlyMotion();
 
   const models = adminModels
     .filter((m) => m.active)
@@ -248,8 +250,8 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
                     />
                     <motion.div
                       className="absolute top-4 right-4 gradient-primary text-[#2f2f2d] px-3 py-1 rounded-full text-sm z-20 shadow-lg font-bold"
-                      initial={{ x: 100, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
+                      initial={getRevealInitial(touchFriendlyMotion, 100)}
+                      animate={getRevealAnimate(touchFriendlyMotion)}
                       transition={{ duration: 0.6, delay: index * 0.1 + 0.3 }}
                     >
                       {model.price}

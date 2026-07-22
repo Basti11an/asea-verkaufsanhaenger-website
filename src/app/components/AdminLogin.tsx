@@ -4,6 +4,8 @@ import { Lock, Eye, EyeOff, LogIn, Shield, Mail } from 'lucide-react';
 import { Button } from './ui/button';
 import { isSupabaseConfigured, supabase, supabaseAdminEmail } from '../lib/supabase';
 
+const ADMIN_REGISTRATION_CODE = 'ASEA-BBS';
+
 interface AdminLoginProps {
   onLogin: () => void;
   onNavigate: (page: string) => void;
@@ -12,6 +14,7 @@ interface AdminLoginProps {
 export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
   const [email, setEmail] = useState(supabaseAdminEmail);
   const [password, setPassword] = useState('');
+  const [registrationCode, setRegistrationCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [error, setError] = useState('');
@@ -29,6 +32,10 @@ export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
         if (mode === 'register') {
           const normalizedEmail = email.trim().toLowerCase();
           const normalizedAdminEmail = supabaseAdminEmail.trim().toLowerCase();
+
+          if (registrationCode.trim() !== ADMIN_REGISTRATION_CODE) {
+            throw new Error('Der Registrierungscode ist falsch.');
+          }
 
           if (normalizedEmail !== normalizedAdminEmail) {
             throw new Error('Bitte verwenden Sie die hinterlegte Admin-E-Mail.');
@@ -53,6 +60,7 @@ export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
           setInfo('Admin-Konto wurde angelegt. Falls Supabase eine E-Mail-Bestätigung verlangt, bestätige bitte den Link in deinem Postfach und melde dich danach an.');
           setMode('login');
           setPassword('');
+          setRegistrationCode('');
           return;
         }
 
@@ -82,10 +90,10 @@ export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f8f7f3] to-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#f8f7f3] to-white flex items-center justify-center p-4 md:p-6 overflow-hidden">
       {/* Background Decorative Elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 gradient-primary opacity-10 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 gradient-primary opacity-10 rounded-full blur-3xl" />
+      <div className="absolute top-0 right-0 w-96 h-96 gradient-primary opacity-10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 gradient-primary opacity-10 rounded-full blur-3xl pointer-events-none" />
 
       <motion.div
         className="relative z-10 w-full max-w-md"
@@ -96,7 +104,7 @@ export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
         {/* Login Card */}
         <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-[#b08a57]/30 overflow-hidden">
           {/* Header */}
-          <div className="gradient-secondary text-white p-8 text-center relative overflow-hidden">
+          <div className="gradient-secondary text-white p-6 md:p-8 text-center relative overflow-hidden">
             <motion.div
               className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl"
               animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
@@ -112,7 +120,7 @@ export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
           </div>
 
           {/* Login Form */}
-          <div className="p-8">
+          <div className="p-5 md:p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               {isSupabaseConfigured && (
                 <div>
@@ -136,6 +144,32 @@ export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
                       placeholder="admin@example.com"
                       required
                       autoFocus
+                    />
+                  </div>
+                </div>
+              )}
+
+              {isSupabaseConfigured && mode === 'register' && (
+                <div>
+                  <label htmlFor="registration-code" className="block text-sm font-medium text-[#77756f] mb-2">
+                    Registrierungscode
+                  </label>
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#77756f]">
+                      <Shield size={20} />
+                    </div>
+                    <input
+                      type="password"
+                      id="registration-code"
+                      value={registrationCode}
+                      onChange={(e) => {
+                        setRegistrationCode(e.target.value);
+                        setError('');
+                        setInfo('');
+                      }}
+                      className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-[#b08a57]/30 focus:border-[#b08a57] transition-all duration-300 focus:outline-none"
+                      placeholder="Registrierungscode eingeben"
+                      required
                     />
                   </div>
                 </div>
@@ -197,9 +231,9 @@ export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
 
               <Button
                 type="submit"
-                disabled={isLoading || !password || (isSupabaseConfigured && !email)}
+                disabled={isLoading || !password || (isSupabaseConfigured && (!email || (mode === 'register' && !registrationCode)))}
                 className={`w-full gradient-secondary text-white py-6 text-lg font-semibold transition-all duration-300 ${
-                  isLoading || !password || (isSupabaseConfigured && !email)
+                  isLoading || !password || (isSupabaseConfigured && (!email || (mode === 'register' && !registrationCode)))
                     ? 'opacity-50 cursor-not-allowed'
                     : 'hover:shadow-xl hover:scale-105'
                 }`}
@@ -225,6 +259,8 @@ export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
                   setMode((currentMode) => (currentMode === 'login' ? 'register' : 'login'));
                   setError('');
                   setInfo('');
+                  setPassword('');
+                  setRegistrationCode('');
                 }}
                 className="mt-4 w-full text-sm text-[#77756f] hover:text-[#b08a57] transition-colors"
               >
@@ -244,7 +280,7 @@ export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
                 <strong>Hinweis:</strong>{' '}
                 {isSupabaseConfigured
                   ? mode === 'register'
-                    ? 'Das Konto darf nur mit der hinterlegten Admin-E-Mail erstellt werden.'
+                    ? 'Das Konto darf nur mit der hinterlegten Admin-E-Mail und Registrierungscode erstellt werden.'
                     : 'Die Anmeldung läuft über Supabase Auth.'
                   : 'Supabase ist noch nicht konfiguriert. Lokal funktioniert vorerst das Demo-Passwort 1234.'}
               </p>

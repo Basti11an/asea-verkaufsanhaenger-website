@@ -37,8 +37,8 @@ export function ModelleTab() {
   const hasDraft = (id: number) => !!drafts[id] && Object.keys(drafts[id]).length > 0;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-5">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between mb-5">
         <h2 className="text-lg font-semibold text-[#2f2f2d]">Anhänger-Modelle</h2>
         <p className="text-sm text-gray-400">Änderungen werden erst nach „Speichern" live</p>
       </div>
@@ -51,7 +51,7 @@ export function ModelleTab() {
           return (
             <div
               key={model.id}
-              className={`bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col transition-all duration-200 ${
+              className={`bg-white rounded-xl border shadow-sm overflow-hidden flex min-w-0 flex-col transition-all duration-200 ${
                 isDirty ? 'border-amber-300 shadow-amber-100' : 'border-gray-200'
               } ${!draft.active ? 'opacity-60' : ''}`}
             >
@@ -133,7 +133,7 @@ export function ModelleTab() {
                 <Button
                   onClick={() => handleSave(model.id)}
                   size="sm"
-                  className={`mt-auto h-8 text-xs transition-all duration-200 ${
+                  className={`mt-auto h-8 w-full text-xs transition-all duration-200 ${
                     isDirty
                       ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-md'
                       : 'bg-emerald-600 hover:bg-emerald-700 text-white'

@@ -187,6 +187,13 @@
 html {
   font-size: var(--font-size);
   scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body,
+#root {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* Custom Animations */
@@ -239,16 +246,17 @@ html {
 
 @keyframes referenceMarquee {
   from {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
   to {
-    transform: translateX(-50%);
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
 .reference-marquee {
   width: 100%;
   overflow: hidden;
+  contain: layout paint;
   -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
   mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
 }
@@ -256,7 +264,10 @@ html {
 .reference-marquee-track {
   display: flex;
   width: max-content;
-  animation: referenceMarquee 38s linear infinite;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+  backface-visibility: hidden;
+  animation: referenceMarquee 44s linear infinite;
 }
 
 .reference-marquee-group {
@@ -265,8 +276,26 @@ html {
   padding-right: 1.25rem;
 }
 
-.reference-marquee:hover .reference-marquee-track {
-  animation-play-state: paused;
+@media (hover: hover) and (pointer: fine) {
+  .reference-marquee:hover .reference-marquee-track {
+    animation-play-state: paused;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .reference-marquee {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .reference-marquee-track {
+    animation-duration: 54s;
+  }
+
+  .reference-marquee-group {
+    gap: 0.875rem;
+    padding-right: 0.875rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

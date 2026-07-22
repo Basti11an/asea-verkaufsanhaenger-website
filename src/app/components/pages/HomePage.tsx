@@ -7,6 +7,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { ReferenceCard } from '../references/ReferenceCard';
 import { ReferenceSubmitPanel } from '../references/ReferenceSubmitPanel';
 import { getLatestApprovedReferences } from '../../lib/referenceUtils';
+import { getRevealAnimate, getRevealInitial, useTouchFriendlyMotion } from '../../lib/useTouchFriendlyMotion';
 
 interface HomePageProps {
   onNavigate: (page: string, data?: any) => void;
@@ -15,6 +16,7 @@ interface HomePageProps {
 export function HomePage({ onNavigate }: HomePageProps) {
   const { references } = useAdminData();
   const { t } = useLanguage();
+  const touchFriendlyMotion = useTouchFriendlyMotion();
   const visibleRefs = getLatestApprovedReferences(references, 6);
 
   const features = [
@@ -55,8 +57,8 @@ export function HomePage({ onNavigate }: HomePageProps) {
 
         <motion.div
           className="absolute inset-0 z-30 flex flex-col justify-end md:justify-center pb-8 md:pb-0 px-6 md:px-12 lg:px-16 xl:px-24"
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
+          initial={getRevealInitial(touchFriendlyMotion, -30)}
+          animate={getRevealAnimate(touchFriendlyMotion)}
           transition={{ duration: 0.7 }}
         >
           <div className="max-w-full md:max-w-[38%]">
@@ -113,19 +115,8 @@ export function HomePage({ onNavigate }: HomePageProps) {
       </section>
 
       {/* Erfahrungen Section */}
-      <section className="py-14 md:py-16 gradient-accent relative overflow-hidden">
+      <section className="py-10 md:py-12 gradient-accent relative overflow-hidden">
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24 relative z-10">
-          <motion.div
-            className="text-center mb-8 md:mb-10"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="text-2xl md:text-3xl lg:text-5xl text-[#2f2f2d] mb-3 md:mb-4">{t('home_refs_title')}</h2>
-            <p className="text-base md:text-xl text-[#77756f] max-w-xl mx-auto">{t('home_refs_subtitle')}</p>
-          </motion.div>
-
           {visibleRefs.length > 0 && (
             <div className="reference-marquee mb-8 md:mb-10">
               <div className="reference-marquee-track">

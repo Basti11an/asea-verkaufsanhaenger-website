@@ -17,57 +17,78 @@ const TABS = [
 export function AdminHeader({ activeTab, setActiveTab, onNavigate, onLogout }: AdminHeaderProps) {
   return (
     <header
-      className="text-white px-6 flex items-center gap-6 sticky top-0 z-50 border-b border-white/10 shadow-xl"
-      style={{ backgroundColor: '#1e2a3a', height: '52px' }}
+      className="text-white sticky top-0 z-50 border-b border-white/10 shadow-xl"
+      style={{ backgroundColor: '#1e2a3a' }}
     >
-      {/* Left: Brand */}
-      <div className="flex items-center gap-2 shrink-0">
-        <Lock size={14} className="text-[#c8a96e]" />
-        <span
-          className="text-[#c8a96e] text-sm tracking-widest select-none"
-          style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}
-        >
-          ASEA Admin
-        </span>
-      </div>
+      <div className="flex w-full flex-col gap-2 px-3 py-2 md:h-[52px] md:flex-row md:items-center md:gap-6 md:px-6 md:py-0">
+        <div className="flex items-center justify-between gap-3 md:contents">
+          <div className="flex items-center gap-2 shrink-0">
+            <Lock size={14} className="text-[#c8a96e]" />
+            <span
+              className="text-[#c8a96e] text-sm tracking-widest select-none"
+              style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}
+            >
+              ASEA Admin
+            </span>
+          </div>
 
-      {/* Center: Navigation Tabs */}
-      <nav className="flex items-center flex-1 justify-center h-full">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`
-              relative h-full px-5 text-sm transition-all duration-200 flex items-center gap-2
-              ${activeTab === tab.id
-                ? 'text-white border-b-2 border-[#b08a57]'
-                : 'text-white/55 hover:text-white/85 border-b-2 border-transparent'
-              }
-            `}
+          <div className="flex items-center gap-2 md:hidden">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onNavigate('home')}
+              className="h-8 border-white/30 text-white hover:bg-white/10 bg-transparent text-xs px-2.5"
+            >
+              Start
+            </Button>
+            <Button
+              size="sm"
+              onClick={onLogout}
+              className="h-8 bg-red-900/70 hover:bg-red-800 text-white border-none text-xs px-2.5"
+              aria-label="Abmelden"
+              title="Abmelden"
+            >
+              <LogOut size={13} />
+            </Button>
+          </div>
+        </div>
+
+        <nav className="-mx-3 flex overflow-x-auto px-3 md:mx-0 md:h-full md:flex-1 md:items-center md:justify-center md:overflow-visible md:px-0">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`
+                relative h-10 shrink-0 px-4 text-sm transition-all duration-200 flex items-center gap-2 md:h-full md:px-5
+                ${activeTab === tab.id
+                  ? 'text-white border-b-2 border-[#b08a57]'
+                  : 'text-white/55 hover:text-white/85 border-b-2 border-transparent'
+                }
+              `}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="hidden items-center gap-2 shrink-0 md:flex">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onNavigate('home')}
+            className="h-7 border-white/30 text-white hover:bg-white/10 bg-transparent text-xs px-3"
           >
-            {tab.label}
-          </button>
-        ))}
-      </nav>
-
-      {/* Right: Actions */}
-      <div className="flex items-center gap-2 shrink-0">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onNavigate('home')}
-          className="h-7 border-white/30 text-white hover:bg-white/10 bg-transparent text-xs px-3"
-        >
-          ← Startseite
-        </Button>
-        <Button
-          size="sm"
-          onClick={onLogout}
-          className="h-7 bg-red-900/70 hover:bg-red-800 text-white border-none text-xs px-3"
-        >
-          <LogOut size={12} className="mr-1.5" />
-          Abmelden
-        </Button>
+            ← Startseite
+          </Button>
+          <Button
+            size="sm"
+            onClick={onLogout}
+            className="h-7 bg-red-900/70 hover:bg-red-800 text-white border-none text-xs px-3"
+          >
+            <LogOut size={12} className="mr-1.5" />
+            Abmelden
+          </Button>
+        </div>
       </div>
     </header>
   );

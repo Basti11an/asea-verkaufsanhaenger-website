@@ -48,7 +48,7 @@ export function EingaengeTab() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
           <h2 className="text-lg font-semibold text-[#2f2f2d] flex items-center gap-2">
@@ -125,13 +125,13 @@ export function EingaengeTab() {
                       {reference.jahr}
                     </span>
                     {reference.kontaktEmail && (
-                      <span className="inline-flex items-center gap-1">
+                      <span className="inline-flex max-w-full items-center gap-1 break-all">
                         <Mail size={12} className="text-[#b08a57]" />
                         {reference.kontaktEmail}
                       </span>
                     )}
                     {reference.kontaktTelefon && (
-                      <span className="inline-flex items-center gap-1">
+                      <span className="inline-flex max-w-full items-center gap-1 break-all">
                         <Phone size={12} className="text-[#b08a57]" />
                         {reference.kontaktTelefon}
                       </span>
@@ -147,7 +147,7 @@ export function EingaengeTab() {
                       size="sm"
                       onClick={() => approveReference(reference)}
                       disabled={savingId === reference.id}
-                      className="bg-emerald-700 hover:bg-emerald-800 text-white"
+                      className="w-full sm:w-auto bg-emerald-700 hover:bg-emerald-800 text-white"
                     >
                       <Check size={14} className="mr-1.5" />
                       Freigeben
@@ -157,7 +157,7 @@ export function EingaengeTab() {
                       variant="outline"
                       onClick={() => setDeleteTarget(reference)}
                       disabled={savingId === reference.id}
-                      className="border-red-200 text-red-700 hover:bg-red-50"
+                      className="w-full sm:w-auto border-red-200 text-red-700 hover:bg-red-50"
                     >
                       <Trash2 size={14} className="mr-1.5" />
                       Löschen
@@ -171,7 +171,7 @@ export function EingaengeTab() {
       )}
 
       <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-lg">
           <DialogHeader>
             <DialogTitle>Bildvorschau</DialogTitle>
           </DialogHeader>
@@ -180,7 +180,7 @@ export function EingaengeTab() {
       </Dialog>
 
       <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-sm">
           <DialogHeader>
             <DialogTitle>Eingang löschen?</DialogTitle>
           </DialogHeader>
