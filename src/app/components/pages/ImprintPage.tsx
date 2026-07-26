@@ -23,11 +23,11 @@ export function ImprintPage() {
             <div>
               <h2 className="text-xl md:text-2xl text-[#2f2f2d] mb-4 md:mb-6 pb-2 border-b border-[#dfd9cf]">{t('imprint_company_title')}</h2>
               <div className="space-y-1.5 text-[#77756f]">
-                <p><strong className="text-[#2f2f2d]">Verkaufsanhänger ASEA</strong></p>
-                <p>Inhaber: Mst. Alfred Gaffal</p>
+                <p><strong className="text-[#2f2f2d]">{t('legal_company_name')}</strong></p>
+                <p>{t('legal_owner_line')}</p>
                 <p>Lahrndorf 34</p>
                 <p>A-4240 Waldburg</p>
-                <p>Österreich</p>
+                <p>{t('contact_country')}</p>
               </div>
             </div>
 
@@ -35,9 +35,9 @@ export function ImprintPage() {
             <div>
               <h2 className="text-xl md:text-2xl text-[#2f2f2d] mb-4 md:mb-6 pb-2 border-b border-[#dfd9cf]">{t('imprint_contact_title')}</h2>
               <div className="space-y-1.5 text-[#77756f]">
-                <p><strong className="text-[#2f2f2d]">Telefon:</strong> +43 664 410 5 007</p>
-                <p><strong className="text-[#2f2f2d]">E-Mail:</strong> office@verkaufsanhaenger-asea.at</p>
-                <p><strong className="text-[#2f2f2d]">Website:</strong> www.verkaufsanhaenger-asea.at</p>
+                <p><strong className="text-[#2f2f2d]">{t('legal_phone_label')}</strong> +43 664 410 5 007</p>
+                <p><strong className="text-[#2f2f2d]">{t('legal_email_label')}</strong> office@verkaufsanhaenger-asea.at</p>
+                <p><strong className="text-[#2f2f2d]">{t('legal_website_label')}</strong> www.verkaufsanhaenger-asea.at</p>
               </div>
             </div>
 
@@ -54,7 +54,7 @@ export function ImprintPage() {
               <h2 className="text-xl md:text-2xl text-[#2f2f2d] mb-4 md:mb-6 pb-2 border-b border-[#dfd9cf]">{t('imprint_register_title')}</h2>
               <div className="space-y-1.5 text-[#77756f]">
                 <p><strong className="text-[#2f2f2d]">{t('imprint_firm_no')}</strong> FN 123456a</p>
-                <p><strong className="text-[#2f2f2d]">{t('imprint_firm_court')}</strong> Landesgericht Wels</p>
+                <p><strong className="text-[#2f2f2d]">{t('imprint_firm_court')}</strong> {t('legal_court_wels')}</p>
                 <p><strong className="text-[#2f2f2d]">{t('imprint_uid')}</strong> ATU12345678</p>
               </div>
             </div>
@@ -63,10 +63,10 @@ export function ImprintPage() {
             <div>
               <h2 className="text-xl md:text-2xl text-[#2f2f2d] mb-4 md:mb-6 pb-2 border-b border-[#dfd9cf]">{t('imprint_profession_title')}</h2>
               <div className="space-y-1.5 text-[#77756f]">
-                <p><strong className="text-[#2f2f2d]">{t('imprint_chamber_label')}</strong> Wirtschaftskammer Oberösterreich</p>
-                <p><strong className="text-[#2f2f2d]">{t('imprint_profession_label')}</strong> Metalltechnik / Fahrzeugbau</p>
-                <p><strong className="text-[#2f2f2d]">{t('imprint_trade_reg_label')}</strong> Gewerbeordnung (GewO)</p>
-                <p><strong className="text-[#2f2f2d]">{t('imprint_authority_label')}</strong> Bezirkshauptmannschaft Wels-Land</p>
+                <p><strong className="text-[#2f2f2d]">{t('imprint_chamber_label')}</strong> {t('legal_chamber_upper_austria')}</p>
+                <p><strong className="text-[#2f2f2d]">{t('imprint_profession_label')}</strong> {t('legal_profession_value')}</p>
+                <p><strong className="text-[#2f2f2d]">{t('imprint_trade_reg_label')}</strong> {t('legal_trade_regulation')}</p>
+                <p><strong className="text-[#2f2f2d]">{t('imprint_authority_label')}</strong> {t('legal_authority_wels')}</p>
               </div>
             </div>
 
@@ -75,9 +75,9 @@ export function ImprintPage() {
               <h2 className="text-xl md:text-2xl text-[#2f2f2d] mb-4 md:mb-6 pb-2 border-b border-[#dfd9cf]">{t('imprint_responsible_title')}</h2>
               <div className="space-y-1.5 text-[#77756f]">
                 <p>Mst. Alfred Gaffal</p>
-                <p>Verkaufsanhänger ASEA</p>
+                <p>{t('legal_company_name')}</p>
                 <p>Lahrndorf 34</p>
-                <p>A-4240 Waldburg, Österreich</p>
+                <p>A-4240 Waldburg, {t('contact_country')}</p>
               </div>
             </div>
 

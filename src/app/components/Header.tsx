@@ -1,7 +1,7 @@
 import { Menu, X, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from './ui/button';
-import { useLanguage } from '../context/LanguageContext';
+import { availableLanguages, useLanguage } from '../context/LanguageContext';
 
 interface HeaderProps {
   currentPage: string;
@@ -12,9 +12,9 @@ function LanguageToggle() {
   const { lang, setLang } = useLanguage();
   return (
     <div className="flex items-center gap-2 select-none">
-      {(['de', 'en'] as const).map((code, i) => (
+      {availableLanguages.map((code, i) => (
         <div key={code} className="flex items-center gap-2">
-          {i === 1 && <span className="text-[#161615]/25">|</span>}
+          {i > 0 && <span className="text-[#161615]/25">|</span>}
           <button
             onClick={() => setLang(code)}
             aria-pressed={lang === code}
@@ -128,6 +128,9 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
                   {item.label}
                 </button>
               ))}
+              <div className="flex justify-center py-4 border-t border-[#161615]/10">
+                <LanguageToggle />
+              </div>
               <div className="pt-6 mt-2 border-t border-[#161615]/10">
                 <Button
                   onClick={() => handleNavigate('contact')}

@@ -1,14 +1,18 @@
 import { useState, type FormEvent } from 'react';
-import { ChevronDown, ImageIcon, Send } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Button } from '../ui/button';
 import { useAdminData } from '../../context/AdminDataContext';
+import { useLanguage, type TranslationKey } from '../../context/LanguageContext';
 
 interface ReferenceSubmitPanelProps {
   className?: string;
   title?: string;
   description?: string;
   buttonLabel?: string;
+  titleKey?: TranslationKey;
+  descriptionKey?: TranslationKey;
+  buttonLabelKey?: TranslationKey;
 }
 
 const INITIAL_FORM = {
@@ -22,17 +26,31 @@ const INITIAL_FORM = {
   kontaktTelefon: '',
 };
 
+const MODEL_OPTIONS: { value: string; labelKey: TranslationKey }[] = [
+  { value: 'Verkaufsanhänger', labelKey: 'reference_model_sales' },
+  { value: 'Kühlanhänger', labelKey: 'reference_model_cooling' },
+  { value: 'Messe- und Präsentationsanhänger', labelKey: 'reference_model_exhibition' },
+];
+
 export function ReferenceSubmitPanel({
   className = '',
-  title = 'Eigene Erfahrung einreichen',
-  description = 'Teilen Sie Ihre Erfahrung mit ASEA. Nach einer kurzen Prüfung wird Ihre Bewertung veröffentlicht.',
-  buttonLabel = 'Erfahrung einreichen',
+  title,
+  description,
+  buttonLabel,
+  titleKey = 'reference_submit_title',
+  descriptionKey = 'reference_submit_desc',
+  buttonLabelKey = 'reference_submit_button',
 }: ReferenceSubmitPanelProps) {
   const { submitReference } = useAdminData();
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState(INITIAL_FORM);
   const [state, setState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
+
+  const panelTitle = title ?? t(titleKey);
+  const panelDescription = description ?? t(descriptionKey);
+  const panelButtonLabel = buttonLabel ?? t(buttonLabelKey);
 
   const handleFieldChange = (field: keyof typeof form, value: string | number) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -49,32 +67,27 @@ export function ReferenceSubmitPanel({
       await submitReference(form);
       setForm({ ...INITIAL_FORM, jahr: new Date().getFullYear() });
       setState('success');
-      setMessage('Vielen Dank. Ihre Erfahrung wurde eingereicht und wird nach Prüfung veröffentlicht.');
+      setMessage(t('reference_submit_success'));
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Die Erfahrung konnte nicht eingereicht werden.';
+      const errorMessage = error instanceof Error ? error.message : t('reference_submit_error');
       setState('error');
       setMessage(errorMessage);
     }
   };
 
   return (
-    <div className={`bg-white rounded-2xl border border-[#b08a57]/20 shadow-xl overflow-hidden ${className}`}>
+    <div className={`bg-white rounded-xl border border-[#dfd9cf] shadow-sm overflow-hidden ${className}`}>
       <button
         type="button"
         onClick={() => setIsOpen((current) => !current)}
         className="w-full p-5 md:p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between text-left hover:bg-[#f8f7f3] transition-colors"
       >
-        <span className="flex items-start gap-4">
-          <span className="w-11 h-11 rounded-xl bg-[#b08a57] text-white flex items-center justify-center shrink-0">
-            <ImageIcon size={22} />
-          </span>
-          <span>
-            <span className="block text-xl md:text-2xl font-bold text-[#2f2f2d]">{title}</span>
-            <span className="block text-sm md:text-base text-[#77756f] mt-1 max-w-2xl">{description}</span>
-          </span>
+        <span>
+          <span className="block text-xl md:text-2xl font-bold text-[#2f2f2d]">{panelTitle}</span>
+          <span className="block text-sm md:text-base text-[#77756f] mt-1 max-w-2xl">{panelDescription}</span>
         </span>
-        <span className="inline-flex items-center justify-center gap-2 bg-[#2f2f2d] text-white rounded-lg px-4 py-2.5 text-sm font-medium shrink-0">
-          {buttonLabel}
+        <span className="inline-flex items-center justify-center gap-2 bg-[#2f2f2d] text-white rounded-md px-4 py-2.5 text-sm font-medium shrink-0">
+          {panelButtonLabel}
           <ChevronDown
             size={16}
             className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
@@ -92,39 +105,41 @@ export function ReferenceSubmitPanel({
         >
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#55524c] mb-1.5">Kundenname</label>
+              <label className="block text-sm font-medium text-[#55524c] mb-1.5">{t('reference_submit_customer')}</label>
               <input
                 value={form.kundenname}
                 onChange={(event) => handleFieldChange('kundenname', event.target.value)}
                 required
                 className="w-full rounded-lg border border-[#dfd9cf] px-3 py-2.5 text-sm focus:outline-none focus:border-[#b08a57]"
-                placeholder="z.B. Café Moser"
+                placeholder={t('reference_submit_customer_placeholder')}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#55524c] mb-1.5">Ort</label>
+              <label className="block text-sm font-medium text-[#55524c] mb-1.5">{t('reference_submit_location')}</label>
               <input
                 value={form.ort}
                 onChange={(event) => handleFieldChange('ort', event.target.value)}
                 required
                 className="w-full rounded-lg border border-[#dfd9cf] px-3 py-2.5 text-sm focus:outline-none focus:border-[#b08a57]"
-                placeholder="z.B. Salzburg"
+                placeholder={t('reference_submit_location_placeholder')}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#55524c] mb-1.5">Modell</label>
+              <label className="block text-sm font-medium text-[#55524c] mb-1.5">{t('reference_submit_model')}</label>
               <select
                 value={form.modell}
                 onChange={(event) => handleFieldChange('modell', event.target.value)}
                 className="w-full rounded-lg border border-[#dfd9cf] px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-[#b08a57]"
               >
-                <option>Verkaufsanhänger</option>
-                <option>Kühlanhänger</option>
-                <option>Messe- und Präsentationsanhänger</option>
+                {MODEL_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {t(option.labelKey)}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#55524c] mb-1.5">Jahr</label>
+              <label className="block text-sm font-medium text-[#55524c] mb-1.5">{t('reference_submit_year')}</label>
               <input
                 type="number"
                 min="1990"
@@ -136,7 +151,7 @@ export function ReferenceSubmitPanel({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#55524c] mb-1.5">E-Mail für Rückfragen</label>
+              <label className="block text-sm font-medium text-[#55524c] mb-1.5">{t('reference_submit_email')}</label>
               <input
                 type="email"
                 value={form.kontaktEmail}
@@ -147,7 +162,7 @@ export function ReferenceSubmitPanel({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#55524c] mb-1.5">Telefon optional</label>
+              <label className="block text-sm font-medium text-[#55524c] mb-1.5">{t('reference_submit_phone')}</label>
               <input
                 value={form.kontaktTelefon}
                 onChange={(event) => handleFieldChange('kontaktTelefon', event.target.value)}
@@ -156,7 +171,7 @@ export function ReferenceSubmitPanel({
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-[#55524c] mb-1.5">Bild-Link optional</label>
+              <label className="block text-sm font-medium text-[#55524c] mb-1.5">{t('reference_submit_image')}</label>
               <input
                 type="url"
                 value={form.bildUrl}
@@ -166,14 +181,14 @@ export function ReferenceSubmitPanel({
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-[#55524c] mb-1.5">Beschreibung</label>
+              <label className="block text-sm font-medium text-[#55524c] mb-1.5">{t('reference_submit_description')}</label>
               <textarea
                 value={form.beschreibung}
                 onChange={(event) => handleFieldChange('beschreibung', event.target.value)}
                 required
                 rows={4}
                 className="w-full rounded-lg border border-[#dfd9cf] px-3 py-2.5 text-sm focus:outline-none focus:border-[#b08a57] resize-none"
-                placeholder="Erzählen Sie kurz, wie Sie Ihren Anhänger einsetzen."
+                placeholder={t('reference_submit_description_placeholder')}
               />
             </div>
           </div>
@@ -193,8 +208,7 @@ export function ReferenceSubmitPanel({
             disabled={state === 'sending'}
             className="mt-5 w-full sm:w-auto bg-[#2f2f2d] hover:bg-[#1c1c1a] text-white px-8"
           >
-            <Send size={16} className="mr-2" />
-            {state === 'sending' ? 'Wird gesendet...' : 'Erfahrung einreichen'}
+            {state === 'sending' ? t('reference_submit_sending') : t('reference_submit_button')}
           </Button>
         </motion.form>
       )}

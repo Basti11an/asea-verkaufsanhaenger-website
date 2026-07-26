@@ -102,7 +102,7 @@ export function ContactPage({ prefillData }: { prefillData?: any }) {
                   <div>
                     <Label htmlFor="phone">
                       {t('contact_phone_label')}{' '}
-                      <span className="text-[#77756f]/55 text-sm font-normal">(optional)</span>
+                      <span className="text-[#77756f]/55 text-sm font-normal">({t('contact_optional')})</span>
                     </Label>
                     <Input
                       id="phone"
@@ -172,7 +172,7 @@ export function ContactPage({ prefillData }: { prefillData?: any }) {
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  title="Standort Verkaufsanhänger ASEA"
+                  title={t('contact_map_iframe_title')}
                 />
               </div>
 
@@ -211,7 +211,7 @@ export function ContactPage({ prefillData }: { prefillData?: any }) {
                 <MapPin className="text-[#b08a57]" size={24} />
               </div>
               <h3 className="text-lg text-[#2f2f2d] mb-2">{t('contact_addr_card_title')}</h3>
-              <p className="text-[#77756f]">Lahrndorf 34<br />A-4240 Waldburg<br />Österreich</p>
+              <p className="text-[#77756f]">Lahrndorf 34<br />A-4240 Waldburg<br />{t('contact_country')}</p>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
@@ -302,8 +302,8 @@ export function ContactPage({ prefillData }: { prefillData?: any }) {
       <section className="py-16 md:py-20 bg-[#f8f7f3]">
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24">
           <ReferenceSubmitPanel
-            description="Haben Sie bereits mit ASEA gearbeitet? Reichen Sie Ihre Erfahrung hier ein. Nach der Prüfung im Admin-Bereich wird sie veröffentlicht."
-            buttonLabel="Bewertung schreiben"
+            descriptionKey="contact_reference_desc"
+            buttonLabelKey="references_write_review"
           />
         </div>
       </section>

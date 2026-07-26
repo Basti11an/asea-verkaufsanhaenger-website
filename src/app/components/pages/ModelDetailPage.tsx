@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Check, Sparkles, Phone } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '../ui/button';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { motion } from 'motion/react';
@@ -13,6 +13,7 @@ interface Model {
   id: string;
   name: string;
   category: string;
+  referenceModelName?: string;
   image: string;
   images?: string[];
   description: string;
@@ -36,7 +37,7 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
   const touchFriendlyMotion = useTouchFriendlyMotion();
 
   const images = model.images || [model.image, model.image, model.image, model.image];
-  const modelReferences = getApprovedReferencesForModel(references, model.name, 2);
+  const modelReferences = getApprovedReferencesForModel(references, model.referenceModelName ?? model.name, 2);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f8f7f3] to-white">
@@ -81,7 +82,7 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
                       ? 'border-[#b08a57] shadow-lg scale-105'
                       : 'border-transparent hover:border-[#b08a57]/50'
                   }`}
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={touchFriendlyMotion ? undefined : { scale: 1.03 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <div className="aspect-[4/3] bg-[#f8f7f3]">
@@ -97,7 +98,7 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
 
             {modelReferences.length > 0 && (
               <div className="mt-8">
-                <h2 className="text-2xl text-[#2f2f2d] font-bold mb-4">Erfahrungen zu diesem Anhänger</h2>
+                <h2 className="text-2xl text-[#2f2f2d] font-bold mb-4">{t('detail_model_refs_title')}</h2>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-1 gap-4">
                   {modelReferences.map((reference) => (
                     <ReferenceCard key={reference.id} reference={reference} compact />
@@ -143,18 +144,16 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
               <Button
                 size="lg"
                 onClick={() => onNavigate('contact', { model: model.name })}
-                className="flex-1 gradient-secondary text-white hover:shadow-xl hover:scale-105 transition-all duration-300 text-lg py-6"
+                className="flex-1 gradient-secondary text-white hover:shadow-xl transition-all duration-300 text-lg py-6"
               >
-                <Phone className="mr-2" size={20} />
                 {t('detail_enquire')}
               </Button>
               {model.category === 'sales' && (
                 <Button
                   size="lg"
                   onClick={() => onNavigate('configurator', { returnPage: 'model-detail', model })}
-                  className="flex-1 gradient-primary text-[#2f2f2d] hover:shadow-xl hover:scale-105 transition-all duration-300 text-lg py-6 border-2 border-[#b08a57]"
+                  className="flex-1 gradient-primary text-[#2f2f2d] hover:shadow-xl transition-all duration-300 text-lg py-6 border-2 border-[#b08a57]"
                 >
-                  <Sparkles className="mr-2" size={20} />
                   {t('detail_configure')}
                 </Button>
               )}
@@ -177,12 +176,7 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           <div className="glass rounded-3xl p-8 md:p-12 border border-[#b08a57]/20">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center">
-                <Sparkles className="text-[#2f2f2d]" size={24} />
-              </div>
-              <h2 className="text-3xl text-[#2f2f2d] font-bold">{t('detail_description_title')}</h2>
-            </div>
+            <h2 className="text-3xl text-[#2f2f2d] font-bold mb-6">{t('detail_description_title')}</h2>
             <p className="text-[#77756f] leading-relaxed text-lg">{model.description}</p>
           </div>
         </motion.div>
@@ -195,12 +189,7 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
             transition={{ duration: 0.6, delay: 0.3 }}
           >
             <div className="glass rounded-3xl p-8 border border-[#b08a57]/20 h-full">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
-                  <Check className="text-[#2f2f2d]" size={20} />
-                </div>
-                <h3 className="text-2xl text-[#2f2f2d] font-bold">{t('detail_base_equip_title')}</h3>
-              </div>
+              <h3 className="text-2xl text-[#2f2f2d] font-bold mb-6">{t('detail_base_equip_title')}</h3>
               <div className="space-y-3">
                 {model.baseEquipment.map((item, index) => (
                   <motion.div
@@ -210,9 +199,7 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
                     animate={getRevealAnimate(touchFriendlyMotion)}
                     transition={{ duration: 0.3, delay: 0.4 + index * 0.05 }}
                   >
-                    <div className="w-6 h-6 gradient-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Check className="text-[#2f2f2d]" size={14} />
-                    </div>
+                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-[#b08a57] flex-shrink-0" />
                     <span className="text-[#77756f]">{item}</span>
                   </motion.div>
                 ))}
@@ -226,12 +213,7 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
             transition={{ duration: 0.6, delay: 0.4 }}
           >
             <div className="glass rounded-3xl p-8 border border-[#b08a57]/20 h-full">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
-                  <Check className="text-[#2f2f2d]" size={20} />
-                </div>
-                <h3 className="text-2xl text-[#2f2f2d] font-bold">{t('detail_construction_title')}</h3>
-              </div>
+              <h3 className="text-2xl text-[#2f2f2d] font-bold mb-6">{t('detail_construction_title')}</h3>
               <div className="space-y-3">
                 {model.construction.map((item, index) => (
                   <motion.div
@@ -241,9 +223,7 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
                     animate={getRevealAnimate(touchFriendlyMotion)}
                     transition={{ duration: 0.3, delay: 0.5 + index * 0.05 }}
                   >
-                    <div className="w-6 h-6 gradient-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Check className="text-[#2f2f2d]" size={14} />
-                    </div>
+                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-[#b08a57] flex-shrink-0" />
                     <span className="text-[#77756f]">{item}</span>
                   </motion.div>
                 ))}
@@ -271,18 +251,16 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
               <Button
                 size="lg"
                 onClick={() => onNavigate('contact', { model: model.name })}
-                className="bg-[#1c1c1a] text-white hover:bg-[#2f2f2d] hover:shadow-xl hover:scale-105 transition-all duration-300 text-lg px-10 py-6 border border-[#1c1c1a]"
+                className="bg-[#1c1c1a] text-white hover:bg-[#2f2f2d] hover:shadow-xl transition-all duration-300 text-lg px-10 py-6 border border-[#1c1c1a]"
               >
-                <Phone className="mr-2" size={22} />
                 {t('detail_contact_btn')}
               </Button>
                 {model.category === 'sales' && (
                   <Button
                     size="lg"
                     onClick={() => onNavigate('configurator', { returnPage: 'model-detail', model })}
-                    className="bg-white text-[#1c1c1a] hover:bg-[#f8f7f3] hover:shadow-xl hover:scale-105 transition-all duration-300 text-lg px-10 py-6 border border-white"
+                    className="bg-white text-[#1c1c1a] hover:bg-[#f8f7f3] hover:shadow-xl transition-all duration-300 text-lg px-10 py-6 border border-white"
                   >
-                  <Sparkles className="mr-2" size={22} />
                   {t('detail_configure_now')}
                 </Button>
               )}

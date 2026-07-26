@@ -15,20 +15,53 @@ import {
   Wrench,
   Paintbrush,
   Package,
-  Tag,
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAdminData } from '../../context/AdminDataContext';
-import { useLanguage } from '../../context/LanguageContext';
+import { useLanguage, type TranslationKey } from '../../context/LanguageContext';
+import { useTouchFriendlyMotion } from '../../lib/useTouchFriendlyMotion';
 
 interface EquipmentPageProps {
   onNavigate: (page: string, data?: any) => void;
 }
 
+const EQUIPMENT_CATEGORY_LABELS: Record<string, TranslationKey> = {
+  Kühlung: 'equip_category_cooling',
+  Küche: 'equip_category_kitchen',
+  Getränke: 'equip_category_drinks',
+  Elektrik: 'equip_category_electric',
+  Außen: 'equip_category_outside',
+  Einrichtung: 'equip_category_furnishing',
+};
+
+const EQUIPMENT_OPTION_LABELS: Record<string, { nameKey: TranslationKey; descKey: TranslationKey }> = {
+  Kühlvitrine: { nameKey: 'equip_option_showcase_name', descKey: 'equip_option_showcase_desc' },
+  Fritteuse: { nameKey: 'equip_option_fryer_name', descKey: 'equip_option_fryer_desc' },
+  Warmhaltebehälter: { nameKey: 'equip_option_warmer_name', descKey: 'equip_option_warmer_desc' },
+  Zapfanlage: { nameKey: 'equip_option_tap_name', descKey: 'equip_option_tap_desc' },
+  'LED-Beleuchtung': { nameKey: 'equip_option_led_name', descKey: 'equip_option_led_desc' },
+  Markise: { nameKey: 'equip_option_awning_name', descKey: 'equip_option_awning_desc' },
+  Edelstahltheke: { nameKey: 'equip_option_counter_name', descKey: 'equip_option_counter_desc' },
+  Kassenlade: { nameKey: 'equip_option_cash_name', descKey: 'equip_option_cash_desc' },
+};
+
 export function EquipmentPage({ onNavigate }: EquipmentPageProps) {
   const { equipment: adminEquipment } = useAdminData();
   const { t } = useLanguage();
+  const touchFriendlyMotion = useTouchFriendlyMotion();
   const activeEquipment = adminEquipment.filter((e) => e.aktiv);
+  const getCategoryLabel = (category: string) => {
+    const labelKey = EQUIPMENT_CATEGORY_LABELS[category];
+    return labelKey ? t(labelKey) : category;
+  };
+
+  const getEquipmentText = (item: { name: string; beschreibung: string }) => {
+    const labelKeys = EQUIPMENT_OPTION_LABELS[item.name];
+    return {
+      name: labelKeys ? t(labelKeys.nameKey) : item.name,
+      description: labelKeys ? t(labelKeys.descKey) : item.beschreibung,
+    };
+  };
 
   const KATEGORIE_COLORS: Record<string, string> = {
     Kühlung: 'bg-blue-100 text-blue-700 border-blue-200',
@@ -135,11 +168,6 @@ export function EquipmentPage({ onNavigate }: EquipmentPageProps) {
     <div>
       {/* Hero Section */}
       <section className="relative gradient-secondary text-white py-20 overflow-hidden">
-        <motion.div
-          className="absolute -top-40 -right-40 w-96 h-96 bg-[#b08a57]/10 rounded-full blur-3xl"
-          animate={{ scale: [1, 1.3, 1], rotate: [0, 180, 360] }}
-          transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-        />
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24 relative z-10">
           <motion.div
             className="max-w-3xl"
@@ -185,35 +213,36 @@ export function EquipmentPage({ onNavigate }: EquipmentPageProps) {
             </motion.div>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
-              {activeEquipment.map((item, i) => (
-                <motion.div
-                  key={item.id}
-                  className="glass rounded-2xl p-5 shadow-md hover:shadow-xl transition-all duration-400 flex flex-col gap-3 group"
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: i * 0.04 }}
-                  whileHover={{ y: -4 }}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-md shrink-0">
-                      <Tag className="text-[#2f2f2d]" size={18} />
+              {activeEquipment.map((item, i) => {
+                const translatedItem = getEquipmentText(item);
+
+                return (
+                  <motion.div
+                    key={item.id}
+                    className="glass rounded-2xl p-5 shadow-md hover:shadow-xl transition-all duration-400 flex flex-col gap-3 group"
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: i * 0.04 }}
+                    whileHover={touchFriendlyMotion ? undefined : { y: -4 }}
+                  >
+                    <div className="flex items-start justify-end gap-2">
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full border font-medium ${KATEGORIE_COLORS[item.kategorie] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                        {getCategoryLabel(item.kategorie)}
+                      </span>
                     </div>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full border font-medium ${KATEGORIE_COLORS[item.kategorie] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
-                      {item.kategorie}
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-[#2f2f2d] mb-1">{item.name}</h3>
-                    <p className="text-[#77756f] text-sm leading-relaxed">{item.beschreibung}</p>
-                  </div>
-                  <div className="pt-2 border-t border-gray-100">
-                    <span className="text-[#77756f] font-semibold">
-                      € {item.preis.toLocaleString('de-AT')}
-                    </span>
-                  </div>
-                </motion.div>
-              ))}
+                    <div className="flex-1">
+                      <h3 className="text-[#2f2f2d] mb-1">{translatedItem.name}</h3>
+                      <p className="text-[#77756f] text-sm leading-relaxed">{translatedItem.description}</p>
+                    </div>
+                    <div className="pt-2 border-t border-gray-100">
+                      <span className="text-[#77756f] font-semibold">
+                        € {item.preis.toLocaleString('de-AT')}
+                      </span>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -221,13 +250,9 @@ export function EquipmentPage({ onNavigate }: EquipmentPageProps) {
 
       {/* Equipment Categories */}
       <section className="py-20 gradient-accent relative overflow-hidden">
-        <div className="absolute top-20 right-20 w-40 h-40 border-4 border-[#b08a57]/20 rounded-full" />
-        <div className="absolute bottom-20 left-20 w-32 h-32 border-4 border-[#b08a57]/20 rounded-full" />
-
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24 relative z-10">
           <div className="space-y-20">
             {equipmentCategories.map((category, categoryIndex) => {
-              const CategoryIcon = category.icon;
               return (
                 <motion.div
                   key={categoryIndex}
@@ -236,43 +261,28 @@ export function EquipmentPage({ onNavigate }: EquipmentPageProps) {
                   viewport={{ once: true }}
                   transition={{ duration: 0.8 }}
                 >
-                  <div className="flex items-center gap-4 mb-12">
-                    <motion.div
-                      className="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center shadow-xl"
-                      whileHover={{ rotate: 360, scale: 1.1 }}
-                      transition={{ duration: 0.6 }}
-                    >
-                      <CategoryIcon className="text-[#2f2f2d]" size={32} />
-                    </motion.div>
+                  <div className="flex flex-col gap-2 mb-10 sm:flex-row sm:items-end sm:gap-5">
+                    <span className="text-sm font-semibold text-[#b08a57]">
+                      {String(categoryIndex + 1).padStart(2, '0')}
+                    </span>
                     <h2 className="text-3xl lg:text-4xl text-[#2f2f2d]">{t(category.titleKey)}</h2>
                   </div>
 
                   <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {category.items.map((item, itemIndex) => {
-                      const ItemIcon = item.icon;
-                      return (
-                        <motion.div
-                          key={itemIndex}
-                          className="glass p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 group relative overflow-hidden"
-                          initial={{ opacity: 0, y: 30 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.6, delay: itemIndex * 0.05 }}
-                          whileHover={{ y: -5, scale: 1.02 }}
-                        >
-                          <div className="absolute top-0 right-0 w-24 h-24 gradient-primary opacity-10 rounded-full blur-xl group-hover:opacity-20 transition-opacity duration-500" />
-                          <motion.div
-                            className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center mb-4 shadow-lg relative z-10"
-                            whileHover={{ rotate: 360 }}
-                            transition={{ duration: 0.6 }}
-                          >
-                            <ItemIcon className="text-[#2f2f2d]" size={24} />
-                          </motion.div>
-                          <h3 className="text-lg text-[#2f2f2d] mb-2 relative z-10">{t(item.nameKey)}</h3>
-                          <p className="text-[#77756f] text-sm leading-relaxed relative z-10">{t(item.descKey)}</p>
-                        </motion.div>
-                      );
-                    })}
+                    {category.items.map((item, itemIndex) => (
+                      <motion.div
+                        key={itemIndex}
+                        className="glass p-6 rounded-xl border border-[#dfd9cf] shadow-sm hover:shadow-lg transition-all duration-300"
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.5, delay: itemIndex * 0.04 }}
+                        whileHover={touchFriendlyMotion ? undefined : { y: -4 }}
+                      >
+                        <h3 className="text-lg text-[#2f2f2d] mb-2">{t(item.nameKey)}</h3>
+                        <p className="text-[#77756f] text-sm leading-relaxed">{t(item.descKey)}</p>
+                      </motion.div>
+                    ))}
                   </div>
                 </motion.div>
               );
@@ -296,30 +306,23 @@ export function EquipmentPage({ onNavigate }: EquipmentPageProps) {
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {additionalServices.map((service, index) => {
-              const ServiceIcon = service.icon;
-              return (
-                <motion.div
-                  key={index}
-                  className="glass p-8 rounded-2xl text-center hover:shadow-2xl transition-all duration-500 group"
-                  initial={{ opacity: 0, y: 50 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  whileHover={{ y: -10, scale: 1.02 }}
-                >
-                  <motion.div
-                    className="w-16 h-16 gradient-primary rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl"
-                    whileHover={{ rotate: 360, scale: 1.1 }}
-                    transition={{ duration: 0.6 }}
-                  >
-                    <ServiceIcon className="text-[#2f2f2d]" size={32} />
-                  </motion.div>
-                  <h3 className="text-xl text-[#2f2f2d] mb-3">{t(service.titleKey)}</h3>
-                  <p className="text-[#77756f] leading-relaxed">{t(service.descKey)}</p>
-                </motion.div>
-              );
-            })}
+            {additionalServices.map((service, index) => (
+              <motion.div
+                key={index}
+                className="glass p-8 rounded-xl text-center border border-[#dfd9cf] hover:shadow-lg transition-all duration-300"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+                whileHover={touchFriendlyMotion ? undefined : { y: -4 }}
+              >
+                <span className="block text-sm font-semibold text-[#b08a57] mb-4">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <h3 className="text-xl text-[#2f2f2d] mb-3">{t(service.titleKey)}</h3>
+                <p className="text-[#77756f] leading-relaxed">{t(service.descKey)}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
@@ -345,7 +348,7 @@ export function EquipmentPage({ onNavigate }: EquipmentPageProps) {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
-                  whileHover={{ y: -5 }}
+                  whileHover={touchFriendlyMotion ? undefined : { y: -4 }}
                 >
                   <h3 className="text-xl text-[#2f2f2d] mb-4">{t(item.titleKey)}</h3>
                   <p className="text-[#77756f] leading-relaxed mb-4">{t(item.descKey)}</p>
@@ -363,11 +366,6 @@ export function EquipmentPage({ onNavigate }: EquipmentPageProps) {
 
       {/* CTA Section */}
       <section className="py-20 gradient-primary relative overflow-hidden">
-        <motion.div
-          className="absolute top-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"
-          animate={{ x: [0, 100, 0], y: [0, 50, 0] }}
-          transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-        />
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24 relative z-10">
           <motion.div
             className="max-w-3xl mx-auto text-center"
@@ -382,7 +380,7 @@ export function EquipmentPage({ onNavigate }: EquipmentPageProps) {
               <motion.button
                 className="px-8 py-4 gradient-secondary text-white rounded-xl hover:shadow-2xl transition-all duration-300"
                 onClick={() => onNavigate('contact')}
-                whileHover={{ scale: 1.05 }}
+                whileHover={touchFriendlyMotion ? undefined : { scale: 1.03 }}
                 whileTap={{ scale: 0.95 }}
               >
                 {t('equip_cta_btn1')}
@@ -390,7 +388,7 @@ export function EquipmentPage({ onNavigate }: EquipmentPageProps) {
               <motion.button
                 className="px-8 py-4 glass-dark border border-[#77756f]/30 text-[#2f2f2d] rounded-xl hover:bg-white/20 transition-all duration-300"
                 onClick={() => onNavigate('contact')}
-                whileHover={{ scale: 1.05 }}
+                whileHover={touchFriendlyMotion ? undefined : { scale: 1.03 }}
                 whileTap={{ scale: 0.95 }}
               >
                 {t('equip_cta_btn2')}

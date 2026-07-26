@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react';
 
+const TOUCH_FRIENDLY_MOTION_QUERY = '(hover: none), (pointer: coarse), (max-width: 1023px)';
+
+function getTouchFriendlyMotion() {
+  return typeof window !== 'undefined' && window.matchMedia(TOUCH_FRIENDLY_MOTION_QUERY).matches;
+}
+
 export function useTouchFriendlyMotion() {
-  const [isTouchFriendly, setIsTouchFriendly] = useState(false);
+  const [isTouchFriendly, setIsTouchFriendly] = useState(getTouchFriendlyMotion);
 
   useEffect(() => {
-    const query = window.matchMedia('(hover: none), (pointer: coarse), (max-width: 1023px)');
+    const query = window.matchMedia(TOUCH_FRIENDLY_MOTION_QUERY);
     const update = () => setIsTouchFriendly(query.matches);
 
     update();
@@ -16,10 +22,10 @@ export function useTouchFriendlyMotion() {
   return isTouchFriendly;
 }
 
-export function getRevealInitial(isTouchFriendly: boolean, x: number) {
-  return isTouchFriendly ? { opacity: 0, y: 24 } : { opacity: 0, x };
+export function getRevealInitial(isTouchFriendly: boolean, _x: number) {
+  return { opacity: 0, y: isTouchFriendly ? 14 : 22 };
 }
 
-export function getRevealAnimate(isTouchFriendly: boolean) {
-  return isTouchFriendly ? { opacity: 1, y: 0 } : { opacity: 1, x: 0 };
+export function getRevealAnimate(_isTouchFriendly: boolean) {
+  return { opacity: 1, y: 0 };
 }

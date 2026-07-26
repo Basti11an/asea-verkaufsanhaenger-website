@@ -76,12 +76,12 @@ export function PrivacyPage() {
                   <h3 className="text-base md:text-lg text-[#2f2f2d] mb-3">{t('privacy_s4_responsible_title')}</h3>
                   <p>{t('privacy_s4_responsible_intro')}</p>
                   <div className="mt-3 p-4 bg-[#f8f7f3] rounded-lg border border-[#dfd9cf]">
-                    <p className="text-[#2f2f2d]">Verkaufsanhänger ASEA</p>
-                    <p>Inhaber: Mst. Alfred Gaffal</p>
+                    <p className="text-[#2f2f2d]">{t('legal_company_name')}</p>
+                    <p>{t('legal_owner_line')}</p>
                     <p>Lahrndorf 34</p>
-                    <p>A-4240 Waldburg, Österreich</p>
-                    <p className="mt-2">Telefon: +43 664 410 5 007</p>
-                    <p>E-Mail: office@verkaufsanhaenger-asea.at</p>
+                    <p>A-4240 Waldburg, {t('contact_country')}</p>
+                    <p className="mt-2">{t('legal_phone_label')} +43 664 410 5 007</p>
+                    <p>{t('legal_email_label')} office@verkaufsanhaenger-asea.at</p>
                   </div>
                   <p className="mt-3">{t('privacy_s4_responsible_outro')}</p>
                 </div>
@@ -159,11 +159,11 @@ export function PrivacyPage() {
               <div className="bg-[#f3efe8] border border-[#b08a57]/20 p-5 md:p-6 rounded-xl">
                 <p className="text-[#77756f] mb-4">{t('privacy_contact_text')}</p>
                 <div className="text-[#77756f] space-y-1">
-                  <p className="text-[#2f2f2d] font-medium">Verkaufsanhänger ASEA</p>
+                  <p className="text-[#2f2f2d] font-medium">{t('legal_company_name')}</p>
                   <p>Mst. Alfred Gaffal</p>
                   <p>Lahrndorf 34, A-4240 Waldburg</p>
-                  <p>E-Mail: office@verkaufsanhaenger-asea.at</p>
-                  <p>Telefon: +43 664 410 5 007</p>
+                  <p>{t('legal_email_label')} office@verkaufsanhaenger-asea.at</p>
+                  <p>{t('legal_phone_label')} +43 664 410 5 007</p>
                 </div>
               </div>
             </div>

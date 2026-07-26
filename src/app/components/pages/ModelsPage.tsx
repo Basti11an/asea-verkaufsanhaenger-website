@@ -1,9 +1,9 @@
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '../ui/button';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { motion } from 'motion/react';
 import { useAdminData } from '../../context/AdminDataContext';
-import { useLanguage } from '../../context/LanguageContext';
+import { useLanguage, type TranslationKey } from '../../context/LanguageContext';
 import { ReferenceSubmitPanel } from '../references/ReferenceSubmitPanel';
 import { getRevealAnimate, getRevealInitial, useTouchFriendlyMotion } from '../../lib/useTouchFriendlyMotion';
 
@@ -11,178 +11,192 @@ interface ModelsPageProps {
   onNavigate: (page: string, data?: any) => void;
 }
 
-// Static detail data keyed by AdminModel.id
-const STATIC_DETAILS: Record<number, {
+interface StaticModelDetails {
   id: string;
   category: string;
+  referenceModelName: string;
+  nameKey: TranslationKey;
+  descriptionKey: TranslationKey;
+  shortDescriptionKey: TranslationKey;
   images: string[];
-  shortDescription: string;
-  features: string[];
-  specs: { label: string; value: string }[];
-  price: string;
-  baseEquipment: string[];
-  construction: string[];
-}> = {
+  featureKeys: TranslationKey[];
+  specs: { labelKey: TranslationKey; value: string }[];
+  priceKey: TranslationKey;
+  baseEquipmentKeys: TranslationKey[];
+  constructionKeys: TranslationKey[];
+}
+
+// Static detail data keyed by AdminModel.id
+const STATIC_DETAILS: Record<number, StaticModelDetails> = {
   1: {
     id: '1',
     category: 'sales',
+    referenceModelName: 'Verkaufsanhänger',
+    nameKey: 'home_model1_name',
+    descriptionKey: 'home_model1_desc',
+    shortDescriptionKey: 'model_sales_short',
     images: [
       'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-85.jpg',
       'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-10.jpg',
       'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-86.jpg',
       'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-87.jpg',
     ],
-    shortDescription: 'Ihr praktischer Begleiter bei Verkaufstouren',
-    features: [
-      'Geringes Eigengewicht - mehr Zuladung',
-      'Maximale Flexibilität im Einsatz',
-      'Großzügige Verkaufsfläche',
-      'Robuste und langlebige Bauweise',
-      'Wetterfeste Konstruktion',
-      'Individuelle Innenausstattung möglich',
-      'LED-Beleuchtung innen und außen',
-      'Komplette elektrische Ausstattung 230V',
+    featureKeys: [
+      'model_sales_feature1',
+      'model_sales_feature2',
+      'model_sales_feature3',
+      'model_sales_feature4',
+      'model_sales_feature5',
+      'model_sales_feature6',
+      'model_sales_feature7',
+      'model_sales_feature8',
     ],
     specs: [
-      { label: 'Länge', value: '3,50 m' },
-      { label: 'Breite', value: '2,00 m' },
-      { label: 'Höhe', value: '2,40 m' },
-      { label: 'Eigengewicht', value: 'ca. 650 kg' },
-      { label: 'Zul. Gesamtgewicht', value: '1.300 kg' },
-      { label: 'Nutzlast', value: 'ca. 650 kg' },
-      { label: 'Verkaufsfläche', value: '7 m²' },
-      { label: 'Stromanschluss', value: '230V' },
+      { labelKey: 'spec_laenge', value: '3,50 m' },
+      { labelKey: 'spec_breite', value: '2,00 m' },
+      { labelKey: 'spec_hoehe', value: '2,40 m' },
+      { labelKey: 'spec_eigengewicht', value: 'ca. 650 kg' },
+      { labelKey: 'spec_gesamtgewicht', value: '1.300 kg' },
+      { labelKey: 'spec_nutzlast', value: 'ca. 650 kg' },
+      { labelKey: 'spec_verkaufsflaeche', value: '7 m²' },
+      { labelKey: 'spec_stromanschluss', value: '230V' },
     ],
-    price: 'ab 8.900 €',
-    baseEquipment: [
-      'Verkaufsanhänger mit komplettem Aufbau',
-      'Vollständig isolierte Konstruktion (Wände, Dach, Boden)',
-      'Elektrische Grundausstattung 230V mit Sicherungskasten',
-      'Große Verkaufsklappe mit Gasdruckfedern',
-      'Abschließbare Türen und Klappen',
-      'Stützrad und professionelles Bremssystem',
-      'LED-Innenbeleuchtung',
-      'Wetterfeste Außenmaterialien',
-      'Hochwertige Verarbeitung',
-      'TÜV-geprüft und straßenzugelassen',
+    priceKey: 'model_sales_price',
+    baseEquipmentKeys: [
+      'model_sales_base1',
+      'model_sales_base2',
+      'model_sales_base3',
+      'model_sales_base4',
+      'model_sales_base5',
+      'model_sales_base6',
+      'model_sales_base7',
+      'model_sales_base8',
+      'model_sales_base9',
+      'model_sales_base10',
     ],
-    construction: [
-      'Robuster verzinkter Stahlrahmen',
-      'Isolierte Wände und Dach (30mm)',
-      'Hochwertige Alu-Verbundplatten außen',
-      'Innenverkleidung weiß',
-      'Langlebige Materialien',
-      'Moderne Bautechnik',
-      'Alle Komponenten TÜV-geprüft',
+    constructionKeys: [
+      'model_sales_construction1',
+      'model_sales_construction2',
+      'model_sales_construction3',
+      'model_sales_construction4',
+      'model_sales_construction5',
+      'model_sales_construction6',
+      'model_sales_construction7',
     ],
   },
   2: {
     id: '2',
     category: 'cooling',
+    referenceModelName: 'Kühlanhänger',
+    nameKey: 'home_model2_name',
+    descriptionKey: 'home_model2_desc',
+    shortDescriptionKey: 'model_cooling_short',
     images: [
       'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-2-1.jpg',
       'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-3.jpg',
       'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-71.jpg',
       'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-72.jpg',
     ],
-    shortDescription: 'Frische Waren sicher transportiert',
-    features: [
-      'Professionelle Kühltechnik',
-      'Präzise Temperaturkontrolle',
-      'Energieeffiziente Kühlung',
-      'Lebensmittelgerechte Ausstattung',
-      'Zuverlässige Dauerkühlung',
-      'Großes Kühlvolumen',
-      'Einfache Reinigung und Wartung',
-      'Hochwertige Isolierung',
+    featureKeys: [
+      'model_cooling_feature1',
+      'model_cooling_feature2',
+      'model_cooling_feature3',
+      'model_cooling_feature4',
+      'model_cooling_feature5',
+      'model_cooling_feature6',
+      'model_cooling_feature7',
+      'model_cooling_feature8',
     ],
     specs: [
-      { label: 'Länge', value: '4,00 m' },
-      { label: 'Breite', value: '2,20 m' },
-      { label: 'Höhe', value: '2,50 m' },
-      { label: 'Eigengewicht', value: 'ca. 950 kg' },
-      { label: 'Zul. Gesamtgewicht', value: '2.000 kg' },
-      { label: 'Nutzlast', value: 'ca. 1.050 kg' },
-      { label: 'Kühlvolumen', value: '16 m³' },
-      { label: 'Temperaturbereich', value: '-5°C bis +10°C' },
-      { label: 'Energieversorgung', value: '230V/12V' },
+      { labelKey: 'spec_laenge', value: '4,00 m' },
+      { labelKey: 'spec_breite', value: '2,20 m' },
+      { labelKey: 'spec_hoehe', value: '2,50 m' },
+      { labelKey: 'spec_eigengewicht', value: 'ca. 950 kg' },
+      { labelKey: 'spec_gesamtgewicht', value: '2.000 kg' },
+      { labelKey: 'spec_nutzlast', value: 'ca. 1.050 kg' },
+      { labelKey: 'spec_kuehlvolumen', value: '16 m³' },
+      { labelKey: 'spec_temperatur', value: '-5°C bis +10°C' },
+      { labelKey: 'spec_energie', value: '230V/12V' },
     ],
-    price: 'ab 14.900 €',
-    baseEquipment: [
-      'Professionelles Kühlsystem mit Thermostat',
-      'Digitale Temperaturregelung und -anzeige',
-      'Vollständige Isolierung (80mm Stärke)',
-      'Lebensmittelgerechte Edelstahlverkleidung innen',
-      'Abschließbare isolierte Türen',
-      'LED-Innenbeleuchtung',
-      'Stromanschluss 230V und 12V',
-      'Bodenentwässerung',
-      'TÜV-geprüft',
-      'Inkl. Kühlflüssigkeit',
+    priceKey: 'model_cooling_price',
+    baseEquipmentKeys: [
+      'model_cooling_base1',
+      'model_cooling_base2',
+      'model_cooling_base3',
+      'model_cooling_base4',
+      'model_cooling_base5',
+      'model_cooling_base6',
+      'model_cooling_base7',
+      'model_cooling_base8',
+      'model_cooling_base9',
+      'model_cooling_base10',
     ],
-    construction: [
-      'Hochwertige Kühltechnik namhafter Hersteller',
-      'Professionelle Vollschaumisolierung 80mm',
-      'GFK-Außenhaut wetterbeständig',
-      'Edelstahl-Innenverkleidung',
-      'Robuster Aluminiumrahmen',
-      'Energieeffiziente Bauweise',
-      'Wartungsfreundliche Konstruktion',
+    constructionKeys: [
+      'model_cooling_construction1',
+      'model_cooling_construction2',
+      'model_cooling_construction3',
+      'model_cooling_construction4',
+      'model_cooling_construction5',
+      'model_cooling_construction6',
+      'model_cooling_construction7',
     ],
   },
   3: {
     id: '3',
     category: 'exhibition',
+    referenceModelName: 'Messe- und Präsentationsanhänger',
+    nameKey: 'home_model3_name',
+    descriptionKey: 'home_model3_desc',
+    shortDescriptionKey: 'model_exhibition_short',
     images: [
       'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-4-2.jpg',
       'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-5.jpg',
       'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-6.jpg',
       'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-81.jpg',
     ],
-    shortDescription: 'Perfekt für Events und Präsentationen',
-    features: [
-      'Professionelle Präsentationsfläche',
-      'Eigene autarke Elektrik',
-      'Optimal für Outdoor-Events',
-      'Repräsentatives Design',
-      'Flexibel und vielseitig einsetzbar',
-      'Witterungsbeständig und robust',
-      'Hochwertige Innenausstattung',
-      'Individuelle Gestaltung und Branding möglich',
+    featureKeys: [
+      'model_exhibition_feature1',
+      'model_exhibition_feature2',
+      'model_exhibition_feature3',
+      'model_exhibition_feature4',
+      'model_exhibition_feature5',
+      'model_exhibition_feature6',
+      'model_exhibition_feature7',
+      'model_exhibition_feature8',
     ],
     specs: [
-      { label: 'Länge', value: '5,00 m' },
-      { label: 'Breite', value: '2,50 m' },
-      { label: 'Höhe', value: '2,80 m' },
-      { label: 'Eigengewicht', value: 'ca. 1.100 kg' },
-      { label: 'Zul. Gesamtgewicht', value: '2.500 kg' },
-      { label: 'Nutzlast', value: 'ca. 1.400 kg' },
-      { label: 'Präsentationsfläche', value: '12,5 m²' },
-      { label: 'Stromanschluss', value: '230V autark' },
-      { label: 'Stehhöhe innen', value: '2,20 m' },
+      { labelKey: 'spec_laenge', value: '5,00 m' },
+      { labelKey: 'spec_breite', value: '2,50 m' },
+      { labelKey: 'spec_hoehe', value: '2,80 m' },
+      { labelKey: 'spec_eigengewicht', value: 'ca. 1.100 kg' },
+      { labelKey: 'spec_gesamtgewicht', value: '2.500 kg' },
+      { labelKey: 'spec_nutzlast', value: 'ca. 1.400 kg' },
+      { labelKey: 'spec_praesentationsflaeche', value: '12,5 m²' },
+      { labelKey: 'spec_stromanschluss', value: '230V autark' },
+      { labelKey: 'spec_stehoehe', value: '2,20 m' },
     ],
-    price: 'ab 16.500 €',
-    baseEquipment: [
-      'Professioneller Messeaufbau mit großen Klappen',
-      'Eigene autarke Elektrikversorgung 230V',
-      'Integriertes Beleuchtungssystem LED',
-      'Großzügige Präsentationsflächen innen',
-      'Wetterfeste und robuste Konstruktion',
-      'Repräsentatives modernes Design',
-      'Abschließbare Türen und Klappen',
-      'Flexible Innenraumgestaltung',
-      'Steckdosen und Lichtschalter',
-      'TÜV-geprüft und zugelassen',
+    priceKey: 'model_exhibition_price',
+    baseEquipmentKeys: [
+      'model_exhibition_base1',
+      'model_exhibition_base2',
+      'model_exhibition_base3',
+      'model_exhibition_base4',
+      'model_exhibition_base5',
+      'model_exhibition_base6',
+      'model_exhibition_base7',
+      'model_exhibition_base8',
+      'model_exhibition_base9',
+      'model_exhibition_base10',
     ],
-    construction: [
-      'Hochwertige GFK-Außenverkleidung',
-      'Professionelle Isolierung',
-      'Moderne Elektroinstallation',
-      'Robuster Stahlrahmen verzinkt',
-      'Witterungsbeständige Materialien',
-      'Hochwertige Innenverkleidung',
-      'Individuell gestaltbar (Folierung, Lack)',
-      'Langlebige Bauweise',
+    constructionKeys: [
+      'model_exhibition_construction1',
+      'model_exhibition_construction2',
+      'model_exhibition_construction3',
+      'model_exhibition_construction4',
+      'model_exhibition_construction5',
+      'model_exhibition_construction6',
+      'model_exhibition_construction7',
+      'model_exhibition_construction8',
     ],
   },
 };
@@ -193,17 +207,20 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
   const touchFriendlyMotion = useTouchFriendlyMotion();
 
   const models = adminModels
-    .filter((m) => m.active)
+    .filter((m) => m.active && STATIC_DETAILS[m.id])
     .map((m) => {
       const details = STATIC_DETAILS[m.id];
       return {
         ...details,
-        name: m.name,
-        description: m.description,
-        shortDescription: m.description.length > 70
-          ? m.description.slice(0, 70) + '…'
-          : m.description,
+        name: t(details.nameKey),
+        description: t(details.descriptionKey),
+        shortDescription: t(details.shortDescriptionKey),
         image: m.imageUrl,
+        features: details.featureKeys.map((key) => t(key)),
+        specs: details.specs.map((spec) => ({ label: t(spec.labelKey), value: spec.value })),
+        price: t(details.priceKey),
+        baseEquipment: details.baseEquipmentKeys.map((key) => t(key)),
+        construction: details.constructionKeys.map((key) => t(key)),
       };
     });
 
@@ -211,7 +228,6 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
     <div>
       {/* Hero Section */}
       <section className="relative bg-[#f8f7f3] py-16 md:py-20 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-[#b08a57]/8 rounded-full blur-3xl pointer-events-none" />
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24 relative z-10">
           <motion.div
             className="max-w-3xl"
@@ -239,7 +255,7 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
-                  whileHover={{ y: -10 }}
+                  whileHover={touchFriendlyMotion ? undefined : { y: -8 }}
                 >
                   <div className="relative h-64 overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-t from-[#2f2f2d]/70 to-transparent z-10" />
@@ -281,17 +297,14 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
 
           <ReferenceSubmitPanel
             className="mt-10 md:mt-12"
-            description="Nutzen Sie einen ASEA Anhänger? Teilen Sie Ihre Erfahrung. Nach der Prüfung im Admin-Bereich wird sie veröffentlicht."
-            buttonLabel="Bewertung schreiben"
+            descriptionKey="models_reference_desc"
+            buttonLabelKey="references_write_review"
           />
         </div>
       </section>
 
       {/* CTA Section */}
       <section className="py-16 md:py-24 bg-white relative overflow-hidden">
-        <div className="absolute top-20 right-10 w-32 h-32 border-2 border-[#b08a57]/15 rounded-full pointer-events-none" />
-        <div className="absolute bottom-20 left-10 w-24 h-24 border-2 border-[#b08a57]/15 rounded-full pointer-events-none" />
-
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24 relative z-10">
           <motion.div
             className="max-w-4xl mx-auto text-center"
@@ -300,14 +313,6 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <motion.div
-              className="w-20 h-20 gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl"
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Sparkles className="text-[#2f2f2d]" size={40} />
-            </motion.div>
-
             <h2 className="text-2xl md:text-4xl lg:text-5xl text-[#2f2f2d] mb-4 md:mb-6 font-bold">{t('models_cta_title')}</h2>
             <p className="text-base md:text-xl text-[#77756f] mb-8 md:mb-10 leading-relaxed max-w-2xl mx-auto">{t('models_cta_desc')}</p>
 
@@ -316,7 +321,6 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
               onClick={() => onNavigate('contact')}
               className="gradient-secondary text-white hover:shadow-xl transition-all duration-300"
             >
-              <Sparkles className="mr-2" size={20} />
               {t('models_cta_button')}
               <ArrowRight className="ml-2" size={20} />
             </Button>

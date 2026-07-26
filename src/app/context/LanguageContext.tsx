@@ -1,11 +1,14 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { de } from '../translations/de';
 import { en } from '../translations/en';
+import { sk } from '../translations/sk';
 
-export type Lang = 'de' | 'en';
+export type Lang = 'de' | 'en' | 'sk';
 export type TranslationKey = keyof typeof de;
 
-const translations = { de, en };
+export const availableLanguages: Lang[] = ['de', 'en', 'sk'];
+
+const translations = { de, en, sk };
 
 interface LanguageContextType {
   lang: Lang;
@@ -23,7 +26,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => {
     try {
       const saved = localStorage.getItem('asea-lang') as Lang;
-      return saved === 'en' ? 'en' : 'de';
+      return availableLanguages.includes(saved) ? saved : 'de';
     } catch {
       return 'de';
     }

@@ -187,11 +187,15 @@
 html {
   font-size: var(--font-size);
   scroll-behavior: smooth;
+  width: 100%;
+  max-width: 100%;
   overflow-x: hidden;
 }
 
 body,
 #root {
+  width: 100%;
+  min-width: 0;
   max-width: 100%;
   overflow-x: hidden;
 }
@@ -256,7 +260,6 @@ body,
 .reference-marquee {
   width: 100%;
   overflow: hidden;
-  contain: layout paint;
   -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
   mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
 }
@@ -282,19 +285,41 @@ body,
   }
 }
 
-@media (hover: none), (pointer: coarse) {
+@media (hover: none), (pointer: coarse), (max-width: 1023px) {
   .reference-marquee {
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
     -webkit-mask-image: none;
     mask-image: none;
   }
 
+  .reference-marquee::-webkit-scrollbar {
+    display: none;
+  }
+
   .reference-marquee-track {
-    animation-duration: 54s;
+    animation: none;
+    will-change: auto;
   }
 
   .reference-marquee-group {
     gap: 0.875rem;
     padding-right: 0.875rem;
+  }
+
+  .reference-marquee-group[aria-hidden='true'] {
+    display: none;
+  }
+
+  .group:hover .group-hover\:scale-105,
+  .group:hover .group-hover\:scale-110,
+  .group:hover .group-hover\/btn\:translate-x-1,
+  .hover\:scale-105:hover,
+  .hover\:shadow-xl:hover,
+  .hover\:shadow-2xl:hover {
+    transform: none !important;
   }
 }
 

@@ -161,7 +161,7 @@ export function Footer({ onNavigate }: FooterProps) {
             <button
               onClick={() => handleNavigate('messages')}
               className="text-[#77756f]/20 hover:text-[#77756f]/50 transition-all duration-300 text-[10px] tracking-widest select-none"
-              title="Admin-Bereich"
+              title={t('admin_area')}
               aria-label="Admin"
             >
               ···
