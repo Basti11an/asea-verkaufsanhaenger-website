@@ -5,7 +5,6 @@ import { motion } from 'motion/react';
 import { useAdminData } from '../../context/AdminDataContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { ReferenceCarousel } from '../references/ReferenceCarousel';
-import { ReferenceSubmitPanel } from '../references/ReferenceSubmitPanel';
 import { getLatestApprovedReferences } from '../../lib/referenceUtils';
 import { getRevealAnimate, getRevealInitial, useTouchFriendlyMotion } from '../../lib/useTouchFriendlyMotion';
 
@@ -117,9 +116,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
       {/* Erfahrungen Section */}
       <section className="py-10 md:py-12 gradient-accent relative overflow-hidden">
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24 relative z-10">
-          <ReferenceCarousel references={visibleRefs} className="mb-8 md:mb-10" />
-
-          <ReferenceSubmitPanel className="max-w-5xl mx-auto" />
+          <ReferenceCarousel references={visibleRefs} />
         </div>
       </section>
 

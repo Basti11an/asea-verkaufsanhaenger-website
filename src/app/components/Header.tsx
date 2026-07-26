@@ -85,9 +85,8 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
             ))}
           </nav>
 
-          {/* Desktop Right: Language + CTA */}
-          <div className="hidden lg:flex items-center gap-10 xl:gap-12 pr-4 xl:pr-8">
-            <LanguageToggle />
+          {/* Desktop Right: CTA + Language */}
+          <div className="hidden lg:flex items-center gap-6 xl:gap-8 pr-4 xl:pr-8">
             <Button
               onClick={() => handleNavigate('contact')}
               className="bg-[#b08a57] text-white hover:bg-[#9a7749] text-[13px] uppercase tracking-[0.15em] h-[50px] px-8 rounded-[2px] transition-all duration-500 hover:shadow-[0_4px_24px_rgba(176,138,87,0.3)] flex items-center gap-2.5"
@@ -95,6 +94,7 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
               {t('nav_cta')}
               <ArrowRight size={16} strokeWidth={2} />
             </Button>
+            <LanguageToggle />
           </div>
 
           {/* Mobile: Language + Hamburger */}

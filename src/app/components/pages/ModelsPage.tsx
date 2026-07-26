@@ -4,7 +4,6 @@ import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { motion } from 'motion/react';
 import { useAdminData } from '../../context/AdminDataContext';
 import { useLanguage, type TranslationKey } from '../../context/LanguageContext';
-import { ReferenceSubmitPanel } from '../references/ReferenceSubmitPanel';
 import { getRevealAnimate, getRevealInitial, useTouchFriendlyMotion } from '../../lib/useTouchFriendlyMotion';
 
 interface ModelsPageProps {
@@ -227,7 +226,7 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative bg-[#f8f7f3] py-14 md:py-20 overflow-hidden">
+      <section className="relative bg-[#f8f7f3] pt-14 md:pt-20 overflow-hidden">
         <div className="absolute inset-y-0 right-0 hidden lg:block w-[42%]">
           <ImageWithFallback
             src="https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-85.jpg"
@@ -256,10 +255,9 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
               {models.slice(0, 3).map((model, index) => (
                 <div
                   key={model.id}
-                  className={`py-4 sm:px-5 ${index > 0 ? 'border-t sm:border-t-0 sm:border-l border-[#dfd9cf]' : ''}`}
+                  className={`py-6 sm:px-5 ${index > 0 ? 'border-t sm:border-t-0 sm:border-l border-[#dfd9cf]' : ''}`}
                 >
                   <p className="text-sm md:text-base font-semibold text-[#2f2f2d]">{model.name}</p>
-                  <p className="text-xs md:text-sm text-[#77756f] mt-1">{model.price}</p>
                 </div>
               ))}
             </div>
@@ -321,11 +319,6 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
             </div>
           )}
 
-          <ReferenceSubmitPanel
-            className="mt-10 md:mt-12"
-            descriptionKey="models_reference_desc"
-            buttonLabelKey="references_write_review"
-          />
         </div>
       </section>
 
