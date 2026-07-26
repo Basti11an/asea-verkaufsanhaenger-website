@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -18,15 +18,6 @@ export function ContactPage({ prefillData }: { prefillData?: any }) {
   });
   const [submitted, setSubmitted] = useState(false);
 
-  useEffect(() => {
-    const formElement = document.getElementById('contact-form');
-    if (formElement) {
-      setTimeout(() => {
-        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-    }
-  }, []);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
@@ -42,16 +33,6 @@ export function ContactPage({ prefillData }: { prefillData?: any }) {
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="relative bg-[#f8f7f3] py-16 md:py-20">
-        <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24">
-          <div className="max-w-3xl">
-            <h1 className="text-3xl md:text-4xl lg:text-6xl mb-4 md:mb-6 text-[#2f2f2d]">{t('contact_hero_title')}</h1>
-            <p className="text-base md:text-xl text-[#77756f] leading-relaxed">{t('contact_hero_desc')}</p>
-          </div>
-        </div>
-      </section>
-
       {/* Contact Form & Map */}
       <section id="contact-form" className="py-16 md:py-20 bg-white">
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24">

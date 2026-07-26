@@ -227,16 +227,42 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative bg-[#f8f7f3] py-16 md:py-20 overflow-hidden">
+      <section className="relative bg-[#f8f7f3] py-14 md:py-20 overflow-hidden">
+        <div className="absolute inset-y-0 right-0 hidden lg:block w-[42%]">
+          <ImageWithFallback
+            src="https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-85.jpg"
+            alt={t('models_hero_title')}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#f8f7f3] via-[#f8f7f3]/75 to-[#f8f7f3]/10" />
+        </div>
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24 relative z-10">
           <motion.div
-            className="max-w-3xl"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            className="max-w-4xl"
+            initial={getRevealInitial(touchFriendlyMotion, -24)}
+            animate={getRevealAnimate(touchFriendlyMotion)}
+            transition={{ duration: 0.7 }}
           >
-            <h1 className="text-3xl md:text-4xl lg:text-6xl mb-4 md:mb-6 text-[#2f2f2d]">{t('models_hero_title')}</h1>
-            <p className="text-base md:text-xl text-[#b08a57] leading-relaxed">{t('models_hero_desc')}</p>
+            <div className="border-l-2 border-[#b08a57] pl-5 md:pl-7">
+              <h1 className="text-3xl md:text-4xl lg:text-6xl mb-4 md:mb-6 text-[#2f2f2d] font-bold">
+                {t('models_hero_title')}
+              </h1>
+              <p className="text-base md:text-xl text-[#77756f] leading-relaxed max-w-2xl">
+                {t('models_hero_desc')}
+              </p>
+            </div>
+
+            <div className="mt-8 md:mt-10 grid sm:grid-cols-3 border-y border-[#dfd9cf] max-w-3xl">
+              {models.slice(0, 3).map((model, index) => (
+                <div
+                  key={model.id}
+                  className={`py-4 sm:px-5 ${index > 0 ? 'border-t sm:border-t-0 sm:border-l border-[#dfd9cf]' : ''}`}
+                >
+                  <p className="text-sm md:text-base font-semibold text-[#2f2f2d]">{model.name}</p>
+                  <p className="text-xs md:text-sm text-[#77756f] mt-1">{model.price}</p>
+                </div>
+              ))}
+            </div>
           </motion.div>
         </div>
       </section>
@@ -247,11 +273,11 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
           {models.length === 0 ? (
             <p className="text-center text-[#77756f] py-16 md:py-20">{t('models_no_models')}</p>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-stretch">
               {models.map((model, index) => (
                 <motion.div
                   key={model.id}
-                  className="group glass rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 relative"
+                  className="group glass rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 relative h-full flex flex-col"
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
@@ -274,11 +300,11 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
                     </motion.div>
                   </div>
 
-                  <div className="p-6 bg-white/80 backdrop-blur-sm">
-                    <h3 className="text-2xl text-[#2f2f2d] mb-2">{model.name}</h3>
-                    <p className="text-[#77756f] mb-4">{model.shortDescription}</p>
+                  <div className="p-6 bg-white/80 backdrop-blur-sm flex flex-1 flex-col">
+                    <h3 className="text-2xl text-[#2f2f2d] mb-2 leading-tight min-h-[4rem]">{model.name}</h3>
+                    <p className="text-[#77756f] mb-5 leading-relaxed min-h-[4.5rem] line-clamp-3">{model.shortDescription}</p>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 mt-auto">
                       <Button
                         onClick={() => onNavigate('model-detail', { model })}
                         className="flex-1 gradient-secondary text-white hover:shadow-xl transition-all duration-300 group/btn"
@@ -304,22 +330,29 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 md:py-24 bg-white relative overflow-hidden">
+      <section className="py-16 md:py-24 bg-[#1c1c1a] text-white relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-[#b08a57]" />
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24 relative z-10">
           <motion.div
-            className="max-w-4xl mx-auto text-center"
+            className="grid lg:grid-cols-[1fr_auto] gap-8 md:gap-12 items-center"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="text-2xl md:text-4xl lg:text-5xl text-[#2f2f2d] mb-4 md:mb-6 font-bold">{t('models_cta_title')}</h2>
-            <p className="text-base md:text-xl text-[#77756f] mb-8 md:mb-10 leading-relaxed max-w-2xl mx-auto">{t('models_cta_desc')}</p>
+            <div className="border-l-2 border-[#b08a57] pl-5 md:pl-7">
+              <h2 className="text-2xl md:text-4xl lg:text-5xl mb-4 md:mb-5 font-bold">
+                {t('models_cta_title')}
+              </h2>
+              <p className="text-base md:text-xl text-white/72 leading-relaxed max-w-3xl">
+                {t('models_cta_desc')}
+              </p>
+            </div>
 
             <Button
               size="lg"
               onClick={() => onNavigate('contact')}
-              className="gradient-secondary text-white hover:shadow-xl transition-all duration-300"
+              className="bg-[#b08a57] text-white hover:bg-[#9a7445] hover:shadow-xl transition-all duration-300 justify-self-start lg:justify-self-end"
             >
               {t('models_cta_button')}
               <ArrowRight className="ml-2" size={20} />

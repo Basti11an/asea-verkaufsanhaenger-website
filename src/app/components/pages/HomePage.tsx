@@ -4,7 +4,7 @@ import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { motion } from 'motion/react';
 import { useAdminData } from '../../context/AdminDataContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { ReferenceCard } from '../references/ReferenceCard';
+import { ReferenceCarousel } from '../references/ReferenceCarousel';
 import { ReferenceSubmitPanel } from '../references/ReferenceSubmitPanel';
 import { getLatestApprovedReferences } from '../../lib/referenceUtils';
 import { getRevealAnimate, getRevealInitial, useTouchFriendlyMotion } from '../../lib/useTouchFriendlyMotion';
@@ -117,29 +117,41 @@ export function HomePage({ onNavigate }: HomePageProps) {
       {/* Erfahrungen Section */}
       <section className="py-10 md:py-12 gradient-accent relative overflow-hidden">
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24 relative z-10">
-          {visibleRefs.length > 0 && (
-            <div className="reference-marquee mb-8 md:mb-10">
-              <div className="reference-marquee-track">
-                {[0, 1].map((groupIndex) => (
-                  <div
-                    key={groupIndex}
-                    className="reference-marquee-group"
-                    aria-hidden={groupIndex === 1}
-                  >
-                    {visibleRefs.map((reference) => (
-                      <ReferenceCard
-                        key={`${groupIndex}-${reference.id}`}
-                        reference={reference}
-                        className="w-[280px] md:w-[340px] shrink-0"
-                      />
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <ReferenceCarousel references={visibleRefs} className="mb-8 md:mb-10" />
 
           <ReferenceSubmitPanel className="max-w-5xl mx-auto" />
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-16 md:py-20 bg-white relative overflow-hidden">
+        <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24">
+          <motion.div
+            className="text-center mb-10 md:mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-2xl md:text-3xl lg:text-5xl text-[#2f2f2d] mb-3 md:mb-4">{t('home_features_title')}</h2>
+            <p className="text-base md:text-xl text-[#77756f] max-w-2xl mx-auto">{t('home_features_subtitle')}</p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-9">
+            {features.map((feature, index) => (
+              <motion.div
+                key={index}
+                className="relative border-t-2 border-[#b08a57]/35 pt-5 pr-2"
+                initial={{ opacity: 0, y: 28 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+              >
+                <h3 className="text-base md:text-xl text-[#2f2f2d] mb-2 md:mb-3">{t(feature.titleKey)}</h3>
+                <p className="text-sm md:text-base text-[#77756f] leading-relaxed">{t(feature.descKey)}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -180,7 +192,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
             ].map(({ src, nameKey, descKey, delay }) => (
               <motion.div
                 key={nameKey}
-                className="group glass rounded-xl overflow-hidden hover:shadow-xl transition-all duration-500 relative"
+                className="group glass rounded-xl overflow-hidden hover:shadow-xl transition-all duration-500 relative h-full flex flex-col"
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -195,13 +207,13 @@ export function HomePage({ onNavigate }: HomePageProps) {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                 </div>
-                <div className="p-5 md:p-6 bg-white/80 backdrop-blur-sm">
-                  <h3 className="text-lg md:text-xl text-[#2f2f2d] mb-2">{t(nameKey)}</h3>
-                  <p className="text-sm md:text-base text-[#77756f] mb-4 line-clamp-2">{t(descKey)}</p>
+                <div className="p-5 md:p-6 bg-white/80 backdrop-blur-sm flex flex-1 flex-col">
+                  <h3 className="text-lg md:text-xl text-[#2f2f2d] mb-2 leading-tight min-h-[3.25rem]">{t(nameKey)}</h3>
+                  <p className="text-sm md:text-base text-[#77756f] mb-4 line-clamp-3 min-h-[4.5rem]">{t(descKey)}</p>
                   <Button
                     variant="outline"
                     onClick={() => onNavigate('models')}
-                    className="group/btn border-[#b08a57]/50 text-[#2f2f2d] hover:bg-[#b08a57]/10 w-full sm:w-auto"
+                    className="group/btn border-[#b08a57]/50 text-[#2f2f2d] hover:bg-[#b08a57]/10 w-full sm:w-auto mt-auto"
                   >
                     {t('home_model_learn_more')}
                     <ArrowRight className="ml-2 group-hover/btn:translate-x-1 transition-transform" size={16} />
@@ -226,41 +238,6 @@ export function HomePage({ onNavigate }: HomePageProps) {
               {t('home_models_view_all')}
             </Button>
           </motion.div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-16 md:py-20 bg-white relative overflow-hidden">
-        <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24">
-          <motion.div
-            className="text-center mb-10 md:mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="text-2xl md:text-3xl lg:text-5xl text-[#2f2f2d] mb-3 md:mb-4">{t('home_features_title')}</h2>
-            <p className="text-base md:text-xl text-[#77756f] max-w-2xl mx-auto">{t('home_features_subtitle')}</p>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-9">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                className="border-t border-[#dfd9cf] pt-5"
-                initial={{ opacity: 0, y: 28 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.08 }}
-              >
-                <div className="text-sm text-[#b08a57] font-semibold mb-3">
-                  {String(index + 1).padStart(2, '0')}
-                </div>
-                <h3 className="text-base md:text-xl text-[#2f2f2d] mb-2 md:mb-3">{t(feature.titleKey)}</h3>
-                <p className="text-sm md:text-base text-[#77756f] leading-relaxed">{t(feature.descKey)}</p>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </section>
 

@@ -24,21 +24,6 @@ export function AboutPage() {
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="relative bg-[#f8f7f3] py-16 md:py-20 overflow-hidden">
-        <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24 relative z-10">
-          <motion.div
-            className="max-w-3xl"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <h1 className="text-3xl md:text-4xl lg:text-6xl mb-4 md:mb-6 text-[#2f2f2d]">{t('about_hero_title')}</h1>
-            <p className="text-base md:text-xl text-[#b08a57] leading-relaxed">{t('about_hero_desc')}</p>
-          </motion.div>
-        </div>
-      </section>
-
       {/* Story Section */}
       <section className="py-16 md:py-20 bg-white">
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24">

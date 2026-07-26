@@ -46,7 +46,6 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
   const handleNavigate = (page: string) => {
     onNavigate(page);
     setMobileMenuOpen(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (

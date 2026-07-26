@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { AdminDataProvider } from './context/AdminDataContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { Header } from './components/Header';
@@ -22,14 +22,49 @@ function AppInner() {
   const [navData, setNavData] = useState<any>(null);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
   const [adminActiveTab, setAdminActiveTab] = useState<string>('modelle');
+  const [navigationTick, setNavigationTick] = useState(0);
+
+  const scrollToTop = () => {
+    const html = document.documentElement;
+    const body = document.body;
+    const scrollingElement = document.scrollingElement || html;
+    const previousHtmlBehavior = html.style.scrollBehavior;
+    const previousBodyBehavior = body.style.scrollBehavior;
+
+    html.style.scrollBehavior = 'auto';
+    body.style.scrollBehavior = 'auto';
+
+    const run = () => {
+      window.scrollTo(0, 0);
+      scrollingElement.scrollTop = 0;
+      html.scrollTop = 0;
+      body.scrollTop = 0;
+    };
+
+    run();
+    requestAnimationFrame(run);
+    window.setTimeout(run, 0);
+    window.setTimeout(run, 80);
+    window.setTimeout(() => {
+      html.style.scrollBehavior = previousHtmlBehavior;
+      body.style.scrollBehavior = previousBodyBehavior;
+    }, 120);
+  };
 
   const handleNavigate = (page: string, data?: any) => {
-    setCurrentPage(page);
     setNavData(data ?? null);
-    requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-    });
+    setNavigationTick((tick) => tick + 1);
+
+    if (page === currentPage) {
+      return;
+    }
+
+    setCurrentPage(page);
   };
+
+  useLayoutEffect(() => {
+    scrollToTop();
+  }, [currentPage, navigationTick]);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) return;

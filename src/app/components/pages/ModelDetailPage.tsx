@@ -95,17 +95,6 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
                 </motion.button>
               ))}
             </div>
-
-            {modelReferences.length > 0 && (
-              <div className="mt-8">
-                <h2 className="text-2xl text-[#2f2f2d] font-bold mb-4">{t('detail_model_refs_title')}</h2>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-1 gap-4">
-                  {modelReferences.map((reference) => (
-                    <ReferenceCard key={reference.id} reference={reference} compact />
-                  ))}
-                </div>
-              </div>
-            )}
           </motion.div>
 
           {/* Right Column - Product Info */}
@@ -231,6 +220,24 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
             </div>
           </motion.div>
         </div>
+
+        {modelReferences.length > 0 && (
+          <motion.section
+            className="mt-12 md:mt-16"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+          >
+            <h2 className="text-2xl md:text-3xl text-[#2f2f2d] font-bold mb-5 md:mb-6">
+              {t('detail_model_refs_title')}
+            </h2>
+            <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+              {modelReferences.map((reference) => (
+                <ReferenceCard key={reference.id} reference={reference} compact />
+              ))}
+            </div>
+          </motion.section>
+        )}
 
         {/* Bottom CTA */}
         <motion.div

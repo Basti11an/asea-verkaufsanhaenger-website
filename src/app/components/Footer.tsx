@@ -11,7 +11,6 @@ export function Footer({ onNavigate }: FooterProps) {
 
   const handleNavigate = (page: string) => {
     onNavigate(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
