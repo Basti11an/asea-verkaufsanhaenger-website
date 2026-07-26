@@ -6,9 +6,12 @@ import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
 import { useLanguage } from '../../context/LanguageContext';
 import { ReferenceSubmitPanel } from '../references/ReferenceSubmitPanel';
+import { trackAnalyticsEvent } from '../../lib/analytics';
+
+const CONFIGURATOR_REQUEST_SUBJECT = 'Anfrage Konfigurator';
 
 export function ContactPage({ prefillData }: { prefillData?: any }) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -21,6 +24,18 @@ export function ContactPage({ prefillData }: { prefillData?: any }) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
+    void trackAnalyticsEvent('contact_request', {
+      pagePath: 'contact',
+      language: lang,
+    });
+
+    if (formData.subject.trim() === CONFIGURATOR_REQUEST_SUBJECT) {
+      void trackAnalyticsEvent('configuration_submitted', {
+        pagePath: 'contact',
+        language: lang,
+      });
+    }
+
     setTimeout(() => {
       setSubmitted(false);
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });

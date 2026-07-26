@@ -1,6 +1,6 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AdminDataProvider } from './context/AdminDataContext';
-import { LanguageProvider } from './context/LanguageContext';
+import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { Header } from './components/Header';
 import { AdminHeader } from './components/AdminHeader';
 import { Footer } from './components/Footer';
@@ -16,13 +16,28 @@ import { MessagesPage } from './components/pages/MessagesPage';
 import { AdminLogin } from './components/AdminLogin';
 import { ConfiguratorPage } from './components/pages/ConfiguratorPage';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
+import { trackAnalyticsEvent } from './lib/analytics';
+
+const PUBLIC_ANALYTICS_PAGES: Record<string, string> = {
+  home: 'home',
+  about: 'about',
+  configurator: 'configurator',
+  models: 'models',
+  'model-detail': 'model-detail',
+  equipment: 'equipment',
+  contact: 'contact',
+  imprint: 'imprint',
+  privacy: 'privacy',
+};
 
 function AppInner() {
+  const { lang } = useLanguage();
   const [currentPage, setCurrentPage] = useState<string>('home');
   const [navData, setNavData] = useState<any>(null);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
-  const [adminActiveTab, setAdminActiveTab] = useState<string>('modelle');
+  const [adminActiveTab, setAdminActiveTab] = useState<string>('dashboard');
   const [navigationTick, setNavigationTick] = useState(0);
+  const lastAnalyticsKeyRef = useRef('');
 
   const scrollToTop = () => {
     const html = document.documentElement;
@@ -67,6 +82,31 @@ function AppInner() {
   }, [currentPage, navigationTick]);
 
   useEffect(() => {
+    const pagePath = PUBLIC_ANALYTICS_PAGES[currentPage];
+    if (!pagePath) return;
+
+    const model = currentPage === 'model-detail' ? navData?.model : null;
+    const modelId = model ? String(model.id ?? model.name ?? '') : '';
+    const analyticsKey = `${currentPage}|${modelId}`;
+
+    if (lastAnalyticsKeyRef.current === analyticsKey) return;
+    lastAnalyticsKeyRef.current = analyticsKey;
+
+    void trackAnalyticsEvent('page_view', {
+      pagePath,
+      language: lang,
+    });
+
+    if (currentPage === 'model-detail' && model) {
+      void trackAnalyticsEvent('model_view', {
+        modelId: modelId || String(model.name),
+        modelName: String(model.name ?? ''),
+        language: lang,
+      });
+    }
+  }, [currentPage, navData, lang]);
+
+  useEffect(() => {
     if (!isSupabaseConfigured || !supabase) return;
 
     supabase.auth.getSession().then(({ data }) => {
@@ -88,7 +128,7 @@ function AppInner() {
     }
 
     setIsAdminAuthenticated(false);
-    setAdminActiveTab('modelle');
+    setAdminActiveTab('dashboard');
     setCurrentPage('home');
   };
 

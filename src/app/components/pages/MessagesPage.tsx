@@ -1,4 +1,5 @@
 import { Toaster } from 'sonner';
+import { DashboardTab } from '../admin/DashboardTab';
 import { ModelleTab } from '../admin/ModelleTab';
 import { ReferenzenTab } from '../admin/ReferenzenTab';
 import { EingaengeTab } from '../admin/EingaengeTab';
@@ -15,6 +16,10 @@ export function MessagesPage({ activeTab }: MessagesPageProps) {
       <Toaster position="top-right" richColors />
 
       {/* All tabs always mounted — hidden via CSS to preserve local edit state */}
+      <div className={activeTab === 'dashboard' ? '' : 'hidden'}>
+        <DashboardTab />
+      </div>
+
       <div className={activeTab === 'modelle' ? '' : 'hidden'}>
         <ModelleTab />
       </div>

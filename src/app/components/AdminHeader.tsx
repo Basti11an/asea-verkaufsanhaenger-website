@@ -9,6 +9,7 @@ interface AdminHeaderProps {
 }
 
 const TABS = [
+  { id: 'dashboard', label: 'Dashboard' },
   { id: 'modelle', label: 'Modelle' },
   { id: 'referenzen', label: 'Referenzen' },
   { id: 'eingaenge', label: 'Eingänge' },
