@@ -93,7 +93,7 @@ function AppInner() {
   const [navData, setNavData] = useState<any>(null);
   const [adminAccessStatus, setAdminAccessStatus] = useState<AdminAccessStatus>('guest');
   const [adminAccessMessage, setAdminAccessMessage] = useState('');
-  const [adminActiveTab, setAdminActiveTab] = useState<string>('dashboard');
+  const [adminActiveTab, setAdminActiveTab] = useState<string>('eingaenge');
   const [navigationTick, setNavigationTick] = useState(0);
   const [privacySettingsOpen, setPrivacySettingsOpen] = useState(false);
   const [consentVersion, setConsentVersion] = useState(0);
@@ -161,7 +161,7 @@ function AppInner() {
     if (access.status !== 'admin') {
       setAdminAccessStatus('guest');
       setAdminAccessMessage(access.error ?? '');
-      setAdminActiveTab('dashboard');
+      setAdminActiveTab('eingaenge');
 
       const { data } = await supabase.auth.getSession();
       if (data.session) {
@@ -254,7 +254,7 @@ function AppInner() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) {
         setAdminAccessStatus('guest');
-        setAdminActiveTab('dashboard');
+        setAdminActiveTab('eingaenge');
         return;
       }
 
@@ -271,7 +271,7 @@ function AppInner() {
 
     setAdminAccessStatus('guest');
     setAdminAccessMessage('');
-    setAdminActiveTab('dashboard');
+    setAdminActiveTab('eingaenge');
     handleNavigate('home');
   };
 
@@ -338,7 +338,7 @@ function AppInner() {
         {renderPage()}
       </main>
       {showFooter && <Footer onNavigate={handleNavigate} onOpenPrivacySettings={() => setPrivacySettingsOpen(true)} />}
-      {showNormalHeader && (
+      {showNormalHeader && !isFullscreenPage && (
         <PrivacyConsentBanner
           forceOpen={privacySettingsOpen}
           onClose={() => setPrivacySettingsOpen(false)}

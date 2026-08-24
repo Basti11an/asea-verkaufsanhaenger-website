@@ -1,5 +1,6 @@
 import { Lock, LogOut } from 'lucide-react';
 import { Button } from './ui/button';
+import { useAdminData } from '../context/AdminDataContext';
 
 interface AdminHeaderProps {
   activeTab: string;
@@ -9,13 +10,18 @@ interface AdminHeaderProps {
 }
 
 const TABS = [
+  { id: 'eingaenge', label: 'Eingänge' },
   { id: 'dashboard', label: 'Dashboard' },
   { id: 'modelle', label: 'Modelle' },
   { id: 'referenzen', label: 'Referenzen' },
-  { id: 'eingaenge', label: 'Eingänge' },
 ];
 
 export function AdminHeader({ activeTab, setActiveTab, onNavigate, onLogout }: AdminHeaderProps) {
+  const { references, contactRequests } = useAdminData();
+  const newEntriesCount =
+    references.filter((reference) => reference.status === 'pending').length +
+    contactRequests.filter((request) => request.status === 'new' && !request.isRead).length;
+
   return (
     <header
       className="text-white sticky top-0 z-50 border-b border-white/10 shadow-xl"
@@ -67,7 +73,12 @@ export function AdminHeader({ activeTab, setActiveTab, onNavigate, onLogout }: A
                 }
               `}
             >
-              {tab.label}
+              <span>{tab.label}</span>
+              {tab.id === 'eingaenge' && newEntriesCount > 0 && (
+                <span className="min-w-5 rounded-full bg-red-600 px-1.5 py-0.5 text-center text-[11px] font-bold leading-none text-white shadow-sm">
+                  {newEntriesCount > 99 ? '99+' : newEntriesCount}
+                </span>
+              )}
             </button>
           ))}
         </nav>

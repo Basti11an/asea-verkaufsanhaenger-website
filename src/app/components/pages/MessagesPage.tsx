@@ -16,6 +16,10 @@ export function MessagesPage({ activeTab }: MessagesPageProps) {
       <Toaster position="top-right" richColors />
 
       {/* All tabs always mounted — hidden via CSS to preserve local edit state */}
+      <div className={activeTab === 'eingaenge' ? '' : 'hidden'}>
+        <EingaengeTab />
+      </div>
+
       <div className={activeTab === 'dashboard' ? '' : 'hidden'}>
         <DashboardTab />
       </div>
@@ -26,10 +30,6 @@ export function MessagesPage({ activeTab }: MessagesPageProps) {
 
       <div className={activeTab === 'referenzen' ? '' : 'hidden'}>
         <ReferenzenTab />
-      </div>
-
-      <div className={activeTab === 'eingaenge' ? '' : 'hidden'}>
-        <EingaengeTab />
       </div>
     </div>
   );

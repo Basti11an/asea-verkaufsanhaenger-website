@@ -72,7 +72,7 @@ export function ConfiguratorPage({ onNavigate, navData }: ConfiguratorPageProps)
 
   if (stage === 'mobile-warning') {
     return (
-      <div className="w-full h-full overflow-y-auto bg-[#f8f7f3] px-4 py-10 md:px-8 flex items-center justify-center">
+      <div className="w-full h-full min-h-0 overflow-y-auto bg-[#f8f7f3] px-4 py-8 md:px-8 md:py-10 flex items-start justify-center">
         <div className="w-full max-w-xl bg-white border border-[#dfd9cf] rounded-xl shadow-sm p-6 md:p-8">
           <div className="mb-5">
             <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#9a7445] mb-2">{t('configurator_warning_eyebrow')}</p>
@@ -110,7 +110,7 @@ export function ConfiguratorPage({ onNavigate, navData }: ConfiguratorPageProps)
 
   if (stage === 'intro') {
     return (
-      <div className="w-full h-full overflow-y-auto bg-[#f8f7f3] px-4 py-10 md:px-8 lg:px-12 flex items-center justify-center">
+      <div className="w-full h-full min-h-0 overflow-y-auto bg-[#f8f7f3] px-4 py-8 pb-28 md:px-8 md:py-10 lg:px-12 flex items-start justify-center">
         <div className="w-full max-w-4xl">
           <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
@@ -140,25 +140,27 @@ export function ConfiguratorPage({ onNavigate, navData }: ConfiguratorPageProps)
             ))}
           </div>
 
-          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={navigateBackToTrailer}
-              className="border-[#b08a57]/40 text-[#2f2f2d]"
-            >
-              <ArrowLeft size={16} className="mr-2" />
-              {t('configurator_back')}
-            </Button>
-            <Button
-              type="button"
-              size="lg"
-              onClick={startConfigurator}
-              className="bg-[#b08a57] hover:bg-[#9a7445] text-white"
-            >
-              {t('configurator_start')}
-              <ArrowRight size={18} className="ml-2" />
-            </Button>
+          <div className="fixed bottom-0 left-0 right-0 z-[60] border-t border-[#dfd9cf] bg-[#f8f7f3]/95 px-4 py-3 shadow-[0_-12px_30px_rgba(47,47,45,0.08)] backdrop-blur">
+            <div className="mx-auto flex w-full max-w-4xl flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={navigateBackToTrailer}
+                className="border-[#b08a57]/40 text-[#2f2f2d]"
+              >
+                <ArrowLeft size={16} className="mr-2" />
+                {t('configurator_back')}
+              </Button>
+              <Button
+                type="button"
+                size="lg"
+                onClick={startConfigurator}
+                className="bg-[#b08a57] hover:bg-[#9a7445] text-white"
+              >
+                {t('configurator_start')}
+                <ArrowRight size={18} className="ml-2" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
