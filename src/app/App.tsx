@@ -334,7 +334,7 @@ function AppInner() {
           onLogout={handleAdminLogout}
         />
       )}
-      <main className={isFullscreenPage ? 'flex-1 flex flex-col relative lg:overflow-hidden' : 'flex-1'}>
+      <main className={isFullscreenPage ? 'flex-1 min-h-0 flex flex-col relative lg:overflow-hidden' : 'flex-1'}>
         {renderPage()}
       </main>
       {showFooter && <Footer onNavigate={handleNavigate} onOpenPrivacySettings={() => setPrivacySettingsOpen(true)} />}

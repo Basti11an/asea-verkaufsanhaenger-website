@@ -72,7 +72,7 @@ export function ConfiguratorPage({ onNavigate, navData }: ConfiguratorPageProps)
 
   if (stage === 'mobile-warning') {
     return (
-      <div className="w-full min-h-full bg-[#f8f7f3] px-4 py-10 md:px-8 flex items-center justify-center">
+      <div className="w-full h-full overflow-y-auto bg-[#f8f7f3] px-4 py-10 md:px-8 flex items-center justify-center">
         <div className="w-full max-w-xl bg-white border border-[#dfd9cf] rounded-xl shadow-sm p-6 md:p-8">
           <div className="mb-5">
             <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#9a7445] mb-2">{t('configurator_warning_eyebrow')}</p>
@@ -110,7 +110,7 @@ export function ConfiguratorPage({ onNavigate, navData }: ConfiguratorPageProps)
 
   if (stage === 'intro') {
     return (
-      <div className="w-full min-h-full bg-[#f8f7f3] px-4 py-10 md:px-8 lg:px-12 flex items-center justify-center">
+      <div className="w-full h-full overflow-y-auto bg-[#f8f7f3] px-4 py-10 md:px-8 lg:px-12 flex items-center justify-center">
         <div className="w-full max-w-4xl">
           <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
