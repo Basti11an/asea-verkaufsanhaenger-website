@@ -35,6 +35,7 @@ Die Kundenreferenzen können in Supabase gespeichert werden. Dafür ist vorberei
 - `src/app/lib/supabase.ts`: Verbindung zu Supabase
 - `src/app/lib/referencesRepository.ts`: Laden, Anlegen, Bearbeiten und Löschen von Referenzen
 - `supabase/references.sql`: Datenbanktabelle `customer_references`, Eingänge/Freigabe und Sicherheitsregeln
+- `supabase/analytics.sql`: Tabellen und Sicherheitsregeln für das Admin-Dashboard
 - `.env.example`: Vorlage für deine lokalen Supabase-Zugangsdaten
 
 ### 1. Supabase Projekt erstellen
@@ -49,16 +50,29 @@ Die Kundenreferenzen können in Supabase gespeichert werden. Dafür ist vorberei
 
 1. Öffne in Supabase `Authentication` > `Users`.
 2. Lege einen User mit deiner Admin-E-Mail und einem sicheren Passwort an.
-3. Merke dir exakt diese E-Mail-Adresse.
-4. Der Adminbereich ist nach dem Deployment direkt unter `/admin` erreichbar.
+3. Aktiviere die E-Mail-Bestätigung oder bestätige den User manuell im Supabase-Dashboard.
+4. Der User ist dadurch noch nicht automatisch Admin. Die Freigabe erfolgt erst in Schritt 3 über die Tabelle `admin_users`.
 
 ### 3. Tabelle und Berechtigungen anlegen
 
 1. Öffne `supabase/references.sql`.
-2. Prüfe in der SQL-Datei, ob in der Funktion `is_admin()` deine echte Admin-E-Mail eingetragen ist.
-3. Kopiere die komplette SQL-Datei.
-4. Öffne in Supabase den `SQL Editor`.
-5. Führe die SQL aus.
+2. Kopiere die komplette SQL-Datei.
+3. Öffne in Supabase den `SQL Editor`.
+4. Führe die SQL aus.
+5. Öffne danach `supabase/analytics.sql`, kopiere die komplette Datei und führe sie ebenfalls im SQL Editor aus.
+6. Gib den Admin-User einmalig frei. Dafür im SQL Editor ausführen und die E-Mail ersetzen:
+
+```sql
+insert into public.admin_users (user_id, email, role, active)
+select id, email, 'owner', true
+from auth.users
+where email = 'deine-admin-mail@example.com'
+on conflict (user_id) do update set
+  email = excluded.email,
+  role = excluded.role,
+  active = true,
+  updated_at = now();
+```
 
 Danach gilt:
 
@@ -67,6 +81,7 @@ Danach gilt:
 - Besucher dürfen neue Referenzen einreichen, diese bleiben zuerst im Status `pending`.
 - Der Admin sieht neue Einreichungen im Tab `Eingänge` und kann sie freigeben oder löschen.
 - Erst freigegebene Referenzen mit Status `approved` und `sichtbar = true` erscheinen öffentlich.
+- Nur User, die in `admin_users` aktiv freigegeben sind, können den Adminbereich und das Dashboard nutzen.
 
 ### 4. Lokale `.env` Datei anlegen
 
@@ -75,7 +90,6 @@ Lege im Projektordner eine Datei `.env` an:
 ```env
 VITE_SUPABASE_URL=https://dein-projekt.supabase.co
 VITE_SUPABASE_ANON_KEY=dein-anon-public-key
-VITE_SUPABASE_ADMIN_EMAIL=deine-admin-mail@example.com
 ```
 
 Dann lokal starten:
@@ -91,7 +105,9 @@ In Vercel unter `Project Settings` > `Environment Variables` dieselben Werte ein
 
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
-- `VITE_SUPABASE_ADMIN_EMAIL`
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `CRON_SECRET`
 
 Danach neu deployen.
 

@@ -1,186 +1,115 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { Lock, Eye, EyeOff, LogIn, Shield, Mail } from 'lucide-react';
+import { Eye, EyeOff, Lock, LogIn, Mail, Shield } from 'lucide-react';
 import { Button } from './ui/button';
-import { isSupabaseConfigured, supabase, supabaseAdminEmail } from '../lib/supabase';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
 
-const ADMIN_REGISTRATION_CODE = 'ASEA-BBS';
+const LOGIN_ERROR = 'E-Mail-Adresse oder Passwort ist nicht korrekt oder der Zugriff ist nicht freigegeben.';
 
 interface AdminLoginProps {
-  onLogin: () => void;
+  onLogin: () => boolean | void | Promise<boolean | void>;
   onNavigate: (page: string) => void;
+  accessMessage?: string;
 }
 
-export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
-  const [email, setEmail] = useState(supabaseAdminEmail);
+export function AdminLogin({ onLogin, onNavigate, accessMessage }: AdminLoginProps) {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [registrationCode, setRegistrationCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [error, setError] = useState('');
-  const [info, setInfo] = useState('');
+  const [error, setError] = useState(accessMessage ?? '');
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setError(accessMessage ?? '');
+  }, [accessMessage]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setInfo('');
+
+    if (!isSupabaseConfigured || !supabase) {
+      setError('Der Admin-Login ist erst nach der Supabase-Konfiguration verfügbar.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      if (isSupabaseConfigured && supabase) {
-        if (mode === 'register') {
-          const normalizedEmail = email.trim().toLowerCase();
-          const normalizedAdminEmail = supabaseAdminEmail.trim().toLowerCase();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
 
-          if (registrationCode.trim() !== ADMIN_REGISTRATION_CODE) {
-            throw new Error('Der Registrierungscode ist falsch.');
-          }
+      if (signInError) throw new Error(LOGIN_ERROR);
 
-          if (normalizedEmail !== normalizedAdminEmail) {
-            throw new Error('Bitte verwenden Sie die hinterlegte Admin-E-Mail.');
-          }
+      const allowed = await onLogin();
 
-          if (password.length < 6) {
-            throw new Error('Das Passwort muss mindestens 6 Zeichen lang sein.');
-          }
-
-          const { data, error: signUpError } = await supabase.auth.signUp({
-            email: normalizedEmail,
-            password,
-          });
-
-          if (signUpError) throw signUpError;
-
-          if (data.session) {
-            onLogin();
-            return;
-          }
-
-          setInfo('Admin-Konto wurde angelegt. Falls Supabase eine E-Mail-Bestätigung verlangt, bestätige bitte den Link in deinem Postfach und melde dich danach an.');
-          setMode('login');
-          setPassword('');
-          setRegistrationCode('');
-          return;
-        }
-
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (signInError) throw signInError;
-        onLogin();
-        return;
+      if (allowed === false) {
+        await supabase.auth.signOut();
+        throw new Error(LOGIN_ERROR);
       }
-
-      if (password === '1234') {
-        onLogin();
-        return;
-      }
-
-      setError('Falsches Passwort. Bitte versuchen Sie es erneut.');
-      setPassword('');
     } catch (loginError) {
-      const message = loginError instanceof Error ? loginError.message : 'Anmeldung fehlgeschlagen.';
-      setError(message);
+      const message = loginError instanceof Error ? loginError.message : LOGIN_ERROR;
+      setError(message === LOGIN_ERROR ? LOGIN_ERROR : 'Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.');
+      setPassword('');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const loginDisabled = isLoading || !isSupabaseConfigured || !email.trim() || !password;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f8f7f3] to-white flex items-center justify-center p-4 md:p-6 overflow-hidden">
-      {/* Background Decorative Elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 gradient-primary opacity-10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 gradient-primary opacity-10 rounded-full blur-3xl pointer-events-none" />
-
       <motion.div
         className="relative z-10 w-full max-w-md"
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.45 }}
       >
-        {/* Login Card */}
-        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-[#b08a57]/30 overflow-hidden">
-          {/* Header */}
-          <div className="gradient-secondary text-white p-6 md:p-8 text-center relative overflow-hidden">
-            <motion.div
-              className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl"
-              animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-              transition={{ duration: 3, repeat: Infinity }}
-            />
-            <div className="relative z-10">
-              <div className="w-20 h-20 gradient-primary rounded-2xl flex items-center justify-center shadow-2xl mx-auto mb-4">
-                <Shield size={40} className="text-white" />
-              </div>
-              <h1 className="text-3xl font-bold mb-2">Admin-Bereich</h1>
-              <p className="text-[#c8a96e]">Bitte melden Sie sich an</p>
+        <div className="bg-white rounded-2xl shadow-xl border border-[#b08a57]/25 overflow-hidden">
+          <div className="gradient-secondary text-white p-6 md:p-8 text-center">
+            <div className="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center shadow-xl mx-auto mb-4">
+              <Shield size={34} className="text-white" />
             </div>
+            <h1 className="text-3xl font-bold mb-2">Admin-Bereich</h1>
+            <p className="text-[#c8a96e]">Bitte melden Sie sich an</p>
           </div>
 
-          {/* Login Form */}
           <div className="p-5 md:p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
-              {isSupabaseConfigured && (
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-[#77756f] mb-2">
-                    E-Mail
-                  </label>
-                  <div className="relative">
-                    <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#77756f]">
-                      <Mail size={20} />
-                    </div>
-                    <input
-                      type="email"
-                      id="email"
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        setError('');
-                        setInfo('');
-                      }}
-                      className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-[#b08a57]/30 focus:border-[#b08a57] transition-all duration-300 focus:outline-none"
-                      placeholder="admin@example.com"
-                      required
-                      autoFocus
-                    />
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-[#77756f] mb-2">
+                  E-Mail
+                </label>
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#77756f]">
+                    <Mail size={20} />
                   </div>
+                  <input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setError('');
+                    }}
+                    className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-[#b08a57]/30 focus:border-[#b08a57] transition-colors duration-200 focus:outline-none"
+                    placeholder="admin@example.com"
+                    required
+                    autoComplete="username"
+                    autoFocus
+                    disabled={!isSupabaseConfigured}
+                  />
                 </div>
-              )}
-
-              {isSupabaseConfigured && mode === 'register' && (
-                <div>
-                  <label htmlFor="registration-code" className="block text-sm font-medium text-[#77756f] mb-2">
-                    Registrierungscode
-                  </label>
-                  <div className="relative">
-                    <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#77756f]">
-                      <Shield size={20} />
-                    </div>
-                    <input
-                      type="password"
-                      id="registration-code"
-                      value={registrationCode}
-                      onChange={(e) => {
-                        setRegistrationCode(e.target.value);
-                        setError('');
-                        setInfo('');
-                      }}
-                      className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-[#b08a57]/30 focus:border-[#b08a57] transition-all duration-300 focus:outline-none"
-                      placeholder="Registrierungscode eingeben"
-                      required
-                    />
-                  </div>
-                </div>
-              )}
+              </div>
 
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-[#77756f] mb-2">
                   Passwort
                 </label>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#77756f]">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#77756f]">
                     <Lock size={20} />
                   </div>
                   <input
@@ -190,52 +119,42 @@ export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
                     onChange={(e) => {
                       setPassword(e.target.value);
                       setError('');
-                      setInfo('');
                     }}
-                    className={`w-full pl-12 pr-12 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none ${
+                    className={`w-full pl-12 pr-12 py-3 rounded-xl border-2 transition-colors duration-200 focus:outline-none ${
                       error
                         ? 'border-red-500 focus:border-red-500'
                         : 'border-[#b08a57]/30 focus:border-[#b08a57]'
                     }`}
                     placeholder="Geben Sie Ihr Passwort ein"
                     required
-                    autoFocus={!isSupabaseConfigured}
+                    autoComplete="current-password"
+                    disabled={!isSupabaseConfigured}
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#77756f] hover:text-[#b08a57] transition-colors"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#77756f] hover:text-[#b08a57] transition-colors"
+                    aria-label={showPassword ? 'Passwort ausblenden' : 'Passwort anzeigen'}
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
                 {error && (
                   <motion.p
-                    className="text-red-500 text-sm mt-2"
-                    initial={{ opacity: 0, y: -10 }}
+                    className="text-red-600 text-sm mt-2"
+                    initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
                     {error}
-                  </motion.p>
-                )}
-                {info && (
-                  <motion.p
-                    className="text-emerald-700 text-sm mt-2"
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                  >
-                    {info}
                   </motion.p>
                 )}
               </div>
 
               <Button
                 type="submit"
-                disabled={isLoading || !password || (isSupabaseConfigured && (!email || (mode === 'register' && !registrationCode)))}
-                className={`w-full gradient-secondary text-white py-6 text-lg font-semibold transition-all duration-300 ${
-                  isLoading || !password || (isSupabaseConfigured && (!email || (mode === 'register' && !registrationCode)))
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:shadow-xl hover:scale-105'
+                disabled={loginDisabled}
+                className={`w-full gradient-secondary text-white py-6 text-lg font-semibold transition-all duration-200 ${
+                  loginDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg'
                 }`}
               >
                 {isLoading ? (
@@ -246,43 +165,23 @@ export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
                 ) : (
                   <div className="flex items-center justify-center gap-2">
                     <LogIn size={20} />
-                    <span>{mode === 'register' ? 'Admin-Konto erstellen' : 'Anmelden'}</span>
+                    <span>Anmelden</span>
                   </div>
                 )}
               </Button>
             </form>
 
-            {isSupabaseConfigured && (
-              <button
-                type="button"
-                onClick={() => {
-                  setMode((currentMode) => (currentMode === 'login' ? 'register' : 'login'));
-                  setError('');
-                  setInfo('');
-                  setPassword('');
-                  setRegistrationCode('');
-                }}
-                className="mt-4 w-full text-sm text-[#77756f] hover:text-[#b08a57] transition-colors"
-              >
-                {mode === 'login'
-                  ? 'Noch kein Admin-Konto? Hier erstellen'
-                  : 'Ich habe schon ein Konto - anmelden'}
-              </button>
-            )}
-
             <motion.div
-              className="mt-6 p-4 rounded-xl bg-gradient-to-r from-[#b08a57]/10 to-transparent border-l-4 border-[#b08a57]"
+              className="mt-6 p-4 rounded-xl bg-[#f8f7f3] border border-[#b08a57]/20"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
+              transition={{ delay: 0.2 }}
             >
               <p className="text-sm text-[#77756f]">
                 <strong>Hinweis:</strong>{' '}
                 {isSupabaseConfigured
-                  ? mode === 'register'
-                    ? 'Das Konto darf nur mit der hinterlegten Admin-E-Mail und Registrierungscode erstellt werden.'
-                    : 'Die Anmeldung läuft über Supabase Auth.'
-                  : 'Supabase ist noch nicht konfiguriert. Lokal funktioniert vorerst das Demo-Passwort 1234.'}
+                  ? 'Admin-Konten werden in Supabase angelegt und serverseitig freigegeben.'
+                  : 'Supabase ist noch nicht konfiguriert. Der Adminbereich bleibt deshalb gesperrt.'}
               </p>
             </motion.div>
           </div>
@@ -292,11 +191,11 @@ export function AdminLogin({ onLogin, onNavigate }: AdminLoginProps) {
           className="text-center mt-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.3 }}
         >
           <button
             onClick={() => onNavigate('home')}
-            className="text-[#77756f] hover:text-[#b08a57] transition-colors duration-300 text-sm"
+            className="text-[#77756f] hover:text-[#b08a57] transition-colors duration-200 text-sm"
           >
             Zurück zur Startseite
           </button>

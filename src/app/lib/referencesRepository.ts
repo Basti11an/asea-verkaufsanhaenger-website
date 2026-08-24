@@ -58,20 +58,42 @@ function getClient() {
 
 export async function fetchReferencesFromSupabase(includePrivateFields = false): Promise<AdminReference[]> {
   const client = getClient();
-  const columns = includePrivateFields
-    ? '*'
-    : 'id,kundenname,ort,modell,jahr,beschreibung,bild_url,sichtbar,status,created_at';
+  const columns = includePrivateFields ? '*' : 'id,kundenname,ort,modell,jahr,beschreibung,bild_url,sichtbar,status,created_at';
 
-  let query = client.from('customer_references').select(columns);
+  if (includePrivateFields) {
+    const { data, error } = await client
+      .from('customer_references')
+      .select(columns)
+      .order('id', { ascending: false });
 
-  if (!includePrivateFields) {
-    query = query.eq('status', 'approved').eq('sichtbar', true);
+    if (error) throw error;
+    return (data ?? []).map((row) => toAdminReference(row as ReferenceRow));
   }
 
-  const { data, error } = await query.order('id', { ascending: false });
+  const publicResult = await client
+    .from('customer_references_public')
+    .select(columns)
+    .order('id', { ascending: false });
 
-  if (error) throw error;
-  return (data ?? []).map((row) => toAdminReference(row as ReferenceRow));
+  if (!publicResult.error) {
+    return (publicResult.data ?? []).map((row) => toAdminReference(row as ReferenceRow));
+  }
+
+  if (publicResult.error.code !== 'PGRST205' && publicResult.error.code !== '42P01') {
+    throw publicResult.error;
+  }
+
+  console.warn('Public references view is missing. Falling back to filtered table read until supabase/references.sql is applied.');
+
+  const fallbackResult = await client
+    .from('customer_references')
+    .select(columns)
+    .eq('status', 'approved')
+    .eq('sichtbar', true)
+    .order('id', { ascending: false });
+
+  if (fallbackResult.error) throw fallbackResult.error;
+  return (fallbackResult.data ?? []).map((row) => toAdminReference(row as ReferenceRow));
 }
 
 export async function createReferenceInSupabase(reference: Omit<AdminReference, 'id'>): Promise<AdminReference> {

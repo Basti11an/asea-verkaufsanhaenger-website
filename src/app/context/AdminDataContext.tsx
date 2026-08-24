@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { isSupabaseConfigured, supabase, supabaseAdminEmail } from '../lib/supabase';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
+import { isCurrentUserAdmin } from '../lib/adminAuth';
 import {
   createReferenceInSupabase,
   deleteReferenceFromSupabase,
@@ -111,14 +112,6 @@ function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'Unbekannter Supabase-Fehler';
 }
 
-async function isCurrentAdminSession() {
-  if (!isSupabaseConfigured || !supabase || !supabaseAdminEmail) return false;
-
-  const { data } = await supabase.auth.getSession();
-  const sessionEmail = data.session?.user?.email?.trim().toLowerCase();
-  return sessionEmail === supabaseAdminEmail.toLowerCase();
-}
-
 export function AdminDataProvider({ children }: { children: React.ReactNode }) {
   const [models, setModels] = useState<AdminModel[]>(INITIAL_MODELS);
   const [equipment, setEquipment] = useState<AdminEquipment[]>(INITIAL_EQUIPMENT);
@@ -133,7 +126,7 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
     setReferencesError(null);
 
     try {
-      const remoteReferences = await fetchReferencesFromSupabase(await isCurrentAdminSession());
+      const remoteReferences = await fetchReferencesFromSupabase(await isCurrentUserAdmin());
       setReferences(remoteReferences);
     } catch (error) {
       setReferencesError(getErrorMessage(error));

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AdminDataProvider } from './context/AdminDataContext';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { Header } from './components/Header';
@@ -19,6 +19,7 @@ import { PrivacyConsentBanner } from './components/PrivacyConsentBanner';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
 import { trackAnalyticsEvent } from './lib/analytics';
 import { hasStatisticsConsent } from './lib/privacyConsent';
+import { getAdminAccess, type AdminAccessStatus } from './lib/adminAuth';
 
 const PUBLIC_ANALYTICS_PAGES: Record<string, string> = {
   home: 'home',
@@ -74,11 +75,24 @@ function canUseCleanBrowserUrls() {
   return typeof window !== 'undefined' && window.location.protocol !== 'file:';
 }
 
+function AdminAccessLoading() {
+  return (
+    <div className="min-h-screen bg-[#f8f7f3] flex items-center justify-center px-4">
+      <div className="w-full max-w-sm rounded-2xl bg-white border border-[#b08a57]/20 shadow-lg p-6 text-center">
+        <div className="w-10 h-10 mx-auto mb-4 border-2 border-[#b08a57] border-t-transparent rounded-full animate-spin" />
+        <h1 className="text-xl font-semibold text-[#2f2f2f]">Adminzugriff wird geprüft</h1>
+        <p className="text-sm text-[#77756f] mt-2">Bitte einen Moment warten.</p>
+      </div>
+    </div>
+  );
+}
+
 function AppInner() {
   const { lang } = useLanguage();
   const [currentPage, setCurrentPage] = useState<string>(getPageFromLocation);
   const [navData, setNavData] = useState<any>(null);
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
+  const [adminAccessStatus, setAdminAccessStatus] = useState<AdminAccessStatus>('guest');
+  const [adminAccessMessage, setAdminAccessMessage] = useState('');
   const [adminActiveTab, setAdminActiveTab] = useState<string>('dashboard');
   const [navigationTick, setNavigationTick] = useState(0);
   const [privacySettingsOpen, setPrivacySettingsOpen] = useState(false);
@@ -132,6 +146,35 @@ function AppInner() {
 
     setCurrentPage(page);
   };
+
+  const refreshAdminAccess = useCallback(async () => {
+    if (!isSupabaseConfigured || !supabase) {
+      setAdminAccessStatus('guest');
+      setAdminAccessMessage('Der Admin-Login ist erst nach der Supabase-Konfiguration verfügbar.');
+      return false;
+    }
+
+    setAdminAccessStatus('checking');
+
+    const access = await getAdminAccess();
+
+    if (access.status !== 'admin') {
+      setAdminAccessStatus('guest');
+      setAdminAccessMessage(access.error ?? '');
+      setAdminActiveTab('dashboard');
+
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        await supabase.auth.signOut();
+      }
+
+      return false;
+    }
+
+    setAdminAccessStatus('admin');
+    setAdminAccessMessage('');
+    return true;
+  }, []);
 
   useLayoutEffect(() => {
     scrollToTop();
@@ -198,29 +241,38 @@ function AppInner() {
   }, [currentPage, navData, lang, consentVersion]);
 
   useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) return;
+    if (!isSupabaseConfigured || !supabase) {
+      setAdminAccessStatus('guest');
+      setAdminAccessMessage('Der Admin-Login ist erst nach der Supabase-Konfiguration verfügbar.');
+      return;
+    }
 
-    supabase.auth.getSession().then(({ data }) => {
-      setIsAdminAuthenticated(Boolean(data.session));
-    });
+    void refreshAdminAccess();
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAdminAuthenticated(Boolean(session));
+      if (!session) {
+        setAdminAccessStatus('guest');
+        setAdminActiveTab('dashboard');
+        return;
+      }
+
+      void refreshAdminAccess();
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [refreshAdminAccess]);
 
   const handleAdminLogout = async () => {
     if (isSupabaseConfigured && supabase) {
       await supabase.auth.signOut();
     }
 
-    setIsAdminAuthenticated(false);
+    setAdminAccessStatus('guest');
+    setAdminAccessMessage('');
     setAdminActiveTab('dashboard');
-    setCurrentPage('home');
+    handleNavigate('home');
   };
 
   const renderPage = () => {
@@ -246,21 +298,25 @@ function AppInner() {
       case 'privacy':
         return <PrivacyPage />;
       case 'messages':
-        return isAdminAuthenticated ? (
+        if (adminAccessStatus === 'checking') {
+          return <AdminAccessLoading />;
+        }
+
+        return adminAccessStatus === 'admin' ? (
           <MessagesPage
             activeTab={adminActiveTab}
             onLogout={handleAdminLogout}
             onNavigate={handleNavigate}
           />
         ) : (
-          <AdminLogin onLogin={() => setIsAdminAuthenticated(true)} onNavigate={handleNavigate} />
+          <AdminLogin onLogin={refreshAdminAccess} onNavigate={handleNavigate} accessMessage={adminAccessMessage} />
         );
       default:
         return <HomePage onNavigate={handleNavigate} />;
     }
   };
 
-  const isAdminMode = currentPage === 'messages' && isAdminAuthenticated;
+  const isAdminMode = currentPage === 'messages' && adminAccessStatus === 'admin';
   const isFullscreenPage = currentPage === 'configurator';
   const showNormalHeader = currentPage !== 'messages';
   const showFooter = currentPage !== 'messages' && !isFullscreenPage;
