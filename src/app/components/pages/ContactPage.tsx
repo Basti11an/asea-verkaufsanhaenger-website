@@ -5,14 +5,18 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
 import { useLanguage } from '../../context/LanguageContext';
+import { useAdminData } from '../../context/AdminDataContext';
 import { ReferenceSubmitPanel } from '../references/ReferenceSubmitPanel';
 import { trackAnalyticsEvent } from '../../lib/analytics';
 import { GoogleMapsEmbed } from '../GoogleMapsEmbed';
+import { validateContactRequest } from '../../lib/contactRequestValidation';
+import { sendContactRequestEmails } from '../../lib/emailService';
 
 const CONFIGURATOR_REQUEST_SUBJECT = 'Anfrage Konfigurator';
 
 export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; onNavigate?: (page: string) => void }) {
   const { t, lang } = useLanguage();
+  const { submitContactRequest } = useAdminData();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -22,9 +26,14 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
   });
   const [companyWebsite, setCompanyWebsite] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [formError, setFormError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError('');
+
+    if (isSending) return;
 
     if (companyWebsite.trim()) {
       setSubmitted(true);
@@ -34,27 +43,50 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
       return;
     }
 
-    setSubmitted(true);
-    void trackAnalyticsEvent('contact_request', {
-      pagePath: 'contact',
-      language: lang,
-    });
+    const source = formData.subject.trim() === CONFIGURATOR_REQUEST_SUBJECT ? 'configurator' : 'contact';
+    const validation = validateContactRequest(formData, source);
 
-    if (formData.subject.trim() === CONFIGURATOR_REQUEST_SUBJECT) {
-      void trackAnalyticsEvent('configuration_submitted', {
+    if (!validation.ok) {
+      setFormError(validation.error);
+      return;
+    }
+
+    setIsSending(true);
+
+    try {
+      await submitContactRequest(validation.value);
+      await sendContactRequestEmails(validation.value);
+
+      setSubmitted(true);
+      void trackAnalyticsEvent('contact_request', {
         pagePath: 'contact',
         language: lang,
       });
-    }
 
-    setTimeout(() => {
-      setSubmitted(false);
+      if (source === 'configurator') {
+        void trackAnalyticsEvent('configuration_submitted', {
+          pagePath: 'contact',
+          language: lang,
+        });
+      }
+
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
-    }, 3000);
+      setTimeout(() => {
+        setSubmitted(false);
+      }, 4000);
+    } catch (error) {
+      console.warn('Contact request failed:', error);
+      setFormError(
+        'Die Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es später erneut oder kontaktieren Sie uns direkt per E-Mail.',
+      );
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormError('');
   };
 
   return (
@@ -78,6 +110,12 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {formError && (
+                    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+                      {formError}
+                    </div>
+                  )}
+
                   <div>
                     <Label htmlFor="name">{t('contact_name_label')}</Label>
                     <Input
@@ -85,11 +123,13 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
                       name="name"
                       type="text"
                       required
+                      minLength={2}
                       maxLength={120}
                       value={formData.name}
                       onChange={handleChange}
                       placeholder={t('contact_name_placeholder')}
                       className="mt-2"
+                      disabled={isSending}
                     />
                   </div>
 
@@ -105,6 +145,7 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
                       onChange={handleChange}
                       placeholder={t('contact_email_placeholder')}
                       className="mt-2"
+                      disabled={isSending}
                     />
                   </div>
 
@@ -122,6 +163,7 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
                       onChange={handleChange}
                       placeholder={t('contact_phone_placeholder')}
                       className="mt-2"
+                      disabled={isSending}
                     />
                   </div>
 
@@ -132,11 +174,13 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
                       name="subject"
                       type="text"
                       required
+                      minLength={3}
                       maxLength={160}
                       value={formData.subject}
                       onChange={handleChange}
                       placeholder={t('contact_subject_placeholder')}
                       className="mt-2"
+                      disabled={isSending}
                     />
                   </div>
 
@@ -146,11 +190,13 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
                       id="message"
                       name="message"
                       required
+                      minLength={10}
                       maxLength={3000}
                       value={formData.message}
                       onChange={handleChange}
                       placeholder={t('contact_message_placeholder')}
                       className="mt-2 min-h-[150px]"
+                      disabled={isSending}
                     />
                   </div>
 
@@ -164,6 +210,7 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
                       autoComplete="off"
                       value={companyWebsite}
                       onChange={(event) => setCompanyWebsite(event.target.value)}
+                      disabled={isSending}
                     />
                   </div>
 
@@ -181,10 +228,22 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-full gradient-primary text-white hover:shadow-xl hover:scale-105 transition-all duration-300"
+                    disabled={isSending}
+                    className={`w-full gradient-primary text-white transition-all duration-300 ${
+                      isSending ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-xl hover:scale-105'
+                    }`}
                   >
-                    <Send className="mr-2" size={20} />
-                    {t('contact_send_btn')}
+                    {isSending ? (
+                      <>
+                        <span className="mr-2 h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                        Wird gesendet...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="mr-2" size={20} />
+                        {t('contact_send_btn')}
+                      </>
+                    )}
                   </Button>
 
                   <p className="text-sm text-[#77756f] text-center">{t('contact_privacy_note')}</p>

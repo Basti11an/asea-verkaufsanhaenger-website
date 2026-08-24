@@ -8,8 +8,16 @@ import {
   submitReferenceToSupabase,
   updateReferenceInSupabase,
 } from '../lib/referencesRepository';
+import {
+  type ContactRequest,
+  type ContactRequestInput,
+  fetchContactRequestsFromSupabase,
+  submitContactRequestToSupabase,
+  updateContactRequestInSupabase,
+} from '../lib/contactRequestsRepository';
 
 export type ReferenceStatus = 'approved' | 'pending' | 'rejected';
+export type { ContactRequest };
 
 export interface AdminModel {
   id: number;
@@ -95,11 +103,20 @@ interface AdminDataContextType {
   setReferences: React.Dispatch<React.SetStateAction<AdminReference[]>>;
   referencesLoading: boolean;
   referencesError: string | null;
+  contactRequests: ContactRequest[];
+  contactRequestsLoading: boolean;
+  contactRequestsError: string | null;
   reloadReferences: () => Promise<void>;
+  reloadContactRequests: () => Promise<void>;
   createReference: (reference: Omit<AdminReference, 'id'>) => Promise<AdminReference>;
   submitReference: (reference: Omit<AdminReference, 'id' | 'sichtbar' | 'status'>) => Promise<void>;
   updateReference: (id: number, changes: Partial<AdminReference>) => Promise<AdminReference>;
   deleteReference: (id: number) => Promise<void>;
+  submitContactRequest: (request: ContactRequestInput) => Promise<void>;
+  updateContactRequest: (
+    id: number,
+    changes: Partial<Pick<ContactRequest, 'status' | 'isRead'>>,
+  ) => Promise<ContactRequest>;
 }
 
 const AdminDataContext = createContext<AdminDataContextType | null>(null);
@@ -118,6 +135,9 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
   const [references, setReferences] = useState<AdminReference[]>(INITIAL_REFERENCES);
   const [referencesLoading, setReferencesLoading] = useState(false);
   const [referencesError, setReferencesError] = useState<string | null>(null);
+  const [contactRequests, setContactRequests] = useState<ContactRequest[]>([]);
+  const [contactRequestsLoading, setContactRequestsLoading] = useState(false);
+  const [contactRequestsError, setContactRequestsError] = useState<string | null>(null);
 
   const reloadReferences = useCallback(async () => {
     if (!isSupabaseConfigured) return;
@@ -135,6 +155,25 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const reloadContactRequests = useCallback(async () => {
+    if (!isSupabaseConfigured || !(await isCurrentUserAdmin())) {
+      setContactRequests([]);
+      return;
+    }
+
+    setContactRequestsLoading(true);
+    setContactRequestsError(null);
+
+    try {
+      const remoteContactRequests = await fetchContactRequestsFromSupabase();
+      setContactRequests(remoteContactRequests);
+    } catch (error) {
+      setContactRequestsError(getErrorMessage(error));
+    } finally {
+      setContactRequestsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     void reloadReferences();
 
@@ -144,10 +183,11 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(() => {
       void reloadReferences();
+      void reloadContactRequests();
     });
 
     return () => subscription.unsubscribe();
-  }, [reloadReferences]);
+  }, [reloadReferences, reloadContactRequests]);
 
   const createReference = async (reference: Omit<AdminReference, 'id'>) => {
     if (isSupabaseConfigured) {
@@ -206,6 +246,21 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
     setReferences((prev) => prev.filter((reference) => reference.id !== id));
   };
 
+  const submitContactRequest = async (request: ContactRequestInput) => {
+    await submitContactRequestToSupabase(request);
+  };
+
+  const updateContactRequest = async (
+    id: number,
+    changes: Partial<Pick<ContactRequest, 'status' | 'isRead'>>,
+  ) => {
+    const savedContactRequest = await updateContactRequestInSupabase(id, changes);
+    setContactRequests((prev) =>
+      prev.map((request) => (request.id === id ? savedContactRequest : request)),
+    );
+    return savedContactRequest;
+  };
+
   return (
     <AdminDataContext.Provider
       value={{
@@ -217,11 +272,17 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
         setReferences,
         referencesLoading,
         referencesError,
+        contactRequests,
+        contactRequestsLoading,
+        contactRequestsError,
         reloadReferences,
+        reloadContactRequests,
         createReference,
         submitReference,
         updateReference,
         deleteReference,
+        submitContactRequest,
+        updateContactRequest,
       }}
     >
       {children}

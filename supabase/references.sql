@@ -81,12 +81,22 @@ revoke usage, select on all sequences in schema public from anon, authenticated;
 do $$
 declare
   v_reference_sequence regclass;
+  v_contact_sequence regclass;
 begin
   select pg_get_serial_sequence('public.customer_references', 'id')::regclass
   into v_reference_sequence;
 
   if v_reference_sequence is not null then
     execute format('grant usage, select on sequence %s to anon, authenticated', v_reference_sequence);
+  end if;
+
+  if to_regclass('public.contact_requests') is not null then
+    select pg_get_serial_sequence('public.contact_requests', 'id')::regclass
+    into v_contact_sequence;
+
+    if v_contact_sequence is not null then
+      execute format('grant usage, select on sequence %s to anon, authenticated', v_contact_sequence);
+    end if;
   end if;
 end $$;
 

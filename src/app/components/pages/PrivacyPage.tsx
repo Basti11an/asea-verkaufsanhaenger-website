@@ -62,7 +62,7 @@ const COPY: Record<Lang, PrivacyCopy> = {
       {
         title: 'Supabase',
         paragraphs: [
-          'Diese Website nutzt Supabase für freigegebene Kundenreferenzen, neu eingereichte Referenzen, den geschützten Admin-Login und aggregierte interne Statistikdaten, sofern Statistik erlaubt wurde.',
+          'Diese Website nutzt Supabase für freigegebene Kundenreferenzen, neu eingereichte Referenzen, Kontaktanfragen, den geschützten Admin-Login und aggregierte interne Statistikdaten, sofern Statistik erlaubt wurde.',
           'Referenzeinreichungen können Name/Firma, Ort, Anhängermodell, Jahr, Beschreibung, E-Mail, Telefonnummer und optional einen Bildlink enthalten. Neue Referenzen werden zunächst nicht öffentlich angezeigt und erst nach Prüfung im Adminbereich freigegeben.',
           'Die Tabellen für interne Statistiken speichern nur zusammengefasste Tageswerte, Seiten, Modellaufrufe, Sprache, Gerätetyp und Herkunftskategorie. IP-Adressen, vollständige Referrer-URLs, Mausbewegungen, Scrollpositionen oder dauerhafte Nutzerprofile werden dort nicht gespeichert.',
           'Rechtsgrundlagen sind je nach Verarbeitung Art. 6 Abs. 1 lit. b DSGVO für angefragte Leistungen, Art. 6 Abs. 1 lit. f DSGVO für Betrieb, Sicherheit und Adminverwaltung sowie Art. 6 Abs. 1 lit. a DSGVO für optionale Statistik. Der Betreiber muss die Supabase-Region, Auftragsverarbeitung, Unterauftragsverarbeiter und Löschfristen organisatorisch bestätigen.',
@@ -72,7 +72,7 @@ const COPY: Record<Lang, PrivacyCopy> = {
         title: 'Kontaktformular, E-Mail und Telefon',
         paragraphs: [
           'Wenn Sie ASEA per Formular, E-Mail oder Telefon kontaktieren, werden Ihre Angaben zur Bearbeitung der Anfrage und für mögliche Anschlussfragen verarbeitet. Name, E-Mail und Nachricht sind für eine Formularanfrage erforderlich; die Telefonnummer ist optional.',
-          'Das Kontaktformular speichert die Anfrage nach aktuellem Projektstand nicht dauerhaft in Supabase. Wenn die Anfrage aus dem Konfigurator kommt und erfolgreich abgesendet wurde, kann lediglich ein aggregierter Statistikzähler erhöht werden, sofern Statistik erlaubt wurde.',
+          'Das Kontaktformular speichert die Anfrage in Supabase, damit sie im geschützten Adminbereich bearbeitet und dokumentiert werden kann. Zusätzlich werden über EmailJS eine interne Benachrichtigung und eine Bestätigung an die angegebene Kunden-E-Mail ausgelöst.',
           'Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO für vorvertragliche oder vertragliche Anfragen, sonst Art. 6 Abs. 1 lit. f DSGVO für die sachliche Bearbeitung eingehender Kommunikation. Die Daten werden nur so lange aufbewahrt, wie es für die Bearbeitung, Nachweise oder gesetzliche Pflichten erforderlich ist.',
         ],
       },
@@ -151,7 +151,7 @@ const COPY: Record<Lang, PrivacyCopy> = {
       {
         title: 'Supabase',
         paragraphs: [
-          'This website uses Supabase for approved customer references, newly submitted references, protected admin login and aggregated internal statistics where statistics have been allowed.',
+          'This website uses Supabase for approved customer references, newly submitted references, contact requests, protected admin login and aggregated internal statistics where statistics have been allowed.',
           'Reference submissions may contain name/company, place, trailer model, year, description, email address, phone number and optionally an image link. New references are initially not public and are only published after review in the admin area.',
           'The internal statistics tables store only aggregated daily values, pages, model views, language, device type and source category. IP addresses, full referrer URLs, mouse movements, scroll positions or permanent user profiles are not stored there.',
           'Depending on the processing activity, the legal bases are Art. 6(1)(b) GDPR for requested services, Art. 6(1)(f) GDPR for operation, security and admin management, and Art. 6(1)(a) GDPR for optional statistics. The operator must confirm the Supabase region, data processing agreement, subprocessors and retention periods organisationally.',
@@ -161,7 +161,7 @@ const COPY: Record<Lang, PrivacyCopy> = {
         title: 'Contact Form, Email and Phone',
         paragraphs: [
           'If you contact ASEA by form, email or phone, your details are processed to handle the request and possible follow-up questions. Name, email and message are required for a form enquiry; the phone number is optional.',
-          'According to the current project status, the contact form does not permanently store the enquiry in Supabase. If the enquiry comes from the configurator and was submitted successfully, only an aggregated statistics counter may be increased if statistics have been allowed.',
+          'The contact form stores the enquiry in Supabase so that it can be processed and documented in the protected admin area. In addition, EmailJS triggers an internal notification and a confirmation to the customer email address provided.',
           'The legal basis is Art. 6(1)(b) GDPR for pre-contractual or contractual enquiries, otherwise Art. 6(1)(f) GDPR for proper handling of incoming communication. Data is retained only as long as necessary for processing, evidence or statutory obligations.',
         ],
       },
@@ -240,7 +240,7 @@ const COPY: Record<Lang, PrivacyCopy> = {
       {
         title: 'Supabase',
         paragraphs: [
-          'Táto webová stránka používa Supabase pre schválené zákaznícke referencie, novo odoslané referencie, chránené prihlásenie do administrácie a agregované interné štatistiky, ak boli štatistiky povolené.',
+          'Táto webová stránka používa Supabase pre schválené zákaznícke referencie, novo odoslané referencie, kontaktné požiadavky, chránené prihlásenie do administrácie a agregované interné štatistiky, ak boli štatistiky povolené.',
           'Odoslané referencie môžu obsahovať meno/firmu, miesto, model prívesu, rok, popis, e-mail, telefónne číslo a voliteľne odkaz na obrázok. Nové referencie nie sú najskôr verejné a zverejnia sa až po kontrole v administrácii.',
           'Interné štatistické tabuľky ukladajú iba súhrnné denné hodnoty, stránky, zobrazenia modelov, jazyk, typ zariadenia a kategóriu zdroja. IP adresy, úplné referrer URL, pohyby myši, pozície rolovania ani trvalé používateľské profily sa tam neukladajú.',
           'Právnym základom je podľa typu spracúvania čl. 6 ods. 1 písm. b GDPR pre požadované služby, čl. 6 ods. 1 písm. f GDPR pre prevádzku, bezpečnosť a správu administrácie a čl. 6 ods. 1 písm. a GDPR pre voliteľné štatistiky. Prevádzkovateľ musí organizačne potvrdiť región Supabase, zmluvu o spracúvaní, subdodávateľov a lehoty uchovávania.',
@@ -250,7 +250,7 @@ const COPY: Record<Lang, PrivacyCopy> = {
         title: 'Kontaktný formulár, e-mail a telefón',
         paragraphs: [
           'Ak kontaktujete ASEA formulárom, e-mailom alebo telefonicky, vaše údaje sa spracúvajú na vybavenie požiadavky a prípadných doplňujúcich otázok. Meno, e-mail a správa sú pri formulári potrebné; telefónne číslo je voliteľné.',
-          'Podľa aktuálneho stavu projektu kontaktný formulár neukladá požiadavku trvalo v Supabase. Ak požiadavka pochádza z konfigurátora a bola úspešne odoslaná, môže sa zvýšiť iba agregovaný štatistický počítadlo, pokiaľ boli štatistiky povolené.',
+          'Kontaktný formulár ukladá požiadavku v Supabase, aby ju bolo možné spracovať a zdokumentovať v chránenom administračnom priestore. EmailJS zároveň odošle interné upozornenie a potvrdenie na uvedenú e-mailovú adresu zákazníka.',
           'Právnym základom je čl. 6 ods. 1 písm. b GDPR pre predzmluvné alebo zmluvné požiadavky, inak čl. 6 ods. 1 písm. f GDPR pre vecné spracovanie prichádzajúcej komunikácie. Údaje sa uchovávajú len tak dlho, ako je potrebné na spracovanie, dôkazné účely alebo zákonné povinnosti.',
         ],
       },

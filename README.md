@@ -30,11 +30,13 @@ Der Dev-Server ist nur für die Entwicklung gedacht. Für die lokale Datei-Versi
 
 ## Supabase Einrichten
 
-Die Kundenreferenzen können in Supabase gespeichert werden. Dafür ist vorbereitet:
+Die Kundenreferenzen und Kontaktanfragen können in Supabase gespeichert werden. Dafür ist vorbereitet:
 
 - `src/app/lib/supabase.ts`: Verbindung zu Supabase
 - `src/app/lib/referencesRepository.ts`: Laden, Anlegen, Bearbeiten und Löschen von Referenzen
+- `src/app/lib/contactRequestsRepository.ts`: Speichern, Laden und Statuspflege von Kontaktanfragen
 - `supabase/references.sql`: Datenbanktabelle `customer_references`, Eingänge/Freigabe und Sicherheitsregeln
+- `supabase/contact_requests.sql`: Datenbanktabelle `contact_requests`, Kontakt-Eingänge und Sicherheitsregeln
 - `supabase/analytics.sql`: Tabellen und Sicherheitsregeln für das Admin-Dashboard
 - `.env.example`: Vorlage für deine lokalen Supabase-Zugangsdaten
 
@@ -59,8 +61,9 @@ Die Kundenreferenzen können in Supabase gespeichert werden. Dafür ist vorberei
 2. Kopiere die komplette SQL-Datei.
 3. Öffne in Supabase den `SQL Editor`.
 4. Führe die SQL aus.
-5. Öffne danach `supabase/analytics.sql`, kopiere die komplette Datei und führe sie ebenfalls im SQL Editor aus.
-6. Gib den Admin-User einmalig frei. Dafür im SQL Editor ausführen und die E-Mail ersetzen:
+5. Öffne danach `supabase/contact_requests.sql`, kopiere die komplette Datei und führe sie ebenfalls im SQL Editor aus.
+6. Öffne danach `supabase/analytics.sql`, kopiere die komplette Datei und führe sie ebenfalls im SQL Editor aus.
+7. Gib den Admin-User einmalig frei. Dafür im SQL Editor ausführen und die E-Mail ersetzen:
 
 ```sql
 insert into public.admin_users (user_id, email, role, active)
@@ -79,9 +82,36 @@ Danach gilt:
 - Besucher dürfen nur sichtbare Referenzen lesen.
 - Öffentliche Referenzen werden nur mit öffentlichen Spalten ohne Rückfrage-E-Mail und Telefonnummer gelesen.
 - Besucher dürfen neue Referenzen einreichen, diese bleiben zuerst im Status `pending`.
-- Der Admin sieht neue Einreichungen im Tab `Eingänge` und kann sie freigeben oder löschen.
+- Besucher dürfen Kontaktanfragen erstellen, aber keine fremden Kontaktanfragen lesen.
+- Der Admin sieht neue Kontaktanfragen und neue Referenzen im Tab `Eingänge`.
+- Kontaktanfragen können dort als gelesen, für später aufgehoben oder als per E-Mail beantwortet markiert werden.
 - Erst freigegebene Referenzen mit Status `approved` und `sichtbar = true` erscheinen öffentlich.
 - Nur User, die in `admin_users` aktiv freigegeben sind, können den Adminbereich und das Dashboard nutzen.
+
+## EmailJS Kontaktformular
+
+Das Kontaktformular speichert die Anfrage zuerst in Supabase und sendet danach zwei E-Mails über EmailJS:
+
+- interne Anfrage an ASEA
+- Bestätigung an die Kunden-E-Mail
+
+Benötigte Vite-Variablen:
+
+```env
+VITE_EMAILJS_SERVICE_ID=service_7jstv7i
+VITE_EMAILJS_PUBLIC_KEY=JmLu7aHyctT7FdfSI
+VITE_EMAILJS_INTERNAL_TEMPLATE_ID=template_7awv1vu
+VITE_EMAILJS_CUSTOMER_TEMPLATE_ID=template_komdk1b
+VITE_EMAILJS_INTERNAL_RECIPIENT=hochreither_b1@bbs-rohrbach.at
+```
+
+Die verwendeten EmailJS-Template-Variablen sind:
+
+- `customer_name`
+- `customer_email`
+- `customer_phone`
+- `subject`
+- `message`
 
 ### 4. Lokale `.env` Datei anlegen
 
@@ -90,6 +120,11 @@ Lege im Projektordner eine Datei `.env` an:
 ```env
 VITE_SUPABASE_URL=https://dein-projekt.supabase.co
 VITE_SUPABASE_ANON_KEY=dein-anon-public-key
+VITE_EMAILJS_SERVICE_ID=service_7jstv7i
+VITE_EMAILJS_PUBLIC_KEY=JmLu7aHyctT7FdfSI
+VITE_EMAILJS_INTERNAL_TEMPLATE_ID=template_7awv1vu
+VITE_EMAILJS_CUSTOMER_TEMPLATE_ID=template_komdk1b
+VITE_EMAILJS_INTERNAL_RECIPIENT=hochreither_b1@bbs-rohrbach.at
 ```
 
 Dann lokal starten:
@@ -105,6 +140,11 @@ In Vercel unter `Project Settings` > `Environment Variables` dieselben Werte ein
 
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
+- `VITE_EMAILJS_SERVICE_ID`
+- `VITE_EMAILJS_PUBLIC_KEY`
+- `VITE_EMAILJS_INTERNAL_TEMPLATE_ID`
+- `VITE_EMAILJS_CUSTOMER_TEMPLATE_ID`
+- `VITE_EMAILJS_INTERNAL_RECIPIENT`
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
 - `CRON_SECRET`
