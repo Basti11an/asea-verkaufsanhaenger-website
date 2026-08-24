@@ -1,5 +1,6 @@
 import { isSupabaseConfigured, supabase } from './supabase';
 import type { Lang } from '../context/LanguageContext';
+import { hasStatisticsConsent } from './privacyConsent';
 
 export type AnalyticsEventType =
   | 'page_view'
@@ -132,6 +133,7 @@ function isRecentDuplicate(key: string) {
 export async function trackAnalyticsEvent(eventType: AnalyticsEventType, payload: AnalyticsPayload = {}) {
   if (!isSupabaseConfigured || !supabase) return;
   if (typeof window === 'undefined') return;
+  if (!hasStatisticsConsent()) return;
 
   const eventDate = getLocalDateKey();
   const pagePath = payload.pagePath?.trim() || null;

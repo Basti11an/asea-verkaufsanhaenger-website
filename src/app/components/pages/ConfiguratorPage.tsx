@@ -119,6 +119,9 @@ export function ConfiguratorPage({ onNavigate, navData }: ConfiguratorPageProps)
               <p className="text-base md:text-lg text-[#77756f] max-w-2xl">
                 {t('configurator_intro_text')}
               </p>
+              <p className="mt-3 text-sm text-[#77756f] max-w-2xl">
+                {t('configurator_legal_note')}
+              </p>
             </div>
           </div>
 
@@ -165,6 +168,9 @@ export function ConfiguratorPage({ onNavigate, navData }: ConfiguratorPageProps)
   return (
     <div className="w-full bg-[#f8f7f3] flex flex-col lg:h-full lg:overflow-hidden">
       <div className="flex-1 w-full p-4 md:p-6 lg:p-8 xl:p-12 lg:overflow-hidden">
+        <p className="mb-3 rounded-lg border border-[#dfd9cf] bg-white px-4 py-3 text-xs md:text-sm text-[#77756f]">
+          {t('configurator_legal_note')}
+        </p>
         <TrailerConfigurator onNavigate={onNavigate} />
       </div>
     </div>

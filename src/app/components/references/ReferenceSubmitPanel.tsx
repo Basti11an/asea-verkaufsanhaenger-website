@@ -45,6 +45,7 @@ export function ReferenceSubmitPanel({
   const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState(INITIAL_FORM);
+  const [companyWebsite, setCompanyWebsite] = useState('');
   const [state, setState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
 
@@ -62,6 +63,13 @@ export function ReferenceSubmitPanel({
     event.preventDefault();
     setState('sending');
     setMessage('');
+
+    if (companyWebsite.trim()) {
+      setForm({ ...INITIAL_FORM, jahr: new Date().getFullYear() });
+      setState('success');
+      setMessage(t('reference_submit_success'));
+      return;
+    }
 
     try {
       await submitReference(form);
@@ -110,6 +118,7 @@ export function ReferenceSubmitPanel({
                 value={form.kundenname}
                 onChange={(event) => handleFieldChange('kundenname', event.target.value)}
                 required
+                maxLength={120}
                 className="w-full rounded-lg border border-[#dfd9cf] px-3 py-2.5 text-sm focus:outline-none focus:border-[#b08a57]"
                 placeholder={t('reference_submit_customer_placeholder')}
               />
@@ -120,6 +129,7 @@ export function ReferenceSubmitPanel({
                 value={form.ort}
                 onChange={(event) => handleFieldChange('ort', event.target.value)}
                 required
+                maxLength={120}
                 className="w-full rounded-lg border border-[#dfd9cf] px-3 py-2.5 text-sm focus:outline-none focus:border-[#b08a57]"
                 placeholder={t('reference_submit_location_placeholder')}
               />
@@ -157,6 +167,7 @@ export function ReferenceSubmitPanel({
                 value={form.kontaktEmail}
                 onChange={(event) => handleFieldChange('kontaktEmail', event.target.value)}
                 required
+                maxLength={160}
                 className="w-full rounded-lg border border-[#dfd9cf] px-3 py-2.5 text-sm focus:outline-none focus:border-[#b08a57]"
                 placeholder="name@example.com"
               />
@@ -166,6 +177,7 @@ export function ReferenceSubmitPanel({
               <input
                 value={form.kontaktTelefon}
                 onChange={(event) => handleFieldChange('kontaktTelefon', event.target.value)}
+                maxLength={60}
                 className="w-full rounded-lg border border-[#dfd9cf] px-3 py-2.5 text-sm focus:outline-none focus:border-[#b08a57]"
                 placeholder="+43 ..."
               />
@@ -176,6 +188,7 @@ export function ReferenceSubmitPanel({
                 type="url"
                 value={form.bildUrl}
                 onChange={(event) => handleFieldChange('bildUrl', event.target.value)}
+                maxLength={600}
                 className="w-full rounded-lg border border-[#dfd9cf] px-3 py-2.5 text-sm focus:outline-none focus:border-[#b08a57]"
                 placeholder="https://..."
               />
@@ -186,12 +199,33 @@ export function ReferenceSubmitPanel({
                 value={form.beschreibung}
                 onChange={(event) => handleFieldChange('beschreibung', event.target.value)}
                 required
+                maxLength={1600}
                 rows={4}
                 className="w-full rounded-lg border border-[#dfd9cf] px-3 py-2.5 text-sm focus:outline-none focus:border-[#b08a57] resize-none"
                 placeholder={t('reference_submit_description_placeholder')}
               />
             </div>
           </div>
+
+          <div className="hidden" aria-hidden="true">
+            <label htmlFor="reference-company-website">Website</label>
+            <input
+              id="reference-company-website"
+              name="companyWebsite"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={companyWebsite}
+              onChange={(event) => setCompanyWebsite(event.target.value)}
+            />
+          </div>
+
+          <p className="mt-4 text-sm text-[#77756f]">
+            {t('reference_privacy_notice')}{' '}
+            <a href="/datenschutz" className="font-medium text-[#9a7445] underline underline-offset-4">
+              {t('footer_privacy')}
+            </a>
+          </p>
 
           {message && (
             <div className={`mt-4 rounded-lg px-4 py-3 text-sm ${

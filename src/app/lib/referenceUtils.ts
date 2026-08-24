@@ -9,15 +9,6 @@ const REFERENCE_MODEL_LABEL_KEYS: Record<string, TranslationKey> = {
   'messe- und präsentationsanhänger': 'reference_model_exhibition',
 };
 
-const REFERENCE_DESCRIPTION_KEYS: Record<string, TranslationKey> = {
-  'Mobiler Würstelstand im Wiener Prater - täglich im Einsatz.': 'reference_seed1_desc',
-  'Café-Präsentationen bei Events und Stadtfesten in Salzburg.': 'reference_seed2_desc',
-  'Frischlieferungen von Getränken an Gastronomiebetriebe im Großraum Linz.': 'reference_seed3_desc',
-  'Schnellimbiss am Hauptplatz Graz - beliebt bei Marktbesuchern.': 'reference_seed4_desc',
-  'Frische Backwaren direkt vom Anhänger auf dem Wochenmarkt.': 'reference_seed5_desc',
-  'Professionelle Event-Bewirtung bei Tiroler Outdoor-Veranstaltungen.': 'reference_seed6_desc',
-};
-
 export function normalizeModelName(modelName: string) {
   return modelName.trim().toLowerCase();
 }
@@ -27,9 +18,8 @@ export function getReferenceModelLabel(modelName: string, t: Translate) {
   return labelKey ? t(labelKey) : modelName;
 }
 
-export function getReferenceDescription(reference: AdminReference, t: Translate) {
-  const descriptionKey = REFERENCE_DESCRIPTION_KEYS[reference.beschreibung.trim()];
-  return descriptionKey ? t(descriptionKey) : reference.beschreibung;
+export function getReferenceDescription(reference: AdminReference) {
+  return reference.beschreibung;
 }
 
 export function isApprovedVisibleReference(reference: AdminReference) {

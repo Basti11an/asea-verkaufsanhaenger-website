@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { isSupabaseConfigured, supabase } from '../lib/supabase';
+import { isSupabaseConfigured, supabase, supabaseAdminEmail } from '../lib/supabase';
 import {
   createReferenceInSupabase,
   deleteReferenceFromSupabase,
@@ -83,14 +83,7 @@ const INITIAL_EQUIPMENT: AdminEquipment[] = [
   { id: 8, name: 'Kassenlade', beschreibung: 'Stabiler Geldlade-Einsatz', preis: 180, kategorie: 'Elektrik', aktiv: false },
 ];
 
-const INITIAL_REFERENCES: AdminReference[] = [
-  { id: 1, kundenname: 'Würstelstand Huber', ort: 'Wien', modell: 'Verkaufsanhänger', jahr: 2023, beschreibung: 'Mobiler Würstelstand im Wiener Prater - täglich im Einsatz.', bildUrl: 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-85.jpg', sichtbar: true, status: 'approved', kontaktEmail: '', kontaktTelefon: '' },
-  { id: 2, kundenname: 'Café Moser', ort: 'Salzburg', modell: 'Messe- und Präsentationsanhänger', jahr: 2022, beschreibung: 'Café-Präsentationen bei Events und Stadtfesten in Salzburg.', bildUrl: 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-4-2.jpg', sichtbar: true, status: 'approved', kontaktEmail: '', kontaktTelefon: '' },
-  { id: 3, kundenname: 'Getränke Steinbauer', ort: 'Linz', modell: 'Kühlanhänger', jahr: 2024, beschreibung: 'Frischlieferungen von Getränken an Gastronomiebetriebe im Großraum Linz.', bildUrl: 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-2-1.jpg', sichtbar: true, status: 'approved', kontaktEmail: '', kontaktTelefon: '' },
-  { id: 4, kundenname: 'Imbiss Kowalski', ort: 'Graz', modell: 'Verkaufsanhänger', jahr: 2023, beschreibung: 'Schnellimbiss am Hauptplatz Graz - beliebt bei Marktbesuchern.', bildUrl: 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-10.jpg', sichtbar: true, status: 'approved', kontaktEmail: '', kontaktTelefon: '' },
-  { id: 5, kundenname: 'Bäckerei Pichler', ort: 'Wels', modell: 'Verkaufsanhänger', jahr: 2022, beschreibung: 'Frische Backwaren direkt vom Anhänger auf dem Wochenmarkt.', bildUrl: 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-86.jpg', sichtbar: false, status: 'approved', kontaktEmail: '', kontaktTelefon: '' },
-  { id: 6, kundenname: 'Eventservice Huemer', ort: 'Innsbruck', modell: 'Messe- und Präsentationsanhänger', jahr: 2024, beschreibung: 'Professionelle Event-Bewirtung bei Tiroler Outdoor-Veranstaltungen.', bildUrl: 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-5.jpg', sichtbar: true, status: 'approved', kontaktEmail: '', kontaktTelefon: '' },
-];
+const INITIAL_REFERENCES: AdminReference[] = [];
 
 interface AdminDataContextType {
   models: AdminModel[];
@@ -118,6 +111,14 @@ function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'Unbekannter Supabase-Fehler';
 }
 
+async function isCurrentAdminSession() {
+  if (!isSupabaseConfigured || !supabase || !supabaseAdminEmail) return false;
+
+  const { data } = await supabase.auth.getSession();
+  const sessionEmail = data.session?.user?.email?.trim().toLowerCase();
+  return sessionEmail === supabaseAdminEmail.toLowerCase();
+}
+
 export function AdminDataProvider({ children }: { children: React.ReactNode }) {
   const [models, setModels] = useState<AdminModel[]>(INITIAL_MODELS);
   const [equipment, setEquipment] = useState<AdminEquipment[]>(INITIAL_EQUIPMENT);
@@ -132,7 +133,7 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
     setReferencesError(null);
 
     try {
-      const remoteReferences = await fetchReferencesFromSupabase();
+      const remoteReferences = await fetchReferencesFromSupabase(await isCurrentAdminSession());
       setReferences(remoteReferences);
     } catch (error) {
       setReferencesError(getErrorMessage(error));

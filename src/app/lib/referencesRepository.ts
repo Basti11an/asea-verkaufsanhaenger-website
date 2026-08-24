@@ -11,8 +11,8 @@ type ReferenceRow = {
   bild_url: string;
   sichtbar: boolean;
   status: 'approved' | 'pending' | 'rejected';
-  kontakt_email: string;
-  kontakt_telefon: string;
+  kontakt_email?: string;
+  kontakt_telefon?: string;
   created_at: string;
 };
 
@@ -56,12 +56,19 @@ function getClient() {
   return supabase;
 }
 
-export async function fetchReferencesFromSupabase(): Promise<AdminReference[]> {
+export async function fetchReferencesFromSupabase(includePrivateFields = false): Promise<AdminReference[]> {
   const client = getClient();
-  const { data, error } = await client
-    .from('customer_references')
-    .select('*')
-    .order('id', { ascending: false });
+  const columns = includePrivateFields
+    ? '*'
+    : 'id,kundenname,ort,modell,jahr,beschreibung,bild_url,sichtbar,status,created_at';
+
+  let query = client.from('customer_references').select(columns);
+
+  if (!includePrivateFields) {
+    query = query.eq('status', 'approved').eq('sichtbar', true);
+  }
+
+  const { data, error } = await query.order('id', { ascending: false });
 
   if (error) throw error;
   return (data ?? []).map((row) => toAdminReference(row as ReferenceRow));

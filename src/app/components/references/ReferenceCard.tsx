@@ -18,7 +18,7 @@ export function ReferenceCard({ reference, className = '', compact = false }: Re
     .map((part) => part[0])
     .join('')
     .toUpperCase();
-  const description = getReferenceDescription(reference, t);
+  const description = getReferenceDescription(reference);
 
   return (
     <article className={`glass rounded-xl overflow-hidden shadow-md group ${className}`}>

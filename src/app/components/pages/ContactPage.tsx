@@ -7,10 +7,11 @@ import { Label } from '../ui/label';
 import { useLanguage } from '../../context/LanguageContext';
 import { ReferenceSubmitPanel } from '../references/ReferenceSubmitPanel';
 import { trackAnalyticsEvent } from '../../lib/analytics';
+import { GoogleMapsEmbed } from '../GoogleMapsEmbed';
 
 const CONFIGURATOR_REQUEST_SUBJECT = 'Anfrage Konfigurator';
 
-export function ContactPage({ prefillData }: { prefillData?: any }) {
+export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; onNavigate?: (page: string) => void }) {
   const { t, lang } = useLanguage();
   const [formData, setFormData] = useState({
     name: '',
@@ -19,10 +20,20 @@ export function ContactPage({ prefillData }: { prefillData?: any }) {
     subject: prefillData?.subject || '',
     message: prefillData?.message || '',
   });
+  const [companyWebsite, setCompanyWebsite] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (companyWebsite.trim()) {
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+      }, 3000);
+      return;
+    }
+
     setSubmitted(true);
     void trackAnalyticsEvent('contact_request', {
       pagePath: 'contact',
@@ -74,6 +85,7 @@ export function ContactPage({ prefillData }: { prefillData?: any }) {
                       name="name"
                       type="text"
                       required
+                      maxLength={120}
                       value={formData.name}
                       onChange={handleChange}
                       placeholder={t('contact_name_placeholder')}
@@ -88,6 +100,7 @@ export function ContactPage({ prefillData }: { prefillData?: any }) {
                       name="email"
                       type="email"
                       required
+                      maxLength={160}
                       value={formData.email}
                       onChange={handleChange}
                       placeholder={t('contact_email_placeholder')}
@@ -105,6 +118,7 @@ export function ContactPage({ prefillData }: { prefillData?: any }) {
                       name="phone"
                       type="tel"
                       value={formData.phone}
+                      maxLength={60}
                       onChange={handleChange}
                       placeholder={t('contact_phone_placeholder')}
                       className="mt-2"
@@ -118,6 +132,7 @@ export function ContactPage({ prefillData }: { prefillData?: any }) {
                       name="subject"
                       type="text"
                       required
+                      maxLength={160}
                       value={formData.subject}
                       onChange={handleChange}
                       placeholder={t('contact_subject_placeholder')}
@@ -131,12 +146,37 @@ export function ContactPage({ prefillData }: { prefillData?: any }) {
                       id="message"
                       name="message"
                       required
+                      maxLength={3000}
                       value={formData.message}
                       onChange={handleChange}
                       placeholder={t('contact_message_placeholder')}
                       className="mt-2 min-h-[150px]"
                     />
                   </div>
+
+                  <div className="hidden" aria-hidden="true">
+                    <label htmlFor="company-website">Website</label>
+                    <input
+                      id="company-website"
+                      name="companyWebsite"
+                      type="text"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={companyWebsite}
+                      onChange={(event) => setCompanyWebsite(event.target.value)}
+                    />
+                  </div>
+
+                  <p className="text-sm text-[#77756f]">
+                    {t('contact_privacy_notice')}{' '}
+                    <button
+                      type="button"
+                      onClick={() => onNavigate?.('privacy')}
+                      className="font-medium text-[#9a7445] underline underline-offset-4"
+                    >
+                      {t('footer_privacy')}
+                    </button>
+                  </p>
 
                   <Button
                     type="submit"
@@ -160,16 +200,7 @@ export function ContactPage({ prefillData }: { prefillData?: any }) {
               </div>
 
               <div className="rounded-xl overflow-hidden shadow-md h-80 mb-6">
-                <iframe
-                  src="https://maps.google.com/maps?q=Lahrndorf+34,+A-4240+Waldburg,+%C3%96sterreich&t=&z=15&ie=UTF8&iwloc=&output=embed"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title={t('contact_map_iframe_title')}
-                />
+                <GoogleMapsEmbed title={t('contact_map_iframe_title')} />
               </div>
 
               <div className="bg-[#f3efe8] p-6 rounded-xl">

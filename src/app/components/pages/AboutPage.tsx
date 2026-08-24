@@ -2,6 +2,7 @@ import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { motion } from 'motion/react';
 import { useLanguage } from '../../context/LanguageContext';
 import { getRevealAnimate, getRevealInitial, useTouchFriendlyMotion } from '../../lib/useTouchFriendlyMotion';
+import { GoogleMapsEmbed } from '../GoogleMapsEmbed';
 
 export function AboutPage() {
   const { t } = useLanguage();
@@ -53,7 +54,7 @@ export function AboutPage() {
               <div className="rounded-2xl overflow-hidden shadow-2xl relative group">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#b08a57]/20 to-transparent z-10" />
                 <ImageWithFallback
-                  src="https://images.unsplash.com/photo-1762712393685-fbe773b97605?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjcmFmdHNtYW4lMjB3b3Jrc2hvcCUyMHByb2Zlc3Npb25hbHxlbnwxfHx8fDE3NjI4NjMzMTR8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+                  src="https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-85.jpg"
                   alt="ASEA Werkstatt"
                   className="w-full h-auto group-hover:scale-105 transition-transform duration-700"
                 />
@@ -133,16 +134,7 @@ export function AboutPage() {
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              <iframe
-                src="https://maps.google.com/maps?q=Lahrndorf+34,+A-4240+Waldburg,+%C3%96sterreich&t=&z=15&ie=UTF8&iwloc=&output=embed"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title={t('contact_map_iframe_title')}
-              />
+              <GoogleMapsEmbed title={t('contact_map_iframe_title')} />
             </motion.div>
           </div>
         </div>

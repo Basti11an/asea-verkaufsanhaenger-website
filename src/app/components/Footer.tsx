@@ -4,9 +4,10 @@ import logoImage from '../../imports/LOGO_Neu.png';
 
 interface FooterProps {
   onNavigate: (page: string, data?: any) => void;
+  onOpenPrivacySettings?: () => void;
 }
 
-export function Footer({ onNavigate }: FooterProps) {
+export function Footer({ onNavigate, onOpenPrivacySettings }: FooterProps) {
   const { t } = useLanguage();
 
   const handleNavigate = (page: string) => {
@@ -157,14 +158,14 @@ export function Footer({ onNavigate }: FooterProps) {
             >
               {t('footer_privacy')}
             </button>
-            <button
-              onClick={() => handleNavigate('messages')}
-              className="text-[#77756f]/20 hover:text-[#77756f]/50 transition-all duration-300 text-[10px] tracking-widest select-none"
-              title={t('admin_area')}
-              aria-label="Admin"
-            >
-              ···
-            </button>
+            {onOpenPrivacySettings && (
+              <button
+                onClick={onOpenPrivacySettings}
+                className="text-[#77756f] hover:text-[#b08a57] transition-all duration-300 hover:underline"
+              >
+                {t('footer_privacy_settings')}
+              </button>
+            )}
           </div>
         </div>
       </div>

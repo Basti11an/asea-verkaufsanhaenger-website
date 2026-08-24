@@ -15,8 +15,10 @@ import { PrivacyPage } from './components/pages/PrivacyPage';
 import { MessagesPage } from './components/pages/MessagesPage';
 import { AdminLogin } from './components/AdminLogin';
 import { ConfiguratorPage } from './components/pages/ConfiguratorPage';
+import { PrivacyConsentBanner } from './components/PrivacyConsentBanner';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
 import { trackAnalyticsEvent } from './lib/analytics';
+import { hasStatisticsConsent } from './lib/privacyConsent';
 
 const PUBLIC_ANALYTICS_PAGES: Record<string, string> = {
   home: 'home',
@@ -30,13 +32,57 @@ const PUBLIC_ANALYTICS_PAGES: Record<string, string> = {
   privacy: 'privacy',
 };
 
+const PAGE_PATHS: Record<string, string> = {
+  home: '/',
+  about: '/ueber-uns',
+  configurator: '/konfigurator',
+  models: '/modelle',
+  equipment: '/ausstattung',
+  contact: '/kontakt',
+  imprint: '/impressum',
+  privacy: '/datenschutz',
+  messages: '/admin',
+};
+
+const PATH_PAGES: Record<string, string> = {
+  '/': 'home',
+  '/ueber-uns': 'about',
+  '/about': 'about',
+  '/konfigurator': 'configurator',
+  '/configurator': 'configurator',
+  '/modelle': 'models',
+  '/models': 'models',
+  '/ausstattung': 'equipment',
+  '/equipment': 'equipment',
+  '/kontakt': 'contact',
+  '/contact': 'contact',
+  '/impressum': 'imprint',
+  '/imprint': 'imprint',
+  '/datenschutz': 'privacy',
+  '/privacy': 'privacy',
+  '/admin': 'messages',
+};
+
+function getPageFromLocation() {
+  if (typeof window === 'undefined') return 'home';
+
+  const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/';
+  return PATH_PAGES[normalizedPath] ?? 'home';
+}
+
+function canUseCleanBrowserUrls() {
+  return typeof window !== 'undefined' && window.location.protocol !== 'file:';
+}
+
 function AppInner() {
   const { lang } = useLanguage();
-  const [currentPage, setCurrentPage] = useState<string>('home');
+  const [currentPage, setCurrentPage] = useState<string>(getPageFromLocation);
   const [navData, setNavData] = useState<any>(null);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
   const [adminActiveTab, setAdminActiveTab] = useState<string>('dashboard');
   const [navigationTick, setNavigationTick] = useState(0);
+  const [privacySettingsOpen, setPrivacySettingsOpen] = useState(false);
+  const [consentVersion, setConsentVersion] = useState(0);
   const lastAnalyticsKeyRef = useRef('');
 
   const scrollToTop = () => {
@@ -70,6 +116,16 @@ function AppInner() {
     setNavData(data ?? null);
     setNavigationTick((tick) => tick + 1);
 
+    const path = PAGE_PATHS[page === 'model-detail' ? 'models' : page];
+
+    if (path && canUseCleanBrowserUrls() && window.location.pathname !== path) {
+      try {
+        window.history.pushState({}, '', path);
+      } catch (error) {
+        console.warn('Navigation URL update failed:', error);
+      }
+    }
+
     if (page === currentPage) {
       return;
     }
@@ -82,8 +138,43 @@ function AppInner() {
   }, [currentPage, navigationTick]);
 
   useEffect(() => {
+    const handlePopState = () => {
+      setNavData(null);
+      setNavigationTick((tick) => tick + 1);
+      setCurrentPage(getPageFromLocation());
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  useEffect(() => {
+    const existingMeta = document.querySelector<HTMLMetaElement>('meta[name="robots"][data-asea-dynamic="true"]');
+
+    if (currentPage === 'messages') {
+      const meta = existingMeta ?? document.createElement('meta');
+      meta.name = 'robots';
+      meta.content = 'noindex,nofollow';
+      meta.dataset.aseaDynamic = 'true';
+
+      if (!existingMeta) {
+        document.head.appendChild(meta);
+      }
+
+      return;
+    }
+
+    existingMeta?.remove();
+  }, [currentPage]);
+
+  useEffect(() => {
     const pagePath = PUBLIC_ANALYTICS_PAGES[currentPage];
     if (!pagePath) return;
+
+    if (!hasStatisticsConsent()) {
+      lastAnalyticsKeyRef.current = '';
+      return;
+    }
 
     const model = currentPage === 'model-detail' ? navData?.model : null;
     const modelId = model ? String(model.id ?? model.name ?? '') : '';
@@ -104,7 +195,7 @@ function AppInner() {
         language: lang,
       });
     }
-  }, [currentPage, navData, lang]);
+  }, [currentPage, navData, lang, consentVersion]);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) return;
@@ -149,7 +240,7 @@ function AppInner() {
       case 'equipment':
         return <EquipmentPage onNavigate={handleNavigate} />;
       case 'contact':
-        return <ContactPage prefillData={navData} />;
+        return <ContactPage prefillData={navData} onNavigate={handleNavigate} />;
       case 'imprint':
         return <ImprintPage />;
       case 'privacy':
@@ -190,7 +281,15 @@ function AppInner() {
       <main className={isFullscreenPage ? 'flex-1 flex flex-col relative lg:overflow-hidden' : 'flex-1'}>
         {renderPage()}
       </main>
-      {showFooter && <Footer onNavigate={handleNavigate} />}
+      {showFooter && <Footer onNavigate={handleNavigate} onOpenPrivacySettings={() => setPrivacySettingsOpen(true)} />}
+      {showNormalHeader && (
+        <PrivacyConsentBanner
+          forceOpen={privacySettingsOpen}
+          onClose={() => setPrivacySettingsOpen(false)}
+          onConsentChange={() => setConsentVersion((version) => version + 1)}
+          onNavigate={handleNavigate}
+        />
+      )}
     </div>
   );
 }

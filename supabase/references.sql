@@ -36,8 +36,21 @@ end $$;
 
 alter table public.customer_references enable row level security;
 
-grant select on table public.customer_references to anon, authenticated;
+revoke select on table public.customer_references from anon, authenticated;
 grant insert on table public.customer_references to anon, authenticated;
+grant select (
+  id,
+  kundenname,
+  ort,
+  modell,
+  jahr,
+  beschreibung,
+  bild_url,
+  sichtbar,
+  status,
+  created_at
+) on table public.customer_references to anon;
+grant select on table public.customer_references to authenticated;
 grant update, delete on table public.customer_references to authenticated;
 grant usage, select on all sequences in schema public to anon, authenticated;
 
@@ -53,8 +66,15 @@ drop policy if exists "customer references public visible read" on public.custom
 create policy "customer references public visible read"
 on public.customer_references
 for select
-to anon, authenticated
-using ((status = 'approved' and sichtbar = true) or public.is_admin());
+to anon
+using (status = 'approved' and sichtbar = true);
+
+drop policy if exists "customer references admin read" on public.customer_references;
+create policy "customer references admin read"
+on public.customer_references
+for select
+to authenticated
+using (public.is_admin());
 
 drop policy if exists "customer references public pending insert" on public.customer_references;
 create policy "customer references public pending insert"
@@ -85,27 +105,23 @@ for delete
 to authenticated
 using (public.is_admin());
 
-insert into public.customer_references (id, kundenname, ort, modell, jahr, beschreibung, bild_url, sichtbar, status, kontakt_email, kontakt_telefon)
-values
-  (1, 'Würstelstand Huber', 'Wien', 'Verkaufsanhänger', 2023, 'Mobiler Würstelstand im Wiener Prater - täglich im Einsatz.', 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-85.jpg', true, 'approved', '', ''),
-  (2, 'Café Moser', 'Salzburg', 'Messe- und Präsentationsanhänger', 2022, 'Café-Präsentationen bei Events und Stadtfesten in Salzburg.', 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-4-2.jpg', true, 'approved', '', ''),
-  (3, 'Getränke Steinbauer', 'Linz', 'Kühlanhänger', 2024, 'Frischlieferungen von Getränken an Gastronomiebetriebe im Großraum Linz.', 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-2-1.jpg', true, 'approved', '', ''),
-  (4, 'Imbiss Kowalski', 'Graz', 'Verkaufsanhänger', 2023, 'Schnellimbiss am Hauptplatz Graz - beliebt bei Marktbesuchern.', 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-10.jpg', true, 'approved', '', ''),
-  (5, 'Bäckerei Pichler', 'Wels', 'Verkaufsanhänger', 2022, 'Frische Backwaren direkt vom Anhänger auf dem Wochenmarkt.', 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-86.jpg', false, 'approved', '', ''),
-  (6, 'Eventservice Huemer', 'Innsbruck', 'Messe- und Präsentationsanhänger', 2024, 'Professionelle Event-Bewirtung bei Tiroler Outdoor-Veranstaltungen.', 'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-5.jpg', true, 'approved', '', '')
-on conflict (id) do update set
-  kundenname = excluded.kundenname,
-  ort = excluded.ort,
-  modell = excluded.modell,
-  jahr = excluded.jahr,
-  beschreibung = excluded.beschreibung,
-  bild_url = excluded.bild_url,
-  sichtbar = excluded.sichtbar,
-  status = excluded.status,
-  kontakt_email = excluded.kontakt_email,
-  kontakt_telefon = excluded.kontakt_telefon;
+create or replace view public.customer_references_public as
+select
+  id,
+  kundenname,
+  ort,
+  modell,
+  jahr,
+  beschreibung,
+  bild_url,
+  sichtbar,
+  status,
+  created_at
+from public.customer_references
+where status = 'approved'
+  and sichtbar = true;
 
-select setval(
-  pg_get_serial_sequence('public.customer_references', 'id'),
-  coalesce((select max(id) from public.customer_references), 1)
-);
+grant select on public.customer_references_public to anon, authenticated;
+
+-- Keine Demo-Referenzen automatisch anlegen.
+-- Veröffentliche nur echte Referenzen, für die die nötigen Rechte und Freigaben vorliegen.

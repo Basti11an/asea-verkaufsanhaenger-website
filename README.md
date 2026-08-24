@@ -34,7 +34,7 @@ Die Kundenreferenzen können in Supabase gespeichert werden. Dafür ist vorberei
 
 - `src/app/lib/supabase.ts`: Verbindung zu Supabase
 - `src/app/lib/referencesRepository.ts`: Laden, Anlegen, Bearbeiten und Löschen von Referenzen
-- `supabase/references.sql`: Datenbanktabelle `customer_references`, Startdaten, Eingänge/Freigabe und Sicherheitsregeln
+- `supabase/references.sql`: Datenbanktabelle `customer_references`, Eingänge/Freigabe und Sicherheitsregeln
 - `.env.example`: Vorlage für deine lokalen Supabase-Zugangsdaten
 
 ### 1. Supabase Projekt erstellen
@@ -50,11 +50,12 @@ Die Kundenreferenzen können in Supabase gespeichert werden. Dafür ist vorberei
 1. Öffne in Supabase `Authentication` > `Users`.
 2. Lege einen User mit deiner Admin-E-Mail und einem sicheren Passwort an.
 3. Merke dir exakt diese E-Mail-Adresse.
+4. Der Adminbereich ist nach dem Deployment direkt unter `/admin` erreichbar.
 
 ### 3. Tabelle und Berechtigungen anlegen
 
 1. Öffne `supabase/references.sql`.
-2. Ersetze `admin@example.com` durch deine echte Admin-E-Mail.
+2. Prüfe in der SQL-Datei, ob in der Funktion `is_admin()` deine echte Admin-E-Mail eingetragen ist.
 3. Kopiere die komplette SQL-Datei.
 4. Öffne in Supabase den `SQL Editor`.
 5. Führe die SQL aus.
@@ -62,6 +63,7 @@ Die Kundenreferenzen können in Supabase gespeichert werden. Dafür ist vorberei
 Danach gilt:
 
 - Besucher dürfen nur sichtbare Referenzen lesen.
+- Öffentliche Referenzen werden nur mit öffentlichen Spalten ohne Rückfrage-E-Mail und Telefonnummer gelesen.
 - Besucher dürfen neue Referenzen einreichen, diese bleiben zuerst im Status `pending`.
 - Der Admin sieht neue Einreichungen im Tab `Eingänge` und kann sie freigeben oder löschen.
 - Erst freigegebene Referenzen mit Status `approved` und `sichtbar = true` erscheinen öffentlich.
