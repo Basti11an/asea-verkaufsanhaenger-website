@@ -15,6 +15,21 @@ function wait(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
+function formatSubmittedAt(date = new Date()) {
+  const formattedDate = new Intl.DateTimeFormat('de-DE', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
+  const formattedTime = new Intl.DateTimeFormat('de-DE', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(date);
+
+  return `${formattedDate}, ${formattedTime} Uhr`;
+}
+
 function assertEmailJsConfigured() {
   if (
     !emailJsConfig.serviceId ||
@@ -53,6 +68,7 @@ export async function sendContactRequestEmails(request: ContactRequestInput) {
     emailJsConfig.internalTemplateId,
     {
       ...templateParams,
+      submitted_at: formatSubmittedAt(),
       to_email: emailJsConfig.internalRecipient,
       recipient_email: emailJsConfig.internalRecipient,
     },
