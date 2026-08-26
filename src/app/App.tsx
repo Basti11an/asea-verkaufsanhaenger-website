@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { AdminDataProvider } from './context/AdminDataContext';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { Header } from './components/Header';
@@ -355,6 +356,7 @@ export default function App() {
     <LanguageProvider>
       <AdminDataProvider>
         <AppInner />
+        <Analytics />
       </AdminDataProvider>
     </LanguageProvider>
   );
