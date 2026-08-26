@@ -50,6 +50,26 @@ describe('customer follow-up security migration', () => {
     expect(claimFunction).not.toContain('where due.stage is not null');
   });
 
+  it('normalizes legacy null customer status fields before reminder claims run', () => {
+    expect(SQL).toContain('update public.customers');
+    expect(SQL).toContain("review_status = case");
+    expect(SQL).toContain("else 'none'");
+    expect(SQL).toContain("follow_up_opt_out = coalesce(follow_up_opt_out, false)");
+    expect(SQL).toContain("two_month_email_status = case");
+    expect(SQL).toContain("two_month_email_attempts = coalesce(two_month_email_attempts, 0)");
+    expect(SQL).toContain("alter table public.customers alter column review_status set not null;");
+    expect(SQL).toContain("alter table public.customers alter column two_month_email_status set default 'pending';");
+  });
+
+  it('keeps SQL reminder filters null-safe like the admin fallback mapping', () => {
+    expect(SQL).toContain("and coalesce(c.follow_up_enabled, true) = true");
+    expect(SQL).toContain("and coalesce(c.follow_up_opt_out, false) = false");
+    expect(SQL).toContain("and coalesce(c.follow_up_permission_status, 'unknown') in ('consented', 'existing_customer_permitted')");
+    expect(SQL).toContain("and coalesce(c.review_status, 'none') = 'none'");
+    expect(SQL).toContain("and coalesce(c.twelve_month_email_status, 'pending') <> 'sent'");
+    expect(SQL).toContain("coalesce(c.two_month_email_attempts, 0) + 1");
+  });
+
   it('allows public review submission only through a token RPC', () => {
     expect(SQL).toContain('create table if not exists public.customer_review_tokens');
     expect(SQL).toContain('create or replace function public.submit_customer_review_with_token');

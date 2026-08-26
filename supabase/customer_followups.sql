@@ -96,6 +96,95 @@ on public.customers (
 )
 where deleted_at is null;
 
+-- Bestehende Installationen koennen aus aelteren SQL-Versionen noch NULL-Werte
+-- in Status-/Zaehlerfeldern enthalten. Das Frontend behandelt diese Werte als
+-- sichere Defaults; die RPC-Funktionen muessen exakt denselben Zustand sehen.
+update public.customers
+set
+  preferred_language = case
+    when preferred_language in ('de', 'en', 'sk') then preferred_language
+    else 'de'
+  end,
+  review_status = case
+    when review_status in ('none', 'auto_matched', 'manual_confirmed') then review_status
+    else 'none'
+  end,
+  follow_up_enabled = coalesce(follow_up_enabled, true),
+  follow_up_permission_status = case
+    when follow_up_permission_status in ('unknown', 'consented', 'existing_customer_permitted', 'revoked', 'blocked')
+      then follow_up_permission_status
+    else 'unknown'
+  end,
+  follow_up_permission_source = coalesce(follow_up_permission_source, ''),
+  follow_up_permission_text_version = coalesce(follow_up_permission_text_version, ''),
+  follow_up_permission_information = coalesce(follow_up_permission_information, ''),
+  follow_up_opt_out = coalesce(follow_up_opt_out, false),
+  two_month_email_status = case
+    when two_month_email_status in ('pending', 'processing', 'sent', 'failed', 'skipped') then two_month_email_status
+    else 'pending'
+  end,
+  two_month_email_attempts = coalesce(two_month_email_attempts, 0),
+  six_month_email_status = case
+    when six_month_email_status in ('pending', 'processing', 'sent', 'failed', 'skipped') then six_month_email_status
+    else 'pending'
+  end,
+  six_month_email_attempts = coalesce(six_month_email_attempts, 0),
+  twelve_month_email_status = case
+    when twelve_month_email_status in ('pending', 'processing', 'sent', 'failed', 'skipped') then twelve_month_email_status
+    else 'pending'
+  end,
+  twelve_month_email_attempts = coalesce(twelve_month_email_attempts, 0)
+where
+  preferred_language is null
+  or preferred_language not in ('de', 'en', 'sk')
+  or review_status is null
+  or review_status not in ('none', 'auto_matched', 'manual_confirmed')
+  or follow_up_enabled is null
+  or follow_up_permission_status is null
+  or follow_up_permission_status not in ('unknown', 'consented', 'existing_customer_permitted', 'revoked', 'blocked')
+  or follow_up_permission_source is null
+  or follow_up_permission_text_version is null
+  or follow_up_permission_information is null
+  or follow_up_opt_out is null
+  or two_month_email_status is null
+  or two_month_email_status not in ('pending', 'processing', 'sent', 'failed', 'skipped')
+  or two_month_email_attempts is null
+  or six_month_email_status is null
+  or six_month_email_status not in ('pending', 'processing', 'sent', 'failed', 'skipped')
+  or six_month_email_attempts is null
+  or twelve_month_email_status is null
+  or twelve_month_email_status not in ('pending', 'processing', 'sent', 'failed', 'skipped')
+  or twelve_month_email_attempts is null;
+
+alter table public.customers alter column preferred_language set default 'de';
+alter table public.customers alter column preferred_language set not null;
+alter table public.customers alter column review_status set default 'none';
+alter table public.customers alter column review_status set not null;
+alter table public.customers alter column follow_up_enabled set default true;
+alter table public.customers alter column follow_up_enabled set not null;
+alter table public.customers alter column follow_up_permission_status set default 'unknown';
+alter table public.customers alter column follow_up_permission_status set not null;
+alter table public.customers alter column follow_up_permission_source set default '';
+alter table public.customers alter column follow_up_permission_source set not null;
+alter table public.customers alter column follow_up_permission_text_version set default '';
+alter table public.customers alter column follow_up_permission_text_version set not null;
+alter table public.customers alter column follow_up_permission_information set default '';
+alter table public.customers alter column follow_up_permission_information set not null;
+alter table public.customers alter column follow_up_opt_out set default false;
+alter table public.customers alter column follow_up_opt_out set not null;
+alter table public.customers alter column two_month_email_status set default 'pending';
+alter table public.customers alter column two_month_email_status set not null;
+alter table public.customers alter column two_month_email_attempts set default 0;
+alter table public.customers alter column two_month_email_attempts set not null;
+alter table public.customers alter column six_month_email_status set default 'pending';
+alter table public.customers alter column six_month_email_status set not null;
+alter table public.customers alter column six_month_email_attempts set default 0;
+alter table public.customers alter column six_month_email_attempts set not null;
+alter table public.customers alter column twelve_month_email_status set default 'pending';
+alter table public.customers alter column twelve_month_email_status set not null;
+alter table public.customers alter column twelve_month_email_attempts set default 0;
+alter table public.customers alter column twelve_month_email_attempts set not null;
+
 create table if not exists public.customer_followup_events (
   id bigint generated by default as identity primary key,
   customer_id bigint,
@@ -889,17 +978,18 @@ as $$
     from public.customers c
     where c.id = p_customer_id
       and c.deleted_at is null
-      and c.follow_up_enabled = true
-      and c.follow_up_opt_out = false
-      and c.follow_up_permission_status in ('consented', 'existing_customer_permitted')
-      and c.review_status = 'none'
+      and coalesce(c.follow_up_enabled, true) = true
+      and coalesce(c.follow_up_opt_out, false) = false
+      and coalesce(c.follow_up_permission_status, 'unknown') in ('consented', 'existing_customer_permitted')
+      and coalesce(c.review_status, 'none') = 'none'
       and c.review_found_at is null
       and c.manual_review_confirmed_at is null
-      and not (c.twelve_month_email_status = 'sent' or c.twelve_month_email_sent_at is not null)
+      and coalesce(c.twelve_month_email_status, 'pending') <> 'sent'
+      and c.twelve_month_email_sent_at is null
       and (
-        (p_stage = 'two_month' and c.two_month_email_status = 'processing')
-        or (p_stage = 'six_month' and c.six_month_email_status = 'processing')
-        or (p_stage = 'twelve_month' and c.twelve_month_email_status = 'processing')
+        (p_stage = 'two_month' and coalesce(c.two_month_email_status, 'pending') = 'processing')
+        or (p_stage = 'six_month' and coalesce(c.six_month_email_status, 'pending') = 'processing')
+        or (p_stage = 'twelve_month' and coalesce(c.twelve_month_email_status, 'pending') = 'processing')
       )
   );
 $$;
@@ -946,13 +1036,14 @@ begin
       ) as stage
     ) due
     where c.deleted_at is null
-      and c.follow_up_enabled = true
-      and c.follow_up_opt_out = false
-      and c.follow_up_permission_status in ('consented', 'existing_customer_permitted')
-      and c.review_status = 'none'
+      and coalesce(c.follow_up_enabled, true) = true
+      and coalesce(c.follow_up_opt_out, false) = false
+      and coalesce(c.follow_up_permission_status, 'unknown') in ('consented', 'existing_customer_permitted')
+      and coalesce(c.review_status, 'none') = 'none'
       and c.review_found_at is null
       and c.manual_review_confirmed_at is null
-      and not (c.twelve_month_email_status = 'sent' or c.twelve_month_email_sent_at is not null)
+      and coalesce(c.twelve_month_email_status, 'pending') <> 'sent'
+      and c.twelve_month_email_sent_at is null
       and due.stage is not null
     order by c.purchase_date asc, c.id asc
     limit least(greatest(coalesce(p_limit, 20), 1), 50)
@@ -963,13 +1054,13 @@ begin
     set
       two_month_email_status = case when selected_due.stage = 'two_month' then 'processing' else c.two_month_email_status end,
       two_month_email_attempted_at = case when selected_due.stage = 'two_month' then now() else c.two_month_email_attempted_at end,
-      two_month_email_attempts = case when selected_due.stage = 'two_month' then c.two_month_email_attempts + 1 else c.two_month_email_attempts end,
+      two_month_email_attempts = case when selected_due.stage = 'two_month' then coalesce(c.two_month_email_attempts, 0) + 1 else coalesce(c.two_month_email_attempts, 0) end,
       six_month_email_status = case when selected_due.stage = 'six_month' then 'processing' else c.six_month_email_status end,
       six_month_email_attempted_at = case when selected_due.stage = 'six_month' then now() else c.six_month_email_attempted_at end,
-      six_month_email_attempts = case when selected_due.stage = 'six_month' then c.six_month_email_attempts + 1 else c.six_month_email_attempts end,
+      six_month_email_attempts = case when selected_due.stage = 'six_month' then coalesce(c.six_month_email_attempts, 0) + 1 else coalesce(c.six_month_email_attempts, 0) end,
       twelve_month_email_status = case when selected_due.stage = 'twelve_month' then 'processing' else c.twelve_month_email_status end,
       twelve_month_email_attempted_at = case when selected_due.stage = 'twelve_month' then now() else c.twelve_month_email_attempted_at end,
-      twelve_month_email_attempts = case when selected_due.stage = 'twelve_month' then c.twelve_month_email_attempts + 1 else c.twelve_month_email_attempts end
+      twelve_month_email_attempts = case when selected_due.stage = 'twelve_month' then coalesce(c.twelve_month_email_attempts, 0) + 1 else coalesce(c.twelve_month_email_attempts, 0) end
     from selected_due
     where c.id = selected_due.id
     returning
