@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Analytics as VercelAnalytics, type BeforeSendEvent } from '@vercel/analytics/react';
 import { AdminDataProvider } from './context/AdminDataContext';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { Header } from './components/Header';
@@ -73,6 +74,15 @@ function getPageFromLocation() {
 
 function canUseCleanBrowserUrls() {
   return typeof window !== 'undefined' && window.location.protocol !== 'file:';
+}
+
+function filterPublicVercelAnalyticsEvent(event: BeforeSendEvent) {
+  try {
+    const pathname = new URL(event.url, window.location.origin).pathname;
+    return pathname.startsWith('/admin') ? null : event;
+  } catch {
+    return event;
+  }
 }
 
 function AdminAccessLoading() {
@@ -320,6 +330,7 @@ function AppInner() {
   const isFullscreenPage = currentPage === 'configurator';
   const showNormalHeader = currentPage !== 'messages';
   const showFooter = currentPage !== 'messages' && !isFullscreenPage;
+  const statisticsAllowed = hasStatisticsConsent();
 
   return (
     <div className={`flex flex-col bg-gray-50 ${isFullscreenPage ? 'min-h-screen lg:h-screen lg:overflow-hidden' : 'min-h-screen'}`}>
@@ -345,6 +356,9 @@ function AppInner() {
           onConsentChange={() => setConsentVersion((version) => version + 1)}
           onNavigate={handleNavigate}
         />
+      )}
+      {statisticsAllowed && (
+        <VercelAnalytics beforeSend={filterPublicVercelAnalyticsEvent} />
       )}
     </div>
   );

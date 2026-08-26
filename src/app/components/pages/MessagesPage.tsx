@@ -20,16 +20,16 @@ export function MessagesPage({ activeTab }: MessagesPageProps) {
         <EingaengeTab />
       </div>
 
-      <div className={activeTab === 'dashboard' ? '' : 'hidden'}>
-        <DashboardTab />
-      </div>
-
       <div className={activeTab === 'modelle' ? '' : 'hidden'}>
         <ModelleTab />
       </div>
 
       <div className={activeTab === 'referenzen' ? '' : 'hidden'}>
         <ReferenzenTab />
+      </div>
+
+      <div className={activeTab === 'dashboard' ? '' : 'hidden'}>
+        <DashboardTab />
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import { isSupabaseConfigured, supabase } from './supabase';
+import { INTERNAL_ANALYTICS_PAUSED } from './analytics';
 
 export type AnalyticsRange = 'today' | '7d' | '30d' | 'all';
 
@@ -51,6 +52,7 @@ const EMPTY_ANALYTICS_DATA: AnalyticsData = {
 };
 
 async function fetchTable<T>(table: string): Promise<T[]> {
+  if (INTERNAL_ANALYTICS_PAUSED) return [];
   if (!isSupabaseConfigured || !supabase) return [];
 
   const { data, error } = await supabase
@@ -64,6 +66,7 @@ async function fetchTable<T>(table: string): Promise<T[]> {
 }
 
 export async function fetchAnalyticsData(): Promise<AnalyticsData> {
+  if (INTERNAL_ANALYTICS_PAUSED) return EMPTY_ANALYTICS_DATA;
   if (!isSupabaseConfigured || !supabase) return EMPTY_ANALYTICS_DATA;
 
   const [daily, pages, models, visitors] = await Promise.all([

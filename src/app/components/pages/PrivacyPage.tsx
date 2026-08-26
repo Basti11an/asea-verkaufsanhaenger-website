@@ -62,9 +62,10 @@ const COPY: Record<Lang, PrivacyCopy> = {
       {
         title: 'Supabase',
         paragraphs: [
-          'Diese Website nutzt Supabase für freigegebene Kundenreferenzen, neu eingereichte Referenzen, Kontaktanfragen, den geschützten Admin-Login und aggregierte interne Statistikdaten, sofern Statistik erlaubt wurde.',
+          'Diese Website nutzt Supabase für freigegebene Kundenreferenzen, neu eingereichte Referenzen, Kontaktanfragen und den geschützten Admin-Login.',
+          'Bei erlaubter Statistik wird Vercel Web Analytics eingebunden, damit Seitenaufrufe und grundlegende Nutzung im Vercel-Dashboard sichtbar werden. Adminseiten werden aus der öffentlichen Vercel-Auswertung herausgefiltert.',
           'Referenzeinreichungen können Name/Firma, Ort, Anhängermodell, Jahr, Beschreibung, E-Mail, Telefonnummer und optional einen Bildlink enthalten. Neue Referenzen werden zunächst nicht öffentlich angezeigt und erst nach Prüfung im Adminbereich freigegeben.',
-          'Die Tabellen für interne Statistiken speichern nur zusammengefasste Tageswerte, Seiten, Modellaufrufe, Sprache, Gerätetyp und Herkunftskategorie. IP-Adressen, vollständige Referrer-URLs, Mausbewegungen, Scrollpositionen oder dauerhafte Nutzerprofile werden dort nicht gespeichert.',
+          'Die vorbereitete interne Supabase-Statistik ist aktuell pausiert. Es werden derzeit keine eigenen Seiten-, Modell-, Sprach-, Geräte- oder Herkunftszähler an Supabase gesendet.',
           'Rechtsgrundlagen sind je nach Verarbeitung Art. 6 Abs. 1 lit. b DSGVO für angefragte Leistungen, Art. 6 Abs. 1 lit. f DSGVO für Betrieb, Sicherheit und Adminverwaltung sowie Art. 6 Abs. 1 lit. a DSGVO für optionale Statistik. Der Betreiber muss die Supabase-Region, Auftragsverarbeitung, Unterauftragsverarbeiter und Löschfristen organisatorisch bestätigen.',
         ],
       },
@@ -86,14 +87,12 @@ const COPY: Record<Lang, PrivacyCopy> = {
       {
         title: 'Statistik und lokaler Speicher',
         paragraphs: [
-          'Die interne Statistik ist optional. Sie startet erst, wenn Sie Statistik in den Datenschutzeinstellungen erlauben. Dabei werden nur aggregierte Zähler an Supabase gesendet, etwa Seitenaufrufe, Modellaufrufe, ausgewählte Sprache, einfacher Gerätetyp und Herkunftskategorie.',
-          'Zur Vermeidung mehrfacher Besucherzählungen innerhalb einer Sitzung nutzt die Website eine anonyme Sitzungskennung im sessionStorage. Diese Kennung wird nicht an Supabase übertragen und endet grundsätzlich mit der Browsersitzung.',
+          'Die Statistik ist optional. Sie startet erst, wenn Sie Statistik in den Datenschutzeinstellungen erlauben. Aktuell wird dafür Vercel Web Analytics für die allgemeine Auswertung von Seitenaufrufen eingebunden.',
+          'Die eigene Supabase-Statistik mit zusammengefassten Tageswerten ist pausiert und schreibt derzeit keine neuen Werte.',
         ],
         bullets: [
           'asea-lang: lokale Spracheinstellung im localStorage, technisch zweckmäßig, bis zur Änderung oder Löschung im Browser',
           'asea-privacy-consent: gewählte Datenschutzeinstellung im localStorage, technisch erforderlich zur Speicherung Ihrer Entscheidung',
-          'asea-analytics-session-id und zugehörige Tagesmarkierung: anonyme Sitzungszählung im sessionStorage, nur bei erlaubter Statistik',
-          'asea-analytics-source: grobe Herkunftskategorie im sessionStorage, nur bei erlaubter Statistik',
         ],
       },
       {
@@ -151,9 +150,10 @@ const COPY: Record<Lang, PrivacyCopy> = {
       {
         title: 'Supabase',
         paragraphs: [
-          'This website uses Supabase for approved customer references, newly submitted references, contact requests, protected admin login and aggregated internal statistics where statistics have been allowed.',
+          'This website uses Supabase for approved customer references, newly submitted references, contact requests and protected admin login.',
+          'Vercel Web Analytics is included when statistics are allowed so that page views and basic usage become visible in the Vercel dashboard. Admin pages are filtered out of the public Vercel analysis.',
           'Reference submissions may contain name/company, place, trailer model, year, description, email address, phone number and optionally an image link. New references are initially not public and are only published after review in the admin area.',
-          'The internal statistics tables store only aggregated daily values, pages, model views, language, device type and source category. IP addresses, full referrer URLs, mouse movements, scroll positions or permanent user profiles are not stored there.',
+          'The prepared internal Supabase statistics are currently paused. No custom page, model, language, device or source counters are currently sent to Supabase.',
           'Depending on the processing activity, the legal bases are Art. 6(1)(b) GDPR for requested services, Art. 6(1)(f) GDPR for operation, security and admin management, and Art. 6(1)(a) GDPR for optional statistics. The operator must confirm the Supabase region, data processing agreement, subprocessors and retention periods organisationally.',
         ],
       },
@@ -175,14 +175,12 @@ const COPY: Record<Lang, PrivacyCopy> = {
       {
         title: 'Statistics and Local Storage',
         paragraphs: [
-          'Internal statistics are optional. They only start after you allow statistics in the privacy settings. Only aggregated counters are sent to Supabase, such as page views, model views, selected language, basic device type and source category.',
-          'To avoid counting the same visitor repeatedly within a session, the website uses an anonymous session identifier in sessionStorage. This identifier is not sent to Supabase and generally ends with the browser session.',
+          'Statistics are optional. They only start after you allow statistics in the privacy settings. Currently, Vercel Web Analytics is included for general page-view analysis.',
+          'The custom Supabase statistics with aggregated daily values are paused and currently do not write new values.',
         ],
         bullets: [
           'asea-lang: local language preference in localStorage, technically useful, until changed or deleted in the browser',
           'asea-privacy-consent: selected privacy setting in localStorage, technically necessary to store your choice',
-          'asea-analytics-session-id and related daily marker: anonymous session counting in sessionStorage, only if statistics are allowed',
-          'asea-analytics-source: broad source category in sessionStorage, only if statistics are allowed',
         ],
       },
       {
@@ -240,9 +238,10 @@ const COPY: Record<Lang, PrivacyCopy> = {
       {
         title: 'Supabase',
         paragraphs: [
-          'Táto webová stránka používa Supabase pre schválené zákaznícke referencie, novo odoslané referencie, kontaktné požiadavky, chránené prihlásenie do administrácie a agregované interné štatistiky, ak boli štatistiky povolené.',
+          'Táto webová stránka používa Supabase pre schválené zákaznícke referencie, novo odoslané referencie, kontaktné požiadavky a chránené prihlásenie do administrácie.',
+          'Pri povolených štatistikách sa zapája Vercel Web Analytics, aby boli zobrazenia stránok a základné používanie viditeľné v paneli Vercel. Admin stránky sa z verejnej analýzy Vercel filtrujú.',
           'Odoslané referencie môžu obsahovať meno/firmu, miesto, model prívesu, rok, popis, e-mail, telefónne číslo a voliteľne odkaz na obrázok. Nové referencie nie sú najskôr verejné a zverejnia sa až po kontrole v administrácii.',
-          'Interné štatistické tabuľky ukladajú iba súhrnné denné hodnoty, stránky, zobrazenia modelov, jazyk, typ zariadenia a kategóriu zdroja. IP adresy, úplné referrer URL, pohyby myši, pozície rolovania ani trvalé používateľské profily sa tam neukladajú.',
+          'Pripravené interné štatistiky Supabase sú aktuálne pozastavené. Do Supabase sa momentálne neposielajú vlastné počítadlá stránok, modelov, jazyka, zariadenia ani zdroja.',
           'Právnym základom je podľa typu spracúvania čl. 6 ods. 1 písm. b GDPR pre požadované služby, čl. 6 ods. 1 písm. f GDPR pre prevádzku, bezpečnosť a správu administrácie a čl. 6 ods. 1 písm. a GDPR pre voliteľné štatistiky. Prevádzkovateľ musí organizačne potvrdiť región Supabase, zmluvu o spracúvaní, subdodávateľov a lehoty uchovávania.',
         ],
       },
@@ -264,14 +263,12 @@ const COPY: Record<Lang, PrivacyCopy> = {
       {
         title: 'Štatistika a lokálne úložisko',
         paragraphs: [
-          'Interné štatistiky sú voliteľné. Spustia sa až po vašom povolení v nastaveniach ochrany údajov. Do Supabase sa posielajú iba agregované počítadlá, napríklad zobrazenia stránok, zobrazenia modelov, zvolený jazyk, jednoduchý typ zariadenia a kategória zdroja.',
-          'Aby sa zabránilo opakovanému započítaniu toho istého návštevníka v rámci jednej relácie, webová stránka používa anonymný identifikátor relácie v sessionStorage. Tento identifikátor sa neposiela do Supabase a spravidla končí s reláciou prehliadača.',
+          'Štatistiky sú voliteľné. Spustia sa až po vašom povolení v nastaveniach ochrany údajov. Aktuálne sa používa Vercel Web Analytics na všeobecnú analýzu zobrazení stránok.',
+          'Vlastné štatistiky Supabase so súhrnnými dennými hodnotami sú pozastavené a momentálne nezapisujú nové hodnoty.',
         ],
         bullets: [
           'asea-lang: lokálne nastavenie jazyka v localStorage, technicky účelné, do zmeny alebo vymazania v prehliadači',
           'asea-privacy-consent: zvolené nastavenie ochrany údajov v localStorage, technicky potrebné na uloženie vášho rozhodnutia',
-          'asea-analytics-session-id a súvisiace denné označenie: anonymné počítanie relácie v sessionStorage, iba ak sú povolené štatistiky',
-          'asea-analytics-source: hrubá kategória zdroja v sessionStorage, iba ak sú povolené štatistiky',
         ],
       },
       {

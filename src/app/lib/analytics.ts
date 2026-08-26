@@ -2,6 +2,9 @@ import { isSupabaseConfigured, supabase } from './supabase';
 import type { Lang } from '../context/LanguageContext';
 import { hasStatisticsConsent } from './privacyConsent';
 
+// Pauses the custom Supabase analytics while keeping the call sites easy to reactivate later.
+export const INTERNAL_ANALYTICS_PAUSED = true;
+
 export type AnalyticsEventType =
   | 'page_view'
   | 'model_view'
@@ -131,6 +134,7 @@ function isRecentDuplicate(key: string) {
 }
 
 export async function trackAnalyticsEvent(eventType: AnalyticsEventType, payload: AnalyticsPayload = {}) {
+  if (INTERNAL_ANALYTICS_PAUSED) return;
   if (!isSupabaseConfigured || !supabase) return;
   if (typeof window === 'undefined') return;
   if (!hasStatisticsConsent()) return;
