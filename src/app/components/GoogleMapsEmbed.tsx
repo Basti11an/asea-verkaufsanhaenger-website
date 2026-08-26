@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { Button } from './ui/button';
 import { useLanguage } from '../context/LanguageContext';
+import { hasGoogleServicesConsent, saveGoogleServicesConsent } from '../lib/privacyConsent';
 
 interface GoogleMapsEmbedProps {
   className?: string;
@@ -33,8 +34,20 @@ const TEXT = {
 
 export function GoogleMapsEmbed({ className = '', title }: GoogleMapsEmbedProps) {
   const { lang } = useLanguage();
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(hasGoogleServicesConsent);
   const copy = TEXT[lang] ?? TEXT.de;
+
+  useEffect(() => {
+    const syncConsent = () => setEnabled(hasGoogleServicesConsent());
+
+    window.addEventListener('asea-privacy-consent-change', syncConsent);
+    window.addEventListener('storage', syncConsent);
+
+    return () => {
+      window.removeEventListener('asea-privacy-consent-change', syncConsent);
+      window.removeEventListener('storage', syncConsent);
+    };
+  }, []);
 
   if (enabled) {
     return (
@@ -62,7 +75,10 @@ export function GoogleMapsEmbed({ className = '', title }: GoogleMapsEmbedProps)
         <p className="mt-2 text-sm leading-relaxed text-[#77756f]">{copy.text}</p>
         <Button
           type="button"
-          onClick={() => setEnabled(true)}
+          onClick={() => {
+            saveGoogleServicesConsent();
+            setEnabled(true);
+          }}
           className="mt-5 bg-[#2f2f2d] text-white hover:bg-[#1c1c1a]"
         >
           {copy.button}

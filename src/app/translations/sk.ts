@@ -124,7 +124,7 @@ export const sk = {
 
   // Models
   models_hero_title: 'Naše modely',
-  models_hero_desc: 'Od predajných prívesov cez chladiarenské prívesy až po veľtržné a prezentačné prívesy - objavte naše modely a presvedčte sa o kvalite.',
+  models_hero_desc: 'Objavte individuálne riešenia prívesov ASEA a presvedčte sa o kvalite, remeselnom spracovaní a premyslenej výbave.',
   models_no_models: 'Momentálne nie sú dostupné žiadne modely.',
   models_view_details: 'Zobraziť detaily',
   models_cta_title: 'Individuálne riešenia pre vaše požiadavky',

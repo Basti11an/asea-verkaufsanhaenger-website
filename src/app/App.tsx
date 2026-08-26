@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { Analytics as VercelAnalytics, type BeforeSendEvent } from '@vercel/analytics/react';
 import { AdminDataProvider } from './context/AdminDataContext';
-import { LanguageProvider, useLanguage } from './context/LanguageContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { Header } from './components/Header';
 import { AdminHeader } from './components/AdminHeader';
 import { Footer } from './components/Footer';
@@ -18,21 +18,8 @@ import { AdminLogin } from './components/AdminLogin';
 import { ConfiguratorPage } from './components/pages/ConfiguratorPage';
 import { PrivacyConsentBanner } from './components/PrivacyConsentBanner';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
-import { trackAnalyticsEvent } from './lib/analytics';
 import { hasStatisticsConsent } from './lib/privacyConsent';
 import { getAdminAccess, type AdminAccessStatus } from './lib/adminAuth';
-
-const PUBLIC_ANALYTICS_PAGES: Record<string, string> = {
-  home: 'home',
-  about: 'about',
-  configurator: 'configurator',
-  models: 'models',
-  'model-detail': 'model-detail',
-  equipment: 'equipment',
-  contact: 'contact',
-  imprint: 'imprint',
-  privacy: 'privacy',
-};
 
 const PAGE_PATHS: Record<string, string> = {
   home: '/',
@@ -98,7 +85,6 @@ function AdminAccessLoading() {
 }
 
 function AppInner() {
-  const { lang } = useLanguage();
   const [currentPage, setCurrentPage] = useState<string>(getPageFromLocation);
   const [navData, setNavData] = useState<any>(null);
   const [adminAccessStatus, setAdminAccessStatus] = useState<AdminAccessStatus>('guest');
@@ -106,8 +92,7 @@ function AppInner() {
   const [adminActiveTab, setAdminActiveTab] = useState<string>('eingaenge');
   const [navigationTick, setNavigationTick] = useState(0);
   const [privacySettingsOpen, setPrivacySettingsOpen] = useState(false);
-  const [consentVersion, setConsentVersion] = useState(0);
-  const lastAnalyticsKeyRef = useRef('');
+  const [statisticsAllowed, setStatisticsAllowed] = useState(hasStatisticsConsent);
 
   const scrollToTop = () => {
     const html = document.documentElement;
@@ -128,12 +113,14 @@ function AppInner() {
 
     run();
     requestAnimationFrame(run);
+    requestAnimationFrame(() => requestAnimationFrame(run));
     window.setTimeout(run, 0);
     window.setTimeout(run, 80);
+    window.setTimeout(run, 180);
     window.setTimeout(() => {
       html.style.scrollBehavior = previousHtmlBehavior;
       body.style.scrollBehavior = previousBodyBehavior;
-    }, 120);
+    }, 220);
   };
 
   const handleNavigate = (page: string, data?: any) => {
@@ -191,6 +178,19 @@ function AppInner() {
   }, [currentPage, navigationTick]);
 
   useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+
+    const handlePageShow = () => {
+      scrollToTop();
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, []);
+
+  useEffect(() => {
     const handlePopState = () => {
       setNavData(null);
       setNavigationTick((tick) => tick + 1);
@@ -219,36 +219,6 @@ function AppInner() {
 
     existingMeta?.remove();
   }, [currentPage]);
-
-  useEffect(() => {
-    const pagePath = PUBLIC_ANALYTICS_PAGES[currentPage];
-    if (!pagePath) return;
-
-    if (!hasStatisticsConsent()) {
-      lastAnalyticsKeyRef.current = '';
-      return;
-    }
-
-    const model = currentPage === 'model-detail' ? navData?.model : null;
-    const modelId = model ? String(model.id ?? model.name ?? '') : '';
-    const analyticsKey = `${currentPage}|${modelId}`;
-
-    if (lastAnalyticsKeyRef.current === analyticsKey) return;
-    lastAnalyticsKeyRef.current = analyticsKey;
-
-    void trackAnalyticsEvent('page_view', {
-      pagePath,
-      language: lang,
-    });
-
-    if (currentPage === 'model-detail' && model) {
-      void trackAnalyticsEvent('model_view', {
-        modelId: modelId || String(model.name),
-        modelName: String(model.name ?? ''),
-        language: lang,
-      });
-    }
-  }, [currentPage, navData, lang, consentVersion]);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
@@ -330,7 +300,6 @@ function AppInner() {
   const isFullscreenPage = currentPage === 'configurator';
   const showNormalHeader = currentPage !== 'messages';
   const showFooter = currentPage !== 'messages' && !isFullscreenPage;
-  const statisticsAllowed = hasStatisticsConsent();
 
   return (
     <div className={`flex flex-col bg-gray-50 ${isFullscreenPage ? 'min-h-screen lg:h-screen lg:overflow-hidden' : 'min-h-screen'}`}>
@@ -353,7 +322,7 @@ function AppInner() {
         <PrivacyConsentBanner
           forceOpen={privacySettingsOpen}
           onClose={() => setPrivacySettingsOpen(false)}
-          onConsentChange={() => setConsentVersion((version) => version + 1)}
+          onConsentChange={() => setStatisticsAllowed(hasStatisticsConsent())}
           onNavigate={handleNavigate}
         />
       )}

@@ -1,9 +1,8 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { TrailerConfigurator } from '../configurator/TrailerConfigurator';
 import { Button } from '../ui/button';
 import { useLanguage, type TranslationKey } from '../../context/LanguageContext';
-import { trackAnalyticsEvent } from '../../lib/analytics';
 
 interface ConfiguratorNavData {
   returnPage?: string;
@@ -45,9 +44,8 @@ function getInitialStage(): ConfiguratorStage {
 }
 
 export function ConfiguratorPage({ onNavigate, navData }: ConfiguratorPageProps) {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const [stage, setStage] = useState<ConfiguratorStage>(getInitialStage);
-  const startedTrackedRef = useRef(false);
 
   const navigateBackToTrailer = () => {
     if (navData?.returnPage === 'model-detail' && navData.model) {
@@ -59,14 +57,6 @@ export function ConfiguratorPage({ onNavigate, navData }: ConfiguratorPageProps)
   };
 
   const startConfigurator = () => {
-    if (!startedTrackedRef.current) {
-      startedTrackedRef.current = true;
-      void trackAnalyticsEvent('configuration_started', {
-        pagePath: 'configurator',
-        language: lang,
-      });
-    }
-
     setStage('configurator');
   };
 

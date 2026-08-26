@@ -134,7 +134,7 @@ export const de = {
 
   // Models Page
   models_hero_title: 'Unsere Modelle',
-  models_hero_desc: 'Vom Verkaufsanhänger über Kühlanhänger bis zum Messe- und Präsentationsanhänger – entdecken Sie unsere Modelle und lassen Sie sich von der Qualität überzeugen.',
+  models_hero_desc: 'Entdecken Sie individuelle Anhängerlösungen von ASEA und lassen Sie sich von Qualität, Handwerk und durchdachter Ausstattung überzeugen.',
   models_no_models: 'Derzeit sind keine Modelle verfügbar.',
   models_view_details: 'Details ansehen',
   models_cta_title: 'Individuelle Lösungen für Ihre Anforderungen',

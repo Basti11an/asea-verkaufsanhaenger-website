@@ -8,7 +8,7 @@ interface ReferenceCarouselProps {
 }
 
 const AUTOPLAY_SPEED = 36;
-const RESUME_DELAY = 30000;
+const RESUME_DELAY = 2000;
 
 export function ReferenceCarousel({ references, className = '' }: ReferenceCarouselProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);

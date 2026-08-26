@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '../ui/button';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
@@ -10,6 +11,47 @@ import { getRevealAnimate, getRevealInitial, useTouchFriendlyMotion } from '../.
 
 interface HomePageProps {
   onNavigate: (page: string, data?: any) => void;
+}
+
+function CountUpValue({ value }: { value: string }) {
+  const match = value.match(/^(\d+)(.*)$/);
+  const endValue = match ? Number(match[1]) : 0;
+  const suffix = match?.[2] ?? '';
+  const [currentValue, setCurrentValue] = useState(() => (endValue > 1 ? 1 : endValue));
+
+  useEffect(() => {
+    if (!endValue) return undefined;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) {
+      setCurrentValue(endValue);
+      return undefined;
+    }
+
+    const duration = 850;
+    const start = performance.now();
+    let frame = 0;
+
+    const tick = (time: number) => {
+      const progress = Math.min((time - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCurrentValue(Math.max(1, Math.round(1 + (endValue - 1) * eased)));
+
+      if (progress < 1) {
+        frame = requestAnimationFrame(tick);
+      }
+    };
+
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [endValue]);
+
+  return (
+    <>
+      {currentValue}
+      {suffix}
+    </>
+  );
 }
 
 export function HomePage({ onNavigate }: HomePageProps) {
@@ -104,7 +146,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
                 transition={{ duration: 0.6, delay }}
               >
                 <div className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#77756f] mb-2 md:mb-3">
-                  {value}
+                  <CountUpValue value={value} />
                 </div>
                 <div className="text-sm md:text-base text-[#77756f] font-medium">{t(labelKey)}</div>
               </motion.div>
@@ -115,7 +157,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
 
       {/* Erfahrungen Section */}
       <section className="py-10 md:py-12 gradient-accent relative overflow-hidden">
-        <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24 relative z-10">
+        <div className="relative z-10 w-full">
           <ReferenceCarousel references={visibleRefs} />
         </div>
       </section>
@@ -190,18 +232,18 @@ export function HomePage({ onNavigate }: HomePageProps) {
               <motion.div
                 key={nameKey}
                 className="group glass rounded-xl overflow-hidden hover:shadow-xl transition-all duration-500 relative h-full flex flex-col"
-                initial={{ opacity: 0, y: 50 }}
+                initial={{ opacity: 0, y: 14 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay }}
-                whileHover={touchFriendlyMotion ? undefined : { y: -6 }}
+                transition={{ duration: 0.45, delay: delay * 0.7 }}
+                whileHover={touchFriendlyMotion ? undefined : { y: -2 }}
               >
                 <div className="relative h-56 md:h-64 overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-t from-[#2f2f2d]/40 to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <ImageWithFallback
                     src={src}
                     alt={t(nameKey)}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700"
                   />
                 </div>
                 <div className="p-5 md:p-6 bg-white/80 backdrop-blur-sm flex flex-1 flex-col">

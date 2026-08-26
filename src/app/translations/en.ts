@@ -134,7 +134,7 @@ export const en = {
 
   // Models Page
   models_hero_title: 'Our Models',
-  models_hero_desc: 'From sales trailers to refrigerated trailers and trade fair trailers — discover our models and be convinced by the quality.',
+  models_hero_desc: 'Discover individual trailer solutions from ASEA and experience the quality, craftsmanship and thoughtful equipment behind every build.',
   models_no_models: 'No models are currently available.',
   models_view_details: 'View Details',
   models_cta_title: 'Individual Solutions for Your Requirements',

@@ -63,9 +63,7 @@ const COPY: Record<Lang, PrivacyCopy> = {
         title: 'Supabase',
         paragraphs: [
           'Diese Website nutzt Supabase für freigegebene Kundenreferenzen, neu eingereichte Referenzen, Kontaktanfragen und den geschützten Admin-Login.',
-          'Bei erlaubter Statistik wird Vercel Web Analytics eingebunden, damit Seitenaufrufe und grundlegende Nutzung im Vercel-Dashboard sichtbar werden. Adminseiten werden aus der öffentlichen Vercel-Auswertung herausgefiltert.',
           'Referenzeinreichungen können Name/Firma, Ort, Anhängermodell, Jahr, Beschreibung, E-Mail, Telefonnummer und optional einen Bildlink enthalten. Neue Referenzen werden zunächst nicht öffentlich angezeigt und erst nach Prüfung im Adminbereich freigegeben.',
-          'Die vorbereitete interne Supabase-Statistik ist aktuell pausiert. Es werden derzeit keine eigenen Seiten-, Modell-, Sprach-, Geräte- oder Herkunftszähler an Supabase gesendet.',
           'Rechtsgrundlagen sind je nach Verarbeitung Art. 6 Abs. 1 lit. b DSGVO für angefragte Leistungen, Art. 6 Abs. 1 lit. f DSGVO für Betrieb, Sicherheit und Adminverwaltung sowie Art. 6 Abs. 1 lit. a DSGVO für optionale Statistik. Der Betreiber muss die Supabase-Region, Auftragsverarbeitung, Unterauftragsverarbeiter und Löschfristen organisatorisch bestätigen.',
         ],
       },
@@ -88,7 +86,6 @@ const COPY: Record<Lang, PrivacyCopy> = {
         title: 'Statistik und lokaler Speicher',
         paragraphs: [
           'Die Statistik ist optional. Sie startet erst, wenn Sie Statistik in den Datenschutzeinstellungen erlauben. Aktuell wird dafür Vercel Web Analytics für die allgemeine Auswertung von Seitenaufrufen eingebunden.',
-          'Die eigene Supabase-Statistik mit zusammengefassten Tageswerten ist pausiert und schreibt derzeit keine neuen Werte.',
         ],
         bullets: [
           'asea-lang: lokale Spracheinstellung im localStorage, technisch zweckmäßig, bis zur Änderung oder Löschung im Browser',
@@ -98,8 +95,8 @@ const COPY: Record<Lang, PrivacyCopy> = {
       {
         title: 'Google Maps',
         paragraphs: [
-          'Google Maps wird auf dieser Website nicht automatisch geladen. Stattdessen erscheint zunächst ein lokaler Hinweis. Erst wenn Sie die Karte aktiv laden, wird eine Verbindung zu Google hergestellt.',
-          'Beim Laden der Karte kann Google Ireland Limited personenbezogene Daten wie Ihre IP-Adresse und technische Zugriffsdaten verarbeiten; eine Übermittlung in die USA kann nicht ausgeschlossen werden. Rechtsgrundlage für das aktive Laden ist Ihre Einwilligung nach Art. 6 Abs. 1 lit. a DSGVO sowie § 165 TKG 2021.',
+          'Google Maps wird auf dieser Website erst nach Ihrer Einwilligung geladen. Diese Einwilligung kann über „Alle akzeptieren" im Datenschutzbanner oder über den Button direkt im Kartenbereich erfolgen.',
+          'Beim Laden der Karte kann Google Ireland Limited personenbezogene Daten wie Ihre IP-Adresse und technische Zugriffsdaten verarbeiten; eine Übermittlung in die USA kann nicht ausgeschlossen werden. Rechtsgrundlage ist Ihre Einwilligung nach Art. 6 Abs. 1 lit. a DSGVO sowie § 165 TKG 2021.',
         ],
       },
       {
@@ -151,9 +148,7 @@ const COPY: Record<Lang, PrivacyCopy> = {
         title: 'Supabase',
         paragraphs: [
           'This website uses Supabase for approved customer references, newly submitted references, contact requests and protected admin login.',
-          'Vercel Web Analytics is included when statistics are allowed so that page views and basic usage become visible in the Vercel dashboard. Admin pages are filtered out of the public Vercel analysis.',
           'Reference submissions may contain name/company, place, trailer model, year, description, email address, phone number and optionally an image link. New references are initially not public and are only published after review in the admin area.',
-          'The prepared internal Supabase statistics are currently paused. No custom page, model, language, device or source counters are currently sent to Supabase.',
           'Depending on the processing activity, the legal bases are Art. 6(1)(b) GDPR for requested services, Art. 6(1)(f) GDPR for operation, security and admin management, and Art. 6(1)(a) GDPR for optional statistics. The operator must confirm the Supabase region, data processing agreement, subprocessors and retention periods organisationally.',
         ],
       },
@@ -176,7 +171,6 @@ const COPY: Record<Lang, PrivacyCopy> = {
         title: 'Statistics and Local Storage',
         paragraphs: [
           'Statistics are optional. They only start after you allow statistics in the privacy settings. Currently, Vercel Web Analytics is included for general page-view analysis.',
-          'The custom Supabase statistics with aggregated daily values are paused and currently do not write new values.',
         ],
         bullets: [
           'asea-lang: local language preference in localStorage, technically useful, until changed or deleted in the browser',
@@ -186,8 +180,8 @@ const COPY: Record<Lang, PrivacyCopy> = {
       {
         title: 'Google Maps',
         paragraphs: [
-          'Google Maps is not loaded automatically on this website. A local notice is shown first. A connection to Google is only established after you actively load the map.',
-          'When the map is loaded, Google Ireland Limited may process personal data such as your IP address and technical access data; transfer to the USA cannot be excluded. The legal basis for active loading is your consent under Art. 6(1)(a) GDPR and § 165 Austrian Telecommunications Act 2021.',
+          'Google Maps is loaded on this website only after your consent. Consent can be given via “Accept all" in the privacy banner or via the button directly in the map area.',
+          'When the map is loaded, Google Ireland Limited may process personal data such as your IP address and technical access data; transfer to the USA cannot be excluded. The legal basis is your consent under Art. 6(1)(a) GDPR and § 165 Austrian Telecommunications Act 2021.',
         ],
       },
       {
@@ -239,9 +233,7 @@ const COPY: Record<Lang, PrivacyCopy> = {
         title: 'Supabase',
         paragraphs: [
           'Táto webová stránka používa Supabase pre schválené zákaznícke referencie, novo odoslané referencie, kontaktné požiadavky a chránené prihlásenie do administrácie.',
-          'Pri povolených štatistikách sa zapája Vercel Web Analytics, aby boli zobrazenia stránok a základné používanie viditeľné v paneli Vercel. Admin stránky sa z verejnej analýzy Vercel filtrujú.',
           'Odoslané referencie môžu obsahovať meno/firmu, miesto, model prívesu, rok, popis, e-mail, telefónne číslo a voliteľne odkaz na obrázok. Nové referencie nie sú najskôr verejné a zverejnia sa až po kontrole v administrácii.',
-          'Pripravené interné štatistiky Supabase sú aktuálne pozastavené. Do Supabase sa momentálne neposielajú vlastné počítadlá stránok, modelov, jazyka, zariadenia ani zdroja.',
           'Právnym základom je podľa typu spracúvania čl. 6 ods. 1 písm. b GDPR pre požadované služby, čl. 6 ods. 1 písm. f GDPR pre prevádzku, bezpečnosť a správu administrácie a čl. 6 ods. 1 písm. a GDPR pre voliteľné štatistiky. Prevádzkovateľ musí organizačne potvrdiť región Supabase, zmluvu o spracúvaní, subdodávateľov a lehoty uchovávania.',
         ],
       },
@@ -264,7 +256,6 @@ const COPY: Record<Lang, PrivacyCopy> = {
         title: 'Štatistika a lokálne úložisko',
         paragraphs: [
           'Štatistiky sú voliteľné. Spustia sa až po vašom povolení v nastaveniach ochrany údajov. Aktuálne sa používa Vercel Web Analytics na všeobecnú analýzu zobrazení stránok.',
-          'Vlastné štatistiky Supabase so súhrnnými dennými hodnotami sú pozastavené a momentálne nezapisujú nové hodnoty.',
         ],
         bullets: [
           'asea-lang: lokálne nastavenie jazyka v localStorage, technicky účelné, do zmeny alebo vymazania v prehliadači',
@@ -274,8 +265,8 @@ const COPY: Record<Lang, PrivacyCopy> = {
       {
         title: 'Google Maps',
         paragraphs: [
-          'Google Maps sa na tejto webovej stránke nenačíta automaticky. Najprv sa zobrazí lokálne upozornenie. Spojenie so spoločnosťou Google sa vytvorí až po aktívnom načítaní mapy.',
-          'Pri načítaní mapy môže Google Ireland Limited spracúvať osobné údaje, napríklad vašu IP adresu a technické prístupové údaje; prenos do USA nemožno vylúčiť. Právnym základom aktívneho načítania je váš súhlas podľa čl. 6 ods. 1 písm. a GDPR a § 165 rakúskeho TKG 2021.',
+          'Google Maps sa na tejto webovej stránke načíta až po vašom súhlase. Súhlas je možné udeliť cez „Prijať všetko" v banneri ochrany údajov alebo tlačidlom priamo v oblasti mapy.',
+          'Pri načítaní mapy môže Google Ireland Limited spracúvať osobné údaje, napríklad vašu IP adresu a technické prístupové údaje; prenos do USA nemožno vylúčiť. Právnym základom je váš súhlas podľa čl. 6 ods. 1 písm. a GDPR a § 165 rakúskeho TKG 2021.',
         ],
       },
       {

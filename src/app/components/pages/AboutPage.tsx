@@ -67,34 +67,36 @@ export function AboutPage() {
       {/* Values Section */}
       <section className="py-16 md:py-20 gradient-accent relative overflow-hidden">
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24 relative z-10">
-          <motion.div
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="text-2xl md:text-3xl lg:text-4xl text-[#2f2f2d] mb-3 md:mb-4">{t('about_values_title')}</h2>
-            <p className="text-base md:text-xl text-[#77756f] max-w-2xl mx-auto">{t('about_values_subtitle')}</p>
-          </motion.div>
+          <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+            <motion.div
+              className="border-l-2 border-[#b08a57] pl-5 md:pl-7"
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <h2 className="text-2xl md:text-3xl lg:text-4xl text-[#2f2f2d] mb-4">{t('about_values_title')}</h2>
+              <p className="text-base md:text-lg text-[#77756f] leading-relaxed max-w-xl">{t('about_values_subtitle')}</p>
+            </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-9">
-            {values.map((value, index) => (
-              <motion.div
-                key={index}
-                className="border-t border-[#dfd9cf] pt-5"
-                initial={{ opacity: 0, y: 28 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.08 }}
-              >
-                <span className="block text-sm font-semibold text-[#b08a57] mb-3">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <h3 className="text-xl text-[#2f2f2d] mb-3">{t(value.titleKey)}</h3>
-                <p className="text-[#77756f] leading-relaxed">{t(value.descKey)}</p>
-              </motion.div>
-            ))}
+            <div className="grid gap-0 border-y border-[#dfd9cf] bg-white/55 md:grid-cols-2">
+              {values.map((value, index) => (
+                <motion.div
+                  key={value.titleKey}
+                  className={`p-5 md:p-7 ${
+                    index % 2 === 1 ? 'md:border-l' : ''
+                  } ${index > 1 ? 'border-t' : index > 0 ? 'border-t md:border-t-0' : ''} border-[#dfd9cf]`}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.45, delay: index * 0.05 }}
+                >
+                  <div className="mb-4 h-px w-12 bg-[#b08a57]" />
+                  <h3 className="text-lg md:text-xl text-[#2f2f2d] mb-3">{t(value.titleKey)}</h3>
+                  <p className="text-sm md:text-base text-[#77756f] leading-relaxed">{t(value.descKey)}</p>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -143,38 +145,38 @@ export function AboutPage() {
       {/* Team Section */}
       <section className="py-16 md:py-20 bg-white">
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24">
-          <motion.div
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="text-2xl md:text-3xl lg:text-4xl text-[#2f2f2d] mb-3 md:mb-4">{t('about_team_title')}</h2>
-            <p className="text-base md:text-xl text-[#77756f] max-w-2xl mx-auto">{t('about_team_subtitle')}</p>
-          </motion.div>
+          <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="border-l-2 border-[#b08a57] pl-5 md:pl-7">
+                <h2 className="text-2xl md:text-3xl lg:text-4xl text-[#2f2f2d] mb-4">{t('about_team_title')}</h2>
+                <p className="text-base md:text-lg text-[#77756f] leading-relaxed max-w-xl">{t('about_team_subtitle')}</p>
+              </div>
+            </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {[
-              { titleKey: 'about_team1_title' as const, descKey: 'about_team1_desc' as const },
-              { titleKey: 'about_team2_title' as const, descKey: 'about_team2_desc' as const },
-              { titleKey: 'about_team3_title' as const, descKey: 'about_team3_desc' as const },
-            ].map((item, index) => (
-              <motion.div
-                key={index}
-                className="text-center border-t border-[#dfd9cf] pt-6"
-                initial={{ opacity: 0, y: 36 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.08 }}
-              >
-                <span className="block text-sm font-semibold text-[#b08a57] mb-3">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <h3 className="text-xl text-[#2f2f2d] mb-2">{t(item.titleKey)}</h3>
-                <p className="text-[#77756f]">{t(item.descKey)}</p>
-              </motion.div>
-            ))}
+            <div className="border-y border-[#dfd9cf]">
+              {[
+                { titleKey: 'about_team1_title' as const, descKey: 'about_team1_desc' as const },
+                { titleKey: 'about_team2_title' as const, descKey: 'about_team2_desc' as const },
+                { titleKey: 'about_team3_title' as const, descKey: 'about_team3_desc' as const },
+              ].map((item, index) => (
+                <motion.div
+                  key={item.titleKey}
+                  className="grid gap-3 border-b border-[#dfd9cf] py-6 last:border-b-0 md:grid-cols-[190px_1fr] md:gap-8 md:py-7"
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.45, delay: index * 0.05 }}
+                >
+                  <h3 className="text-lg md:text-xl text-[#2f2f2d]">{t(item.titleKey)}</h3>
+                  <p className="text-sm md:text-base text-[#77756f] leading-relaxed">{t(item.descKey)}</p>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

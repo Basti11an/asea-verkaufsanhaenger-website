@@ -13,7 +13,6 @@ const TABS = [
   { id: 'eingaenge', label: 'Eingänge' },
   { id: 'modelle', label: 'Modelle' },
   { id: 'referenzen', label: 'Referenzen' },
-  { id: 'dashboard', label: 'Dashboard', status: 'Außer Betrieb' },
 ];
 
 export function AdminHeader({ activeTab, setActiveTab, onNavigate, onLogout }: AdminHeaderProps) {
@@ -77,11 +76,6 @@ export function AdminHeader({ activeTab, setActiveTab, onNavigate, onLogout }: A
               {tab.id === 'eingaenge' && newEntriesCount > 0 && (
                 <span className="min-w-5 rounded-full bg-red-600 px-1.5 py-0.5 text-center text-[11px] font-bold leading-none text-white shadow-sm">
                   {newEntriesCount > 99 ? '99+' : newEntriesCount}
-                </span>
-              )}
-              {tab.id === 'dashboard' && 'status' in tab && (
-                <span className="rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-amber-200">
-                  {tab.status}
                 </span>
               )}
             </button>

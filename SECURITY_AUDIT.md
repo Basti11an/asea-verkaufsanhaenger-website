@@ -7,7 +7,7 @@ Stand: 24.08.2026
 - `src/app/App.tsx`: Der Adminbereich wurde ueber einen einfachen React-State `isAdminAuthenticated` freigegeben. Risiko: Ein beliebiger Supabase-Login konnte die Admin-UI sehen. Schweregrad: High.
 - `src/app/components/AdminLogin.tsx`: Es gab eine oeffentliche Admin-Registrierung mit Frontend-Registrierungscode und eine lokale Demo-Passwort-Logik. Risiko: Frontend-Barriere statt belastbarer Zugriffskontrolle. Schweregrad: High.
 - `src/app/context/AdminDataContext.tsx`: Private Referenzdaten wurden ueber einen clientseitigen E-Mail-Vergleich angefordert. Risiko: Adminrolle nicht serverseitig genug begruendet. Schweregrad: Medium.
-- `supabase/references.sql` und `supabase/analytics.sql`: `is_admin()` beruhte auf einem festen E-Mail-Vergleich im JWT. Risiko: unflexible Rollenlogik, keine saubere serverseitige Rollentabelle. Schweregrad: Medium.
+- `supabase/references.sql`: `is_admin()` beruhte auf einem festen E-Mail-Vergleich im JWT. Risiko: unflexible Rollenlogik, keine saubere serverseitige Rollentabelle. Schweregrad: Medium.
 - `vercel.json`: Es fehlten zentrale produktive Security Header. Risiko: erhoehte Angriffsoberflaeche fuer Clickjacking, MIME-Sniffing und fehlerhafte Einbettung. Schweregrad: Medium.
 
 ## B. Durchgefuehrte Aenderungen
@@ -18,7 +18,7 @@ Stand: 24.08.2026
 - `src/app/context/AdminDataContext.tsx`: private Referenzdaten werden nur nach erfolgreicher Admin-RPC-Pruefung geladen.
 - `src/app/lib/referencesRepository.ts`: oeffentliche Referenzen werden bevorzugt ueber `customer_references_public` gelesen; falls die View noch fehlt, gibt es einen temporaeren Rueckfall auf die alte gefilterte Tabellenabfrage.
 - `src/app/lib/supabase.ts`: Supabase Auth Optionen explizit gesetzt.
-- `supabase/references.sql` und `supabase/analytics.sql`: neue `admin_users` Rollentabelle, RLS, `is_admin()` als serverseitige Rollenpruefung, Default Deny fuer Admin-Daten.
+- `supabase/references.sql`: neue `admin_users` Rollentabelle, RLS, `is_admin()` als serverseitige Rollenpruefung, Default Deny fuer Admin-Daten.
 - `vercel.json`: CSP, HSTS, Referrer-Policy, Permissions-Policy und `X-Content-Type-Options` ergaenzt.
 - `.env.example`, `README.md`, `src/vite-env.d.ts` und Admin-Texte: veraltete Admin-E-Mail-/Demo-Hinweise entfernt.
 
@@ -36,8 +36,6 @@ Stand: 24.08.2026
 
 - `admin_users`: keine Rechte fuer `anon`; authentifizierte User duerfen nur lesen, wenn `public.is_admin()` wahr ist.
 - `customer_references`: oeffentlich nur freigegebene sichtbare Referenzen; neue Einreichungen nur als `pending` und `sichtbar = false`; Admins duerfen lesen, erstellen, bearbeiten und loeschen.
-- `daily_analytics`, `page_analytics`, `model_analytics`, `visitor_analytics`: direkte Tabellenrechte fuer oeffentliche Nutzer entzogen; Admin-Lesen nur ueber `public.is_admin()`.
-- `track_analytics_event`: oeffentliche RPC zum datensparsamen Hochzaehlen aggregierter Statistikwerte, ohne IPs oder personenbezogene Profile.
 
 ## E. Session-Sicherheit
 
@@ -54,19 +52,18 @@ Stand: 24.08.2026
 - Routencheck lokal: `/`, `/admin`, `/modelle`, `/kontakt`, `/datenschutz` liefern 200.
 - Browsercheck `/admin` ohne Login: zeigt Login, kein Dashboard.
 - Manipulationstest `localStorage.isAdmin = true`: zeigt weiterhin Login, kein Dashboard, keine Referenzverwaltung.
-- Direkter Supabase-Anon-Check: `daily_analytics` war fuer anon blockiert; `admin_users` und `customer_references_public` sind in der echten Datenbank noch nicht voll eingespielt oder nicht im Schema-Cache sichtbar. Deshalb muessen die SQL-Dateien noch im Supabase SQL Editor ausgefuehrt werden.
+- Direkter Supabase-Anon-Check: `admin_users` und `customer_references_public` sind in der echten Datenbank noch nicht voll eingespielt oder nicht im Schema-Cache sichtbar. Deshalb muessen die SQL-Dateien noch im Supabase SQL Editor ausgefuehrt werden.
 - `TrailerConfigurator.tsx` und `TrailerScene.tsx` wurden nicht veraendert.
 
 ## G. Offene Betreiberaufgaben
 
 1. In Supabase `supabase/references.sql` ausfuehren.
-2. Danach `supabase/analytics.sql` ausfuehren.
-3. Den echten Admin-User in `public.admin_users` freigeben.
-4. In Supabase Auth die oeffentliche Registrierung fuer Admins nicht als Website-Flow nutzen; Admin-User manuell im Dashboard anlegen.
-5. Supabase Auth Rate Limits und E-Mail-Bestaetigung aktiv halten.
-6. Fuer Admins MFA/TOTP in Supabase pruefen und aktivieren, wenn der Account-Flow dafuer eingerichtet ist.
-7. Falls frueher private Keys oder Passwoerter in Chat, Screenshots oder Git gelandet sind: diese Keys/Passwoerter rotieren.
-8. Nach dem naechsten Vercel Deployment die Security Header und den Adminlogin produktiv pruefen.
+2. Den echten Admin-User in `public.admin_users` freigeben.
+3. In Supabase Auth die oeffentliche Registrierung fuer Admins nicht als Website-Flow nutzen; Admin-User manuell im Dashboard anlegen.
+4. Supabase Auth Rate Limits und E-Mail-Bestaetigung aktiv halten.
+5. Fuer Admins MFA/TOTP in Supabase pruefen und aktivieren, wenn der Account-Flow dafuer eingerichtet ist.
+6. Falls frueher private Keys oder Passwoerter in Chat, Screenshots oder Git gelandet sind: diese Keys/Passwoerter rotieren.
+7. Nach dem naechsten Vercel Deployment die Security Header und den Adminlogin produktiv pruefen.
 
 ## Verwendete Sicherheitsgrundlagen
 

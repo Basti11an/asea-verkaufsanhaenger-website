@@ -37,7 +37,6 @@ Die Kundenreferenzen und Kontaktanfragen können in Supabase gespeichert werden.
 - `src/app/lib/contactRequestsRepository.ts`: Speichern, Laden und Statuspflege von Kontaktanfragen
 - `supabase/references.sql`: Datenbanktabelle `customer_references`, Eingänge/Freigabe und Sicherheitsregeln
 - `supabase/contact_requests.sql`: Datenbanktabelle `contact_requests`, Kontakt-Eingänge und Sicherheitsregeln
-- `supabase/analytics.sql`: Tabellen und Sicherheitsregeln für das Admin-Dashboard
 - `.env.example`: Vorlage für deine lokalen Supabase-Zugangsdaten
 
 ### 1. Supabase Projekt erstellen
@@ -62,8 +61,7 @@ Die Kundenreferenzen und Kontaktanfragen können in Supabase gespeichert werden.
 3. Öffne in Supabase den `SQL Editor`.
 4. Führe die SQL aus.
 5. Öffne danach `supabase/contact_requests.sql`, kopiere die komplette Datei und führe sie ebenfalls im SQL Editor aus.
-6. Öffne danach `supabase/analytics.sql`, kopiere die komplette Datei und führe sie ebenfalls im SQL Editor aus.
-7. Gib den Admin-User einmalig frei. Dafür im SQL Editor ausführen und die E-Mail ersetzen:
+6. Gib den Admin-User einmalig frei. Dafür im SQL Editor ausführen und die E-Mail ersetzen:
 
 ```sql
 insert into public.admin_users (user_id, email, role, active)
@@ -86,7 +84,7 @@ Danach gilt:
 - Der Admin sieht neue Kontaktanfragen und neue Referenzen im Tab `Eingänge`.
 - Kontaktanfragen können dort als gelesen, für später aufgehoben oder als per E-Mail beantwortet markiert werden.
 - Erst freigegebene Referenzen mit Status `approved` und `sichtbar = true` erscheinen öffentlich.
-- Nur User, die in `admin_users` aktiv freigegeben sind, können den Adminbereich und das Dashboard nutzen.
+- Nur User, die in `admin_users` aktiv freigegeben sind, können den Adminbereich nutzen.
 
 ## EmailJS Kontaktformular
 
@@ -168,6 +166,10 @@ In Vercel:
 - Node.js: Version `20` oder neuer
 
 Die Datei `vercel.json` enthält diese Werte bereits.
+
+### Vercel Analytics
+
+Vercel Web Analytics ist im React-Projekt eingebunden. In Vercel muss Web Analytics für das Projekt aktiviert sein. Dafür ist keine zusätzliche Environment Variable nötig.
 
 ## Ordnerstruktur
 

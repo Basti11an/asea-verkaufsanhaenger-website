@@ -7,7 +7,6 @@ import { Label } from '../ui/label';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAdminData } from '../../context/AdminDataContext';
 import { ReferenceSubmitPanel } from '../references/ReferenceSubmitPanel';
-import { trackAnalyticsEvent } from '../../lib/analytics';
 import { GoogleMapsEmbed } from '../GoogleMapsEmbed';
 import { validateContactRequest } from '../../lib/contactRequestValidation';
 import { sendContactRequestEmails } from '../../lib/emailService';
@@ -15,7 +14,7 @@ import { sendContactRequestEmails } from '../../lib/emailService';
 const CONFIGURATOR_REQUEST_SUBJECT = 'Anfrage Konfigurator';
 
 export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; onNavigate?: (page: string) => void }) {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const { submitContactRequest } = useAdminData();
   const [formData, setFormData] = useState({
     name: '',
@@ -58,17 +57,6 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
       await sendContactRequestEmails(validation.value);
 
       setSubmitted(true);
-      void trackAnalyticsEvent('contact_request', {
-        pagePath: 'contact',
-        language: lang,
-      });
-
-      if (source === 'configurator') {
-        void trackAnalyticsEvent('configuration_submitted', {
-          pagePath: 'contact',
-          language: lang,
-        });
-      }
 
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
       setTimeout(() => {

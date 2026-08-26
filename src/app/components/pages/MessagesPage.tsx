@@ -1,5 +1,4 @@
 import { Toaster } from 'sonner';
-import { DashboardTab } from '../admin/DashboardTab';
 import { ModelleTab } from '../admin/ModelleTab';
 import { ReferenzenTab } from '../admin/ReferenzenTab';
 import { EingaengeTab } from '../admin/EingaengeTab';
@@ -26,10 +25,6 @@ export function MessagesPage({ activeTab }: MessagesPageProps) {
 
       <div className={activeTab === 'referenzen' ? '' : 'hidden'}>
         <ReferenzenTab />
-      </div>
-
-      <div className={activeTab === 'dashboard' ? '' : 'hidden'}>
-        <DashboardTab />
       </div>
     </div>
   );

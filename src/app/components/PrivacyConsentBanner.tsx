@@ -13,12 +13,14 @@ interface PrivacyConsentBannerProps {
 const TEXT = {
   de: {
     title: 'Datenschutzeinstellungen',
-    body: 'Wir verwenden notwendige lokale Einstellungen für Sprache und Datenschutz. Optionale Statistik hilft uns, Seitenaufrufe datensparsam mit Vercel Analytics auszuwerten.',
+    body: 'Wir verwenden notwendige lokale Einstellungen für Sprache und Datenschutz. Optionale Einwilligungen steuern Vercel Analytics und Google Maps.',
     settings: 'Einstellungen',
     acceptAll: 'Alle akzeptieren',
     necessary: 'Nur notwendige',
     statsLabel: 'Statistik',
-    statsHelp: 'Web Analytics in Vercel. Die eigene Supabase-Statistik ist aktuell pausiert.',
+    statsHelp: 'Web Analytics in Vercel für eine einfache Auswertung von Seitenaufrufen.',
+    mapsLabel: 'Google Maps',
+    mapsHelp: 'Lädt die eingebettete Standortkarte von Google erst nach Ihrer Einwilligung.',
     save: 'Auswahl speichern',
     back: 'Zurück',
     privacy: 'Datenschutzerklärung',
@@ -26,12 +28,14 @@ const TEXT = {
   },
   en: {
     title: 'Privacy Settings',
-    body: 'We use necessary local settings for language and privacy. Optional statistics help us evaluate page views sparingly with Vercel Analytics.',
+    body: 'We use necessary local settings for language and privacy. Optional consent controls Vercel Analytics and Google Maps.',
     settings: 'Settings',
     acceptAll: 'Accept all',
     necessary: 'Necessary only',
     statsLabel: 'Statistics',
-    statsHelp: 'Web Analytics in Vercel. The custom Supabase statistics are currently paused.',
+    statsHelp: 'Web Analytics in Vercel for simple page-view analysis.',
+    mapsLabel: 'Google Maps',
+    mapsHelp: 'Loads the embedded Google location map only after your consent.',
     save: 'Save selection',
     back: 'Back',
     privacy: 'Privacy policy',
@@ -39,12 +43,14 @@ const TEXT = {
   },
   sk: {
     title: 'Nastavenia súkromia',
-    body: 'Používame nevyhnutné lokálne nastavenia pre jazyk a súkromie. Voliteľná štatistika nám pomáha úsporne vyhodnocovať zobrazenia stránok cez Vercel Analytics.',
+    body: 'Používame nevyhnutné lokálne nastavenia pre jazyk a súkromie. Voliteľný súhlas riadi Vercel Analytics a Google Maps.',
     settings: 'Nastavenia',
     acceptAll: 'Prijať všetko',
     necessary: 'Iba nevyhnutné',
     statsLabel: 'Štatistika',
-    statsHelp: 'Web Analytics vo Vercel. Vlastné štatistiky Supabase sú aktuálne pozastavené.',
+    statsHelp: 'Web Analytics vo Vercel na jednoduchú analýzu zobrazení stránok.',
+    mapsLabel: 'Google Maps',
+    mapsHelp: 'Vložená mapa polohy od Google sa načíta až po vašom súhlase.',
     save: 'Uložiť výber',
     back: 'Späť',
     privacy: 'Ochrana údajov',
@@ -58,6 +64,7 @@ export function PrivacyConsentBanner({ forceOpen, onClose, onConsentChange, onNa
   const [hasStoredChoice, setHasStoredChoice] = useState(() => Boolean(getPrivacyConsent()));
   const [showSettings, setShowSettings] = useState(false);
   const [statisticsChoice, setStatisticsChoice] = useState(() => getPrivacyConsent()?.statistics ?? false);
+  const [googleServicesChoice, setGoogleServicesChoice] = useState(() => getPrivacyConsent()?.googleServices ?? false);
   const [saved, setSaved] = useState(false);
   const isOpen = forceOpen || !hasStoredChoice;
 
@@ -65,11 +72,12 @@ export function PrivacyConsentBanner({ forceOpen, onClose, onConsentChange, onNa
     const stored = getPrivacyConsent();
     setHasStoredChoice(Boolean(stored));
     setStatisticsChoice(stored?.statistics ?? false);
+    setGoogleServicesChoice(stored?.googleServices ?? false);
     if (forceOpen) setShowSettings(false);
   }, [forceOpen]);
 
-  const choose = (statistics: boolean) => {
-    savePrivacyConsent(statistics);
+  const choose = (statistics: boolean, googleServices: boolean) => {
+    savePrivacyConsent(statistics, googleServices);
     setHasStoredChoice(true);
     setSaved(true);
     onConsentChange();
@@ -101,7 +109,7 @@ export function PrivacyConsentBanner({ forceOpen, onClose, onConsentChange, onNa
             <Button
               type="button"
               variant="outline"
-              onClick={() => choose(false)}
+              onClick={() => choose(false, false)}
               className="border-[#b08a57]/40 text-[#2f2f2d]"
             >
               {copy.necessary}
@@ -116,7 +124,7 @@ export function PrivacyConsentBanner({ forceOpen, onClose, onConsentChange, onNa
             </Button>
             <Button
               type="button"
-              onClick={() => choose(true)}
+              onClick={() => choose(true, true)}
               className="bg-[#2f2f2d] text-white hover:bg-[#1c1c1a]"
             >
               {copy.acceptAll}
@@ -140,6 +148,18 @@ export function PrivacyConsentBanner({ forceOpen, onClose, onConsentChange, onNa
                 <span className="block text-sm leading-relaxed text-[#77756f]">{copy.statsHelp}</span>
               </span>
             </label>
+            <label className="mt-3 flex items-start gap-3 rounded-lg border border-[#dfd9cf] bg-[#f8f7f3] p-3">
+              <input
+                type="checkbox"
+                checked={googleServicesChoice}
+                onChange={(event) => setGoogleServicesChoice(event.target.checked)}
+                className="mt-1 h-4 w-4 accent-[#9a7445]"
+              />
+              <span>
+                <span className="block text-sm font-semibold text-[#2f2f2d]">{copy.mapsLabel}</span>
+                <span className="block text-sm leading-relaxed text-[#77756f]">{copy.mapsHelp}</span>
+              </span>
+            </label>
           </div>
           <div className="grid gap-2 sm:grid-cols-2 md:min-w-[260px]">
             <Button
@@ -152,7 +172,7 @@ export function PrivacyConsentBanner({ forceOpen, onClose, onConsentChange, onNa
             </Button>
             <Button
               type="button"
-              onClick={() => choose(statisticsChoice)}
+              onClick={() => choose(statisticsChoice, googleServicesChoice)}
               className="bg-[#2f2f2d] text-white hover:bg-[#1c1c1a]"
             >
               {copy.save}
