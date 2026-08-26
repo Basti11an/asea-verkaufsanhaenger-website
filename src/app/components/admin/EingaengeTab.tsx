@@ -43,6 +43,32 @@ function getContactStatusClass(request: ContactRequest) {
   return 'bg-gray-100 text-gray-600 border-gray-200';
 }
 
+function createMailReplyHref(request: ContactRequest) {
+  const recipient = request.email.trim().replace(/[\r\n?]/g, '');
+  const subject = request.subject.trim().toLowerCase().startsWith('re:')
+    ? request.subject.trim()
+    : `Re: ${request.subject.trim()}`;
+  const body = [
+    `Hallo ${request.name.trim()},`,
+    '',
+    'vielen Dank für Ihre Anfrage.',
+    '',
+    '',
+    'Freundliche Grüße',
+    'ASEA Team',
+    '',
+    '--- Ursprüngliche Anfrage ---',
+    `Name: ${request.name}`,
+    `E-Mail: ${request.email}`,
+    `Telefon: ${request.phone || 'Nicht angegeben'}`,
+    `Eingang: ${formatDateTime(request.createdAt)}`,
+    '',
+    request.message,
+  ].join('\n');
+
+  return `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
 export function EingaengeTab() {
   const {
     references,
@@ -451,7 +477,7 @@ export function EingaengeTab() {
                 </p>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-3">
                 <Button
                   type="button"
                   variant="outline"
@@ -461,6 +487,16 @@ export function EingaengeTab() {
                 >
                   <Archive size={16} className="mr-2" />
                   Für später aufheben
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="border-[#b08a57]/40 text-[#2f2f2d]"
+                >
+                  <a href={createMailReplyHref(selectedContact)}>
+                    <Mail size={16} className="mr-2" />
+                    Per Mail antworten
+                  </a>
                 </Button>
                 <Button
                   type="button"
