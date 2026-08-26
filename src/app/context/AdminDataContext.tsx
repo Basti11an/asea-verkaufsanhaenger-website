@@ -22,8 +22,10 @@ import {
   createCustomerInSupabase,
   deleteCustomerFromSupabase,
   fetchCustomersFromSupabase,
+  resetFailedCustomerReminderInSupabase,
   updateCustomerInSupabase,
 } from '../lib/customersRepository';
+import type { ReminderStage } from '../lib/customerFollowup';
 
 export type ReferenceStatus = 'approved' | 'pending' | 'rejected';
 export type { ContactRequest, Customer };
@@ -134,6 +136,7 @@ interface AdminDataContextType {
   ) => Promise<ContactRequest>;
   createCustomer: (customer: CustomerInput) => Promise<Customer>;
   updateCustomer: (id: number, changes: CustomerUpdateInput) => Promise<Customer>;
+  resetFailedCustomerReminder: (id: number, stage: ReminderStage) => Promise<Customer>;
   deleteCustomer: (id: number) => Promise<void>;
 }
 
@@ -316,6 +319,14 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
     return savedCustomer;
   };
 
+  const resetFailedCustomerReminder = async (id: number, stage: ReminderStage) => {
+    const savedCustomer = await resetFailedCustomerReminderInSupabase(id, stage);
+    setCustomers((prev) =>
+      prev.map((customer) => (customer.id === id ? savedCustomer : customer)),
+    );
+    return savedCustomer;
+  };
+
   const deleteCustomer = async (id: number) => {
     await deleteCustomerFromSupabase(id);
     setCustomers((prev) => prev.filter((customer) => customer.id !== id));
@@ -349,6 +360,7 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
         updateContactRequest,
         createCustomer,
         updateCustomer,
+        resetFailedCustomerReminder,
         deleteCustomer,
       }}
     >

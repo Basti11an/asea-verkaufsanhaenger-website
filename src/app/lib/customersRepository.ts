@@ -5,6 +5,7 @@ import {
   type CustomerReviewStatus,
   type FollowUpPermissionStatus,
   type MailStatus,
+  type ReminderStage,
   normalizeEmail,
 } from './customerFollowup';
 import type { Lang } from '../context/LanguageContext';
@@ -261,6 +262,28 @@ export async function updateCustomerInSupabase(id: number, changes: CustomerUpda
 
   if (error) throw error;
   return toCustomer(data as unknown as CustomerRow);
+}
+
+export async function resetFailedCustomerReminderInSupabase(id: number, stage: ReminderStage): Promise<Customer> {
+  const client = getClient();
+  const { data, error } = await client.rpc('reset_failed_customer_reminder_for_admin', {
+    p_customer_id: id,
+    p_stage: stage,
+  });
+
+  if (error) throw error;
+  if (data !== true) {
+    throw new Error('Kein fehlgeschlagener Versand zum Zurücksetzen gefunden.');
+  }
+
+  const { data: customer, error: customerError } = await client
+    .from('customers')
+    .select(CUSTOMER_COLUMNS)
+    .eq('id', id)
+    .single();
+
+  if (customerError) throw customerError;
+  return toCustomer(customer as unknown as CustomerRow);
 }
 
 export async function deleteCustomerFromSupabase(id: number): Promise<void> {

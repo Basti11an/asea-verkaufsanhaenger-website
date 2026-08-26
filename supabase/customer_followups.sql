@@ -1140,6 +1140,75 @@ $$;
 revoke all on function public.record_customer_reminder_result(bigint, text, text, text) from public;
 grant execute on function public.record_customer_reminder_result(bigint, text, text, text) to service_role;
 
+create or replace function public.reset_failed_customer_reminder_for_admin(
+  p_customer_id bigint,
+  p_stage text
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_admin() then
+    raise exception 'not_authorized' using errcode = '42501';
+  end if;
+
+  if p_customer_id is null or p_stage not in ('two_month', 'six_month', 'twelve_month') then
+    return false;
+  end if;
+
+  if p_stage = 'two_month' then
+    update public.customers
+    set
+      two_month_email_status = 'pending',
+      two_month_email_attempted_at = null,
+      two_month_email_attempts = 0
+    where id = p_customer_id
+      and deleted_at is null
+      and coalesce(two_month_email_status, 'pending') = 'failed'
+      and two_month_email_sent_at is null;
+  elsif p_stage = 'six_month' then
+    update public.customers
+    set
+      six_month_email_status = 'pending',
+      six_month_email_attempted_at = null,
+      six_month_email_attempts = 0
+    where id = p_customer_id
+      and deleted_at is null
+      and coalesce(six_month_email_status, 'pending') = 'failed'
+      and six_month_email_sent_at is null;
+  else
+    update public.customers
+    set
+      twelve_month_email_status = 'pending',
+      twelve_month_email_attempted_at = null,
+      twelve_month_email_attempts = 0
+    where id = p_customer_id
+      and deleted_at is null
+      and coalesce(twelve_month_email_status, 'pending') = 'failed'
+      and twelve_month_email_sent_at is null;
+  end if;
+
+  if not found then
+    return false;
+  end if;
+
+  perform public.log_customer_followup_event(
+    p_customer_id,
+    'reminder_retry_reset',
+    p_stage,
+    'pending',
+    null
+  );
+
+  return true;
+end;
+$$;
+
+revoke all on function public.reset_failed_customer_reminder_for_admin(bigint, text) from public;
+grant execute on function public.reset_failed_customer_reminder_for_admin(bigint, text) to authenticated;
+
 drop policy if exists "customer references public visible read" on public.customer_references;
 create policy "customer references public visible read"
 on public.customer_references

@@ -70,6 +70,16 @@ describe('customer follow-up security migration', () => {
     expect(SQL).toContain("coalesce(c.two_month_email_attempts, 0) + 1");
   });
 
+  it('allows only authenticated admins to reset failed reminder retries', () => {
+    expect(SQL).toContain('create or replace function public.reset_failed_customer_reminder_for_admin');
+    expect(SQL).toContain('if not public.is_admin() then');
+    expect(SQL).toContain("raise exception 'not_authorized'");
+    expect(SQL).toContain("two_month_email_status = 'pending'");
+    expect(SQL).toContain('two_month_email_attempted_at = null');
+    expect(SQL).toContain('grant execute on function public.reset_failed_customer_reminder_for_admin(bigint, text) to authenticated;');
+    expect(SQL).not.toMatch(/grant execute on function public\.reset_failed_customer_reminder_for_admin\(bigint, text\) to anon/);
+  });
+
   it('allows public review submission only through a token RPC', () => {
     expect(SQL).toContain('create table if not exists public.customer_review_tokens');
     expect(SQL).toContain('create or replace function public.submit_customer_review_with_token');

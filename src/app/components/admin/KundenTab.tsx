@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { CalendarDays, CheckCircle2, Edit3, Mail, Plus, Search, ShieldCheck, Trash2 } from 'lucide-react';
+import { CalendarDays, CheckCircle2, Edit3, Mail, Plus, RotateCcw, Search, ShieldCheck, Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Input } from '../ui/input';
@@ -195,6 +195,16 @@ function getMailStatus(customer: Customer, stage: ReminderStage) {
   return mailStatusLabel(customer.twelveMonthEmailStatus, customer.twelveMonthEmailSentAt);
 }
 
+function getFailedReminderStages(customer: Customer): ReminderStage[] {
+  const stages: ReminderStage[] = [];
+
+  if (customer.twoMonthEmailStatus === 'failed' && !customer.twoMonthEmailSentAt) stages.push('two_month');
+  if (customer.sixMonthEmailStatus === 'failed' && !customer.sixMonthEmailSentAt) stages.push('six_month');
+  if (customer.twelveMonthEmailStatus === 'failed' && !customer.twelveMonthEmailSentAt) stages.push('twelve_month');
+
+  return stages;
+}
+
 function toFormState(customer: Customer): CustomerFormState {
   return {
     name: customer.name,
@@ -295,6 +305,7 @@ export function KundenTab() {
     reloadCustomers,
     createCustomer,
     updateCustomer,
+    resetFailedCustomerReminder,
     deleteCustomer,
   } = useAdminData();
 
@@ -307,6 +318,7 @@ export function KundenTab() {
   const [duplicateCustomer, setDuplicateCustomer] = useState<Customer | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Customer | null>(null);
   const [saving, setSaving] = useState(false);
+  const [retryingReminder, setRetryingReminder] = useState<string | null>(null);
 
   useEffect(() => {
     void reloadCustomers();
@@ -422,6 +434,21 @@ export function KundenTab() {
     }
   };
 
+  const retryFailedReminder = async (customer: Customer, stage: ReminderStage) => {
+    const key = `${customer.id}:${stage}`;
+    setRetryingReminder(key);
+
+    try {
+      await resetFailedCustomerReminder(customer.id, stage);
+      toast.success(`${REMINDER_LABELS[stage]} ist wieder für den nächsten Test freigegeben`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Fehlgeschlagener Versand konnte nicht zurückgesetzt werden';
+      toast.error(message);
+    } finally {
+      setRetryingReminder(null);
+    }
+  };
+
   const removeCustomer = async () => {
     if (!deleteTarget) return;
 
@@ -473,6 +500,25 @@ export function KundenTab() {
     );
   };
 
+  const renderRetryButtons = (customer: Customer) =>
+    getFailedReminderStages(customer).map((stage) => {
+      const key = `${customer.id}:${stage}`;
+
+      return (
+        <Button
+          key={stage}
+          size="sm"
+          variant="outline"
+          onClick={() => retryFailedReminder(customer, stage)}
+          disabled={retryingReminder === key || saving}
+          className="border-amber-200 text-amber-800 hover:bg-amber-50"
+        >
+          <RotateCcw size={14} className="mr-1.5" />
+          {REMINDER_LABELS[stage]} erneut testen
+        </Button>
+      );
+    });
+
   const renderCustomerCard = (customer: Customer) => (
     <article key={customer.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
@@ -495,6 +541,7 @@ export function KundenTab() {
       <div className="mt-4">{renderStatusBadges(customer)}</div>
 
       <div className="mt-4 grid gap-2 sm:grid-cols-3">
+        {renderRetryButtons(customer)}
         <Button size="sm" variant="outline" onClick={() => toggleFollowup(customer)} disabled={saving}>
           {customer.followUpEnabled ? 'Stoppen' : 'Aktivieren'}
         </Button>
@@ -610,7 +657,8 @@ export function KundenTab() {
                       <td className="px-4 py-4 text-[#55524c] max-w-[230px]">{renderNextAction(customer)}</td>
                       <td className="px-4 py-4 text-[#55524c] max-w-[220px]">{permissionLabel(customer.followUpPermissionStatus)}</td>
                       <td className="px-4 py-4">
-                        <div className="flex justify-end gap-2">
+                        <div className="flex flex-wrap justify-end gap-2">
+                          {renderRetryButtons(customer)}
                           <Button size="sm" variant="outline" onClick={() => openEditDialog(customer)}>
                             <Edit3 size={14} />
                           </Button>

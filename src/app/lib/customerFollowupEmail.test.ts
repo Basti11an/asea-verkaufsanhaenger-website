@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildFollowupEmail,
+  createResendSendError,
+  getSafeSendFailureDetails,
   type ClaimedReminder,
   type PreferredLanguage,
   type ReminderStage,
@@ -125,5 +127,27 @@ describe('customer follow-up email template', () => {
     expect(email.text).toContain('Abmeldelink: https://asea.example/bewertung-abmelden?token=unsubscribe-token_456');
     expect(email.text).toContain('Verkaufsanhänger ASEA');
     expect(email.text).toContain('Lahrndorf 34');
+  });
+
+  it('extracts and masks detailed Resend provider errors for safe logs', async () => {
+    const response = new Response(JSON.stringify({
+      name: 'validation_error',
+      message: 'You can only send testing emails to your own email address (bastianhochreither@gmx.at).',
+    }), {
+      status: 403,
+      headers: {
+        'content-type': 'application/json',
+      },
+    });
+
+    const error = await createResendSendError(response);
+    const details = getSafeSendFailureDetails(error);
+
+    expect(details).toEqual({
+      provider: 'resend',
+      http_status: 403,
+      error_code: 'resend_403_validation_error',
+      error_message: 'You can only send testing emails to your own email address ([email]).',
+    });
   });
 });

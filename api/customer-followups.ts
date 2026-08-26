@@ -37,6 +37,37 @@ interface LanguageCopy {
   unsubscribeTextLabel: string;
 }
 
+interface ResendErrorBody {
+  name?: string;
+  code?: string;
+  error?: string;
+  message?: string;
+  statusCode?: number;
+}
+
+interface SendFailureDetail {
+  customer_id: number;
+  reminder_stage: ReminderStage;
+  provider?: 'resend';
+  http_status?: number;
+  error_code: string;
+}
+
+export class ResendSendError extends Error {
+  provider = 'resend' as const;
+  httpStatus: number;
+  errorCode: string;
+  providerMessage: string;
+
+  constructor(httpStatus: number, errorCode: string, providerMessage: string) {
+    super(`resend_${httpStatus}_${errorCode}`);
+    this.name = 'ResendSendError';
+    this.httpStatus = httpStatus;
+    this.errorCode = errorCode;
+    this.providerMessage = providerMessage;
+  }
+}
+
 const REMINDER_COPY: Record<PreferredLanguage, Record<ReminderStage, ReminderCopy>> = {
   de: {
     two_month: {
@@ -225,6 +256,65 @@ function sanitizeErrorCode(error: unknown) {
     .slice(0, 80) || 'unknown_error';
 }
 
+function sanitizeLogMessage(value: unknown) {
+  return String(value ?? '')
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[email]')
+    .replace(/token=[A-Za-z0-9._~+/=-]+/g, 'token=[redacted]')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 500);
+}
+
+function getResponseHeader(response: Response, name: string) {
+  try {
+    return response.headers.get(name) ?? '';
+  } catch {
+    return '';
+  }
+}
+
+export async function createResendSendError(response: Response) {
+  const contentType = getResponseHeader(response, 'content-type');
+  let body: ResendErrorBody | string = '';
+
+  try {
+    body = contentType.includes('application/json')
+      ? ((await response.json()) as ResendErrorBody)
+      : await response.text();
+  } catch {
+    body = '';
+  }
+
+  const rawCode = typeof body === 'object'
+    ? body.code || body.name || body.error || `http_${response.status}`
+    : `http_${response.status}`;
+  const rawMessage = typeof body === 'object'
+    ? body.message || body.error || response.statusText || 'Resend request failed'
+    : body || response.statusText || 'Resend request failed';
+
+  return new ResendSendError(
+    response.status,
+    sanitizeErrorCode(rawCode),
+    sanitizeLogMessage(rawMessage),
+  );
+}
+
+export function getSafeSendFailureDetails(error: unknown) {
+  if (error instanceof ResendSendError) {
+    return {
+      provider: error.provider,
+      http_status: error.httpStatus,
+      error_code: sanitizeErrorCode(`${error.provider}_${error.httpStatus}_${error.errorCode}`),
+      error_message: error.providerMessage,
+    };
+  }
+
+  return {
+    error_code: sanitizeErrorCode(error),
+    error_message: sanitizeLogMessage(error instanceof Error ? error.message : error),
+  };
+}
+
 function generateToken() {
   return randomBytes(32).toString('base64url');
 }
@@ -408,7 +498,7 @@ async function sendEmail({
   });
 
   if (!response.ok) {
-    throw new Error(`resend_${response.status}`);
+    throw await createResendSendError(response);
   }
 }
 
@@ -471,6 +561,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     let sent = 0;
     let failed = 0;
     let skipped = 0;
+    const failures: SendFailureDetail[] = [];
 
     for (const reminder of reminders) {
       const reviewToken = generateToken();
@@ -527,11 +618,22 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
         sent += 1;
       } catch (error) {
         failed += 1;
-        const errorCode = sanitizeErrorCode(error);
-        console.error('Customer follow-up send failed:', {
+        const safeError = getSafeSendFailureDetails(error);
+        const errorCode = safeError.error_code;
+        failures.push({
           customer_id: reminder.customer_id,
           reminder_stage: reminder.reminder_stage,
+          ...(safeError.provider ? { provider: safeError.provider } : {}),
+          ...(safeError.http_status ? { http_status: safeError.http_status } : {}),
           error_code: errorCode,
+        });
+        console.error('Customer follow-up send failed:', {
+          provider: safeError.provider ?? 'internal',
+          customer_id: reminder.customer_id,
+          reminder_stage: reminder.reminder_stage,
+          http_status: safeError.http_status ?? null,
+          error_code: errorCode,
+          error_message: safeError.error_message,
         });
 
         await supabase.rpc('record_customer_reminder_result', {
@@ -549,6 +651,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       sent,
       failed,
       skipped,
+      ...(failures.length > 0 ? { failures } : {}),
     }, isHeadRequest);
   } catch (error) {
     console.error('Customer follow-up cron failed:', sanitizeErrorCode(error));

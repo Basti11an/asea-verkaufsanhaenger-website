@@ -193,6 +193,22 @@ Das bestehende Kontaktformular verwendet weiter EmailJS.
 
 Automatische Bewertungs-Follow-ups verwenden serverseitig Resend, damit kein privater Mail-Key im Frontend landet. Der Resend-Key muss als serverseitiges Vercel Secret hinterlegt werden.
 
+### Resend-Testmodus
+
+Wenn `FOLLOWUP_FROM_EMAIL=onboarding@resend.dev` verwendet wird, gilt die Resend-Testeinschraenkung: Diese Absenderadresse darf nur an die E-Mail-Adresse senden, die zum Resend-Account gehoert. Fuer andere echte Empfaenger antwortet Resend typischerweise mit HTTP 403 und einem Hinweis auf die fehlende Domain-Verifizierung.
+
+Fuer echte Kundenmails muss spaeter eine ASEA-Domain in Resend verifiziert werden. Danach sollte `FOLLOWUP_FROM_EMAIL` auf eine Adresse dieser verifizierten Domain geaendert werden, z. B. `ASEA <office@verkaufsanhaenger-asea.at>`.
+
+### Fehlgeschlagenen Testversand erneut versuchen
+
+Die automatische 24h-Retry-Sperre bleibt produktiv aktiv. Fuer Entwicklung und Admin-Tests gibt es im Adminbereich bei Kunden mit fehlgeschlagenem Reminder einen Button:
+
+```text
+2-Monats-Mail erneut testen
+```
+
+Der Button setzt nur diesen fehlgeschlagenen Reminder serverseitig wieder auf `pending`. Danach kann `/api/customer-followups` erneut manuell mit `CRON_SECRET` aufgerufen werden.
+
 ## Testmail sicher senden
 
 Der sicherste Test laeuft ueber die normale Follow-up-Route, damit echte Bewertungs- und Abmelde-Tokens erzeugt werden:
