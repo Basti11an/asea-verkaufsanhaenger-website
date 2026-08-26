@@ -41,6 +41,15 @@ describe('customer follow-up security migration', () => {
     expect(SQL).not.toMatch(/grant execute on function public\.claim_due_customer_reminders\(integer\) to (anon|authenticated)/);
   });
 
+  it('filters claimable reminders before applying the cron limit', () => {
+    const claimFunction = SQL.match(/create or replace function public\.claim_due_customer_reminders[\s\S]+?revoke all on function public\.claim_due_customer_reminders\(integer\) from public;/)?.[0] ?? '';
+
+    expect(SQL).toContain('create or replace function public.get_customer_claimable_reminder_stage');
+    expect(claimFunction).toContain('cross join lateral');
+    expect(claimFunction).toMatch(/and due\.stage is not null[\s\S]+limit least/);
+    expect(claimFunction).not.toContain('where due.stage is not null');
+  });
+
   it('allows public review submission only through a token RPC', () => {
     expect(SQL).toContain('create table if not exists public.customer_review_tokens');
     expect(SQL).toContain('create or replace function public.submit_customer_review_with_token');

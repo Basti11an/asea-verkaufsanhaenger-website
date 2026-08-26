@@ -28,12 +28,15 @@ export interface CustomerFollowupSnapshot {
   manualReviewConfirmedAt?: string | null;
   twoMonthEmailStatus: MailStatus;
   twoMonthEmailSentAt?: string | null;
+  twoMonthEmailAttemptedAt?: string | null;
   twoMonthEmailAttempts?: number;
   sixMonthEmailStatus: MailStatus;
   sixMonthEmailSentAt?: string | null;
+  sixMonthEmailAttemptedAt?: string | null;
   sixMonthEmailAttempts?: number;
   twelveMonthEmailStatus: MailStatus;
   twelveMonthEmailSentAt?: string | null;
+  twelveMonthEmailAttemptedAt?: string | null;
   twelveMonthEmailAttempts?: number;
 }
 
@@ -139,6 +142,7 @@ function getStageStatus(customer: CustomerFollowupSnapshot, stage: ReminderStage
     return {
       status: customer.twoMonthEmailStatus,
       sentAt: customer.twoMonthEmailSentAt,
+      attemptedAt: customer.twoMonthEmailAttemptedAt,
       attempts: customer.twoMonthEmailAttempts ?? 0,
     };
   }
@@ -147,6 +151,7 @@ function getStageStatus(customer: CustomerFollowupSnapshot, stage: ReminderStage
     return {
       status: customer.sixMonthEmailStatus,
       sentAt: customer.sixMonthEmailSentAt,
+      attemptedAt: customer.sixMonthEmailAttemptedAt,
       attempts: customer.sixMonthEmailAttempts ?? 0,
     };
   }
@@ -154,8 +159,26 @@ function getStageStatus(customer: CustomerFollowupSnapshot, stage: ReminderStage
   return {
     status: customer.twelveMonthEmailStatus,
     sentAt: customer.twelveMonthEmailSentAt,
+    attemptedAt: customer.twelveMonthEmailAttemptedAt,
     attempts: customer.twelveMonthEmailAttempts ?? 0,
   };
+}
+
+function toComparableTime(value: string | Date) {
+  if (value instanceof Date) return value.getTime();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return new Date(`${value}T00:00:00.000Z`).getTime();
+  const time = new Date(value).getTime();
+  return Number.isFinite(time) ? time : 0;
+}
+
+function isRetryCoolingDown(status: MailStatus, attemptedAt: string | null | undefined, now: string | Date) {
+  if (status !== 'failed' && status !== 'processing') return false;
+  if (!attemptedAt) return false;
+
+  const attemptedTime = new Date(attemptedAt).getTime();
+  if (!Number.isFinite(attemptedTime)) return false;
+
+  return toComparableTime(now) - attemptedTime < 24 * 60 * 60 * 1000;
 }
 
 export function getNextReminder(customer: CustomerFollowupSnapshot, today: string | Date = new Date()): NextReminder | null {
@@ -164,13 +187,20 @@ export function getNextReminder(customer: CustomerFollowupSnapshot, today: strin
   const todayDate = dateOnly(today);
 
   for (const stage of STAGE_ORDER) {
-    const { status, sentAt, attempts } = getStageStatus(customer, stage);
-    if (status === 'sent' || sentAt) continue;
-    if (status === 'processing') continue;
+    const { status, sentAt, attemptedAt, attempts } = getStageStatus(customer, stage);
+    if (status === 'sent' || status === 'skipped' || sentAt) continue;
     if (attempts >= 3) continue;
 
     const dueDate = getReminderDueDate(customer.purchaseDate, stage);
     if (!dueDate) continue;
+
+    if (isRetryCoolingDown(status, attemptedAt, today)) {
+      return {
+        stage,
+        dueDate,
+        isDue: false,
+      };
+    }
 
     return {
       stage,

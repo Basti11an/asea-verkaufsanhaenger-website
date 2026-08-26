@@ -52,6 +52,17 @@ describe('customer follow-up logic', () => {
     expect(isReminderDue(customer(), 'two_month', '2026-03-31')).toBe(true);
   });
 
+  it('detects the real 25 June 2026 two-month due case used by the SQL cron', () => {
+    const snapshot = customer({ purchaseDate: '2026-06-25' });
+
+    expect(getNextReminder(snapshot, '2026-08-26')).toEqual({
+      stage: 'two_month',
+      dueDate: '2026-08-25',
+      isDue: true,
+    });
+    expect(isReminderDue(snapshot, 'two_month', '2026-08-26')).toBe(true);
+  });
+
   it('does not send without documented permission', () => {
     const snapshot = customer({ followUpPermissionStatus: 'unknown' });
     expect(getCustomerStopReason(snapshot)).toBe('permission_missing');
@@ -94,6 +105,32 @@ describe('customer follow-up logic', () => {
 
     const result = getNextReminder(snapshot, '2026-07-31');
     expect(result?.stage).toBe('six_month');
+  });
+
+  it('does not skip to a later reminder while an earlier failed attempt is cooling down', () => {
+    const snapshot = customer({
+      purchaseDate: '2026-01-25',
+      twoMonthEmailStatus: 'failed',
+      twoMonthEmailAttemptedAt: '2026-08-26T08:00:00.000Z',
+      twoMonthEmailAttempts: 1,
+    });
+
+    const result = getNextReminder(snapshot, '2026-08-26T09:00:00.000Z');
+    expect(result).toEqual({
+      stage: 'two_month',
+      dueDate: '2026-03-25',
+      isDue: false,
+    });
+    expect(isReminderDue(snapshot, 'six_month', '2026-08-26T09:00:00.000Z')).toBe(false);
+  });
+
+  it('treats skipped reminder stages as completed for scheduling', () => {
+    const snapshot = customer({
+      purchaseDate: '2026-01-25',
+      twoMonthEmailStatus: 'skipped',
+    });
+
+    expect(getNextReminder(snapshot, '2026-08-26')?.stage).toBe('six_month');
   });
 
   it('stops after the twelve-month reminder was sent', () => {

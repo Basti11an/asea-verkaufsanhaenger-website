@@ -744,6 +744,136 @@ $$;
 revoke all on function public.submit_customer_review_with_token(text, integer, text, text, boolean) from public;
 grant execute on function public.submit_customer_review_with_token(text, integer, text, text, boolean) to anon, authenticated;
 
+create or replace function public.get_customer_claimable_reminder_stage(
+  p_purchase_date date,
+  p_two_month_email_status text,
+  p_two_month_email_sent_at timestamptz,
+  p_two_month_email_attempted_at timestamptz,
+  p_two_month_email_attempts integer,
+  p_six_month_email_status text,
+  p_six_month_email_sent_at timestamptz,
+  p_six_month_email_attempted_at timestamptz,
+  p_six_month_email_attempts integer,
+  p_twelve_month_email_status text,
+  p_twelve_month_email_sent_at timestamptz,
+  p_twelve_month_email_attempted_at timestamptz,
+  p_twelve_month_email_attempts integer
+)
+returns text
+language plpgsql
+stable
+set search_path = public
+as $$
+declare
+  v_today date := (now() at time zone 'Europe/Vienna')::date;
+  v_retry_cutoff timestamptz := now() - interval '1 day';
+begin
+  if p_purchase_date is null then
+    return null;
+  end if;
+
+  if coalesce(p_two_month_email_status, 'pending') not in ('sent', 'skipped')
+    and p_two_month_email_sent_at is null
+    and coalesce(p_two_month_email_attempts, 0) < 3
+  then
+    if (p_purchase_date + interval '2 months')::date > v_today then
+      return null;
+    end if;
+
+    if coalesce(p_two_month_email_status, 'pending') = 'pending'
+      or (
+        coalesce(p_two_month_email_status, 'pending') in ('failed', 'processing')
+        and (
+          p_two_month_email_attempted_at is null
+          or p_two_month_email_attempted_at < v_retry_cutoff
+        )
+      )
+    then
+      return 'two_month';
+    end if;
+
+    return null;
+  end if;
+
+  if coalesce(p_six_month_email_status, 'pending') not in ('sent', 'skipped')
+    and p_six_month_email_sent_at is null
+    and coalesce(p_six_month_email_attempts, 0) < 3
+  then
+    if (p_purchase_date + interval '6 months')::date > v_today then
+      return null;
+    end if;
+
+    if coalesce(p_six_month_email_status, 'pending') = 'pending'
+      or (
+        coalesce(p_six_month_email_status, 'pending') in ('failed', 'processing')
+        and (
+          p_six_month_email_attempted_at is null
+          or p_six_month_email_attempted_at < v_retry_cutoff
+        )
+      )
+    then
+      return 'six_month';
+    end if;
+
+    return null;
+  end if;
+
+  if coalesce(p_twelve_month_email_status, 'pending') not in ('sent', 'skipped')
+    and p_twelve_month_email_sent_at is null
+    and coalesce(p_twelve_month_email_attempts, 0) < 3
+  then
+    if (p_purchase_date + interval '12 months')::date > v_today then
+      return null;
+    end if;
+
+    if coalesce(p_twelve_month_email_status, 'pending') = 'pending'
+      or (
+        coalesce(p_twelve_month_email_status, 'pending') in ('failed', 'processing')
+        and (
+          p_twelve_month_email_attempted_at is null
+          or p_twelve_month_email_attempted_at < v_retry_cutoff
+        )
+      )
+    then
+      return 'twelve_month';
+    end if;
+  end if;
+
+  return null;
+end;
+$$;
+
+revoke all on function public.get_customer_claimable_reminder_stage(
+  date,
+  text,
+  timestamptz,
+  timestamptz,
+  integer,
+  text,
+  timestamptz,
+  timestamptz,
+  integer,
+  text,
+  timestamptz,
+  timestamptz,
+  integer
+) from public;
+grant execute on function public.get_customer_claimable_reminder_stage(
+  date,
+  text,
+  timestamptz,
+  timestamptz,
+  integer,
+  text,
+  timestamptz,
+  timestamptz,
+  integer,
+  text,
+  timestamptz,
+  timestamptz,
+  integer
+) to service_role;
+
 create or replace function public.verify_customer_reminder_claim(
   p_customer_id bigint,
   p_stage text
@@ -793,28 +923,28 @@ set search_path = public
 as $$
 begin
   return query
-  with due as (
+  with selected_due as (
     select
       c.id,
-      case
-        when c.two_month_email_status in ('pending', 'failed')
-          and c.two_month_email_attempts < 3
-          and (c.two_month_email_attempted_at is null or c.two_month_email_attempted_at < now() - interval '1 day')
-          and (c.purchase_date + interval '2 months')::date <= (now() at time zone 'Europe/Vienna')::date
-          then 'two_month'
-        when c.six_month_email_status in ('pending', 'failed')
-          and c.six_month_email_attempts < 3
-          and (c.six_month_email_attempted_at is null or c.six_month_email_attempted_at < now() - interval '1 day')
-          and (c.purchase_date + interval '6 months')::date <= (now() at time zone 'Europe/Vienna')::date
-          then 'six_month'
-        when c.twelve_month_email_status in ('pending', 'failed')
-          and c.twelve_month_email_attempts < 3
-          and (c.twelve_month_email_attempted_at is null or c.twelve_month_email_attempted_at < now() - interval '1 day')
-          and (c.purchase_date + interval '12 months')::date <= (now() at time zone 'Europe/Vienna')::date
-          then 'twelve_month'
-        else null
-      end as stage
+      due.stage
     from public.customers c
+    cross join lateral (
+      select public.get_customer_claimable_reminder_stage(
+        c.purchase_date,
+        c.two_month_email_status,
+        c.two_month_email_sent_at,
+        c.two_month_email_attempted_at,
+        c.two_month_email_attempts,
+        c.six_month_email_status,
+        c.six_month_email_sent_at,
+        c.six_month_email_attempted_at,
+        c.six_month_email_attempts,
+        c.twelve_month_email_status,
+        c.twelve_month_email_sent_at,
+        c.twelve_month_email_attempted_at,
+        c.twelve_month_email_attempts
+      ) as stage
+    ) due
     where c.deleted_at is null
       and c.follow_up_enabled = true
       and c.follow_up_opt_out = false
@@ -823,14 +953,10 @@ begin
       and c.review_found_at is null
       and c.manual_review_confirmed_at is null
       and not (c.twelve_month_email_status = 'sent' or c.twelve_month_email_sent_at is not null)
+      and due.stage is not null
     order by c.purchase_date asc, c.id asc
     limit least(greatest(coalesce(p_limit, 20), 1), 50)
-    for update skip locked
-  ),
-  selected_due as (
-    select due.id, due.stage
-    from due
-    where due.stage is not null
+    for update of c skip locked
   ),
   updated as (
     update public.customers c
