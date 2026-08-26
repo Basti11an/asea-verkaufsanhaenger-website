@@ -9,6 +9,8 @@ type ReferenceRow = {
   jahr: number;
   beschreibung: string;
   bild_url: string;
+  rating?: number | null;
+  public_consent?: boolean;
   sichtbar: boolean;
   status: 'approved' | 'pending' | 'rejected';
   kontakt_email?: string;
@@ -25,6 +27,8 @@ function toAdminReference(row: ReferenceRow): AdminReference {
     jahr: row.jahr,
     beschreibung: row.beschreibung ?? '',
     bildUrl: row.bild_url ?? '',
+    rating: row.rating ?? null,
+    publicConsent: row.public_consent ?? true,
     sichtbar: row.sichtbar,
     status: row.status ?? 'approved',
     kontaktEmail: row.kontakt_email ?? '',
@@ -41,6 +45,8 @@ function toReferencePayload(reference: Partial<Omit<AdminReference, 'id'>>) {
     ...(reference.jahr !== undefined ? { jahr: reference.jahr } : {}),
     ...(reference.beschreibung !== undefined ? { beschreibung: reference.beschreibung } : {}),
     ...(reference.bildUrl !== undefined ? { bild_url: reference.bildUrl } : {}),
+    ...(reference.rating !== undefined ? { rating: reference.rating } : {}),
+    ...(reference.publicConsent !== undefined ? { public_consent: reference.publicConsent } : {}),
     ...(reference.sichtbar !== undefined ? { sichtbar: reference.sichtbar } : {}),
     ...(reference.status !== undefined ? { status: reference.status } : {}),
     ...(reference.kontaktEmail !== undefined ? { kontakt_email: reference.kontaktEmail } : {}),
@@ -58,25 +64,37 @@ function getClient() {
 
 export async function fetchReferencesFromSupabase(includePrivateFields = false): Promise<AdminReference[]> {
   const client = getClient();
-  const columns = includePrivateFields ? '*' : 'id,kundenname,ort,modell,jahr,beschreibung,bild_url,sichtbar,status,created_at';
+  const basePublicColumns = 'id,kundenname,ort,modell,jahr,beschreibung,bild_url,sichtbar,status,created_at';
+  const publicColumns = `${basePublicColumns},rating`;
 
   if (includePrivateFields) {
     const { data, error } = await client
       .from('customer_references')
-      .select(columns)
+      .select('*')
       .order('id', { ascending: false });
 
     if (error) throw error;
-    return (data ?? []).map((row) => toAdminReference(row as ReferenceRow));
+    return (data ?? []).map((row) => toAdminReference(row as unknown as ReferenceRow));
   }
 
   const publicResult = await client
     .from('customer_references_public')
-    .select(columns)
+    .select(publicColumns)
     .order('id', { ascending: false });
 
   if (!publicResult.error) {
-    return (publicResult.data ?? []).map((row) => toAdminReference(row as ReferenceRow));
+    return (publicResult.data ?? []).map((row) => toAdminReference(row as unknown as ReferenceRow));
+  }
+
+  if (publicResult.error.code === '42703' || publicResult.error.code === 'PGRST204') {
+    const legacyPublicResult = await client
+      .from('customer_references_public')
+      .select(basePublicColumns)
+      .order('id', { ascending: false });
+
+    if (!legacyPublicResult.error) {
+      return (legacyPublicResult.data ?? []).map((row) => toAdminReference(row as unknown as ReferenceRow));
+    }
   }
 
   if (publicResult.error.code !== 'PGRST205' && publicResult.error.code !== '42P01') {
@@ -87,13 +105,13 @@ export async function fetchReferencesFromSupabase(includePrivateFields = false):
 
   const fallbackResult = await client
     .from('customer_references')
-    .select(columns)
+    .select(basePublicColumns)
     .eq('status', 'approved')
     .eq('sichtbar', true)
     .order('id', { ascending: false });
 
   if (fallbackResult.error) throw fallbackResult.error;
-  return (fallbackResult.data ?? []).map((row) => toAdminReference(row as ReferenceRow));
+  return (fallbackResult.data ?? []).map((row) => toAdminReference(row as unknown as ReferenceRow));
 }
 
 export async function createReferenceInSupabase(reference: Omit<AdminReference, 'id'>): Promise<AdminReference> {

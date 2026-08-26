@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "vite build && node scripts/build-single-file.cjs",
     "build:vite": "vite build",
+    "test": "vitest run",
     "preview": "vite preview",
     "start": "vite"
   },
@@ -38,7 +39,8 @@
     "@vitejs/plugin-react": "4.7.0",
     "tailwindcss": "4.1.12",
     "typescript": "^5.8.3",
-    "vite": "6.4.3"
+    "vite": "6.4.3",
+    "vitest": "^4.1.11"
   },
   "engines": {
     "node": ">=20.11.0"

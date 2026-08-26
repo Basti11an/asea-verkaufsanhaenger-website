@@ -11,6 +11,7 @@ interface AdminHeaderProps {
 
 const TABS = [
   { id: 'eingaenge', label: 'Eingänge' },
+  { id: 'kunden', label: 'Kunden' },
   { id: 'modelle', label: 'Modelle' },
   { id: 'referenzen', label: 'Referenzen' },
 ];

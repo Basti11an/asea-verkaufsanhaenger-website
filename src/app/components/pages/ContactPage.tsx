@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -25,8 +25,20 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
   });
   const [companyWebsite, setCompanyWebsite] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [reviewOfferOpen, setReviewOfferOpen] = useState(false);
+  const [reviewOfferDismissed, setReviewOfferDismissed] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [formError, setFormError] = useState('');
+
+  useEffect(() => {
+    if (window.location.hash !== '#erfahrung-teilen') return;
+
+    const timer = window.setTimeout(() => {
+      document.getElementById('erfahrung-teilen')?.scrollIntoView({ block: 'start' });
+    }, 260);
+
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +57,7 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
     const source = formData.subject.trim() === CONFIGURATOR_REQUEST_SUBJECT ? 'configurator' : 'contact';
     const validation = validateContactRequest(formData, source);
 
-    if (!validation.ok) {
+    if (validation.ok === false) {
       setFormError(validation.error);
       return;
     }
@@ -57,13 +69,12 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
       await sendContactRequestEmails(validation.value);
 
       setSubmitted(true);
+      setReviewOfferOpen(false);
+      setReviewOfferDismissed(false);
 
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
-      setTimeout(() => {
-        setSubmitted(false);
-      }, 4000);
-    } catch (error) {
-      console.warn('Contact request failed:', error);
+    } catch {
+      console.warn('Contact request failed.');
       setFormError(
         'Die Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es später erneut oder kontaktieren Sie uns direkt per E-Mail.',
       );
@@ -95,6 +106,43 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
                   <CheckCircle2 className="text-[#b08a57] mx-auto mb-4" size={48} />
                   <h3 className="text-2xl text-[#2f2f2d] mb-2">{t('contact_success_title')}</h3>
                   <p className="text-[#77756f]">{t('contact_success_desc')}</p>
+
+                  {!reviewOfferOpen && !reviewOfferDismissed && (
+                    <div className="mt-6 rounded-lg border border-[#dfd9cf] bg-white p-5 text-left">
+                      <h4 className="text-lg font-semibold text-[#2f2f2d]">{t('contact_review_offer_title')}</h4>
+                      <p className="mt-2 text-sm leading-relaxed text-[#77756f]">{t('contact_review_offer_desc')}</p>
+                      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                        <Button
+                          type="button"
+                          onClick={() => setReviewOfferOpen(true)}
+                          className="bg-[#2f2f2d] hover:bg-[#1c1c1a] text-white"
+                        >
+                          {t('contact_review_offer_yes')}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setReviewOfferDismissed(true)}
+                          className="border-[#b08a57]/40 text-[#2f2f2d]"
+                        >
+                          {t('contact_review_offer_no')}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {reviewOfferDismissed && (
+                    <p className="mt-5 text-sm text-[#77756f]">{t('contact_review_offer_dismissed')}</p>
+                  )}
+
+                  {reviewOfferOpen && (
+                    <ReferenceSubmitPanel
+                      className="mt-6 text-left"
+                      descriptionKey="contact_reference_desc"
+                      buttonLabelKey="references_write_review"
+                      initiallyOpen
+                    />
+                  )}
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -373,7 +421,7 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
       </section>
 
       {/* Experience Submission */}
-      <section className="py-16 md:py-20 bg-[#f8f7f3]">
+      <section id="erfahrung-teilen" className="py-16 md:py-20 bg-[#f8f7f3]">
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24">
           <ReferenceSubmitPanel
             descriptionKey="contact_reference_desc"

@@ -2,6 +2,7 @@ import { Toaster } from 'sonner';
 import { ModelleTab } from '../admin/ModelleTab';
 import { ReferenzenTab } from '../admin/ReferenzenTab';
 import { EingaengeTab } from '../admin/EingaengeTab';
+import { KundenTab } from '../admin/KundenTab';
 
 interface MessagesPageProps {
   activeTab: string;
@@ -17,6 +18,10 @@ export function MessagesPage({ activeTab }: MessagesPageProps) {
       {/* All tabs always mounted — hidden via CSS to preserve local edit state */}
       <div className={activeTab === 'eingaenge' ? '' : 'hidden'}>
         <EingaengeTab />
+      </div>
+
+      <div className={activeTab === 'kunden' ? '' : 'hidden'}>
+        <KundenTab />
       </div>
 
       <div className={activeTab === 'modelle' ? '' : 'hidden'}>

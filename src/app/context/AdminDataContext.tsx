@@ -15,9 +15,18 @@ import {
   submitContactRequestToSupabase,
   updateContactRequestInSupabase,
 } from '../lib/contactRequestsRepository';
+import {
+  type Customer,
+  type CustomerInput,
+  type CustomerUpdateInput,
+  createCustomerInSupabase,
+  deleteCustomerFromSupabase,
+  fetchCustomersFromSupabase,
+  updateCustomerInSupabase,
+} from '../lib/customersRepository';
 
 export type ReferenceStatus = 'approved' | 'pending' | 'rejected';
-export type { ContactRequest };
+export type { ContactRequest, Customer };
 
 export interface AdminModel {
   id: number;
@@ -44,6 +53,8 @@ export interface AdminReference {
   jahr: number;
   beschreibung: string;
   bildUrl: string;
+  rating?: number | null;
+  publicConsent?: boolean;
   sichtbar: boolean;
   status: ReferenceStatus;
   kontaktEmail: string;
@@ -106,8 +117,12 @@ interface AdminDataContextType {
   contactRequests: ContactRequest[];
   contactRequestsLoading: boolean;
   contactRequestsError: string | null;
+  customers: Customer[];
+  customersLoading: boolean;
+  customersError: string | null;
   reloadReferences: () => Promise<void>;
   reloadContactRequests: () => Promise<void>;
+  reloadCustomers: () => Promise<void>;
   createReference: (reference: Omit<AdminReference, 'id'>) => Promise<AdminReference>;
   submitReference: (reference: Omit<AdminReference, 'id' | 'sichtbar' | 'status'>) => Promise<void>;
   updateReference: (id: number, changes: Partial<AdminReference>) => Promise<AdminReference>;
@@ -117,6 +132,9 @@ interface AdminDataContextType {
     id: number,
     changes: Partial<Pick<ContactRequest, 'status' | 'isRead'>>,
   ) => Promise<ContactRequest>;
+  createCustomer: (customer: CustomerInput) => Promise<Customer>;
+  updateCustomer: (id: number, changes: CustomerUpdateInput) => Promise<Customer>;
+  deleteCustomer: (id: number) => Promise<void>;
 }
 
 const AdminDataContext = createContext<AdminDataContextType | null>(null);
@@ -138,6 +156,9 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
   const [contactRequests, setContactRequests] = useState<ContactRequest[]>([]);
   const [contactRequestsLoading, setContactRequestsLoading] = useState(false);
   const [contactRequestsError, setContactRequestsError] = useState<string | null>(null);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customersLoading, setCustomersLoading] = useState(false);
+  const [customersError, setCustomersError] = useState<string | null>(null);
 
   const reloadReferences = useCallback(async () => {
     if (!isSupabaseConfigured) return;
@@ -174,6 +195,25 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const reloadCustomers = useCallback(async () => {
+    if (!isSupabaseConfigured || !(await isCurrentUserAdmin())) {
+      setCustomers([]);
+      return;
+    }
+
+    setCustomersLoading(true);
+    setCustomersError(null);
+
+    try {
+      const remoteCustomers = await fetchCustomersFromSupabase();
+      setCustomers(remoteCustomers);
+    } catch (error) {
+      setCustomersError(getErrorMessage(error));
+    } finally {
+      setCustomersLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     void reloadReferences();
 
@@ -184,10 +224,11 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange(() => {
       void reloadReferences();
       void reloadContactRequests();
+      void reloadCustomers();
     });
 
     return () => subscription.unsubscribe();
-  }, [reloadReferences, reloadContactRequests]);
+  }, [reloadReferences, reloadContactRequests, reloadCustomers]);
 
   const createReference = async (reference: Omit<AdminReference, 'id'>) => {
     if (isSupabaseConfigured) {
@@ -261,6 +302,25 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
     return savedContactRequest;
   };
 
+  const createCustomer = async (customer: CustomerInput) => {
+    const savedCustomer = await createCustomerInSupabase(customer);
+    setCustomers((prev) => [savedCustomer, ...prev]);
+    return savedCustomer;
+  };
+
+  const updateCustomer = async (id: number, changes: CustomerUpdateInput) => {
+    const savedCustomer = await updateCustomerInSupabase(id, changes);
+    setCustomers((prev) =>
+      prev.map((customer) => (customer.id === id ? savedCustomer : customer)),
+    );
+    return savedCustomer;
+  };
+
+  const deleteCustomer = async (id: number) => {
+    await deleteCustomerFromSupabase(id);
+    setCustomers((prev) => prev.filter((customer) => customer.id !== id));
+  };
+
   return (
     <AdminDataContext.Provider
       value={{
@@ -275,14 +335,21 @@ export function AdminDataProvider({ children }: { children: React.ReactNode }) {
         contactRequests,
         contactRequestsLoading,
         contactRequestsError,
+        customers,
+        customersLoading,
+        customersError,
         reloadReferences,
         reloadContactRequests,
+        reloadCustomers,
         createReference,
         submitReference,
         updateReference,
         deleteReference,
         submitContactRequest,
         updateContactRequest,
+        createCustomer,
+        updateCustomer,
+        deleteCustomer,
       }}
     >
       {children}

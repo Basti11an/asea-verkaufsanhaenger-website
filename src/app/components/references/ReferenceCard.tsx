@@ -50,6 +50,11 @@ export function ReferenceCard({ reference, className = '', compact = false }: Re
         <div className="text-xs text-[#77756f] mb-2 md:mb-3">
           {reference.ort} - {reference.jahr}
         </div>
+        {reference.rating ? (
+          <div className="mb-2 text-sm tracking-[0.08em] text-[#b08a57]">
+            {'★'.repeat(reference.rating)}
+          </div>
+        ) : null}
         {description && (
           <p className={`text-[#77756f] text-sm leading-relaxed ${compact ? 'line-clamp-3' : 'line-clamp-2'}`}>
             {description}

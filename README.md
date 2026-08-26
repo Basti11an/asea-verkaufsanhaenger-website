@@ -35,8 +35,10 @@ Die Kundenreferenzen und Kontaktanfragen können in Supabase gespeichert werden.
 - `src/app/lib/supabase.ts`: Verbindung zu Supabase
 - `src/app/lib/referencesRepository.ts`: Laden, Anlegen, Bearbeiten und Löschen von Referenzen
 - `src/app/lib/contactRequestsRepository.ts`: Speichern, Laden und Statuspflege von Kontaktanfragen
+- `src/app/lib/customersRepository.ts`: Admin-Verwaltung echter Käufer
 - `supabase/references.sql`: Datenbanktabelle `customer_references`, Eingänge/Freigabe und Sicherheitsregeln
 - `supabase/contact_requests.sql`: Datenbanktabelle `contact_requests`, Kontakt-Eingänge und Sicherheitsregeln
+- `supabase/customer_followups.sql`: Kundenverwaltung, sichere Bewertungslinks, Bewertungsabgleich, Follow-up-Reminder, Opt-out und RLS
 - `.env.example`: Vorlage für deine lokalen Supabase-Zugangsdaten
 
 ### 1. Supabase Projekt erstellen
@@ -61,7 +63,8 @@ Die Kundenreferenzen und Kontaktanfragen können in Supabase gespeichert werden.
 3. Öffne in Supabase den `SQL Editor`.
 4. Führe die SQL aus.
 5. Öffne danach `supabase/contact_requests.sql`, kopiere die komplette Datei und führe sie ebenfalls im SQL Editor aus.
-6. Gib den Admin-User einmalig frei. Dafür im SQL Editor ausführen und die E-Mail ersetzen:
+6. Öffne danach `supabase/customer_followups.sql`, kopiere die komplette Datei und führe sie ebenfalls im SQL Editor aus.
+7. Gib den Admin-User einmalig frei. Dafür im SQL Editor ausführen und die E-Mail ersetzen:
 
 ```sql
 insert into public.admin_users (user_id, email, role, active)
@@ -82,7 +85,11 @@ Danach gilt:
 - Besucher dürfen neue Referenzen einreichen, diese bleiben zuerst im Status `pending`.
 - Besucher dürfen Kontaktanfragen erstellen, aber keine fremden Kontaktanfragen lesen.
 - Der Admin sieht neue Kontaktanfragen und neue Referenzen im Tab `Eingänge`.
+- Der Admin verwaltet echte Käufer im Tab `Kunden`.
 - Kontaktanfragen können dort als gelesen, für später aufgehoben oder als per E-Mail beantwortet markiert werden.
+- Kunden-Follow-ups werden nur gesendet, wenn eine zulässige Versandberechtigung dokumentiert ist.
+- Automatische Bewertungslinks verwenden einen zufälligen Token; in Supabase wird nur dessen Hash gespeichert.
+- Bewertungen werden intern Kunden zugeordnet, aber private Felder bleiben öffentlich ausgeschlossen.
 - Erst freigegebene Referenzen mit Status `approved` und `sichtbar = true` erscheinen öffentlich.
 - Nur User, die in `admin_users` aktiv freigegeben sind, können den Adminbereich nutzen.
 
@@ -110,6 +117,7 @@ Die verwendeten EmailJS-Template-Variablen sind:
 - `customer_phone`
 - `subject`
 - `message`
+- `submitted_at` für das interne Template
 
 ### 4. Lokale `.env` Datei anlegen
 
@@ -145,9 +153,16 @@ In Vercel unter `Project Settings` > `Environment Variables` dieselben Werte ein
 - `VITE_EMAILJS_INTERNAL_RECIPIENT`
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
 - `CRON_SECRET`
+- `SITE_URL`
+- `RESEND_API_KEY`
+- `FOLLOWUP_FROM_EMAIL`
+- `FOLLOWUP_REPLY_TO_EMAIL`
 
 Danach neu deployen.
+
+Wichtig: `SUPABASE_SERVICE_ROLE_KEY` und `RESEND_API_KEY` niemals als `VITE_...` Variable anlegen. Sie sind nur fuer Vercel Server Functions gedacht.
 
 ## Veröffentlichung
 
@@ -156,6 +171,7 @@ Für GitHub und Vercel ist das Projekt vorbereitet:
 ```bash
 npm install
 npm run build
+npm test
 ```
 
 In Vercel:
@@ -179,8 +195,10 @@ asea-verkaufsanhaenger-website/
   index.html                Vite/React-Einstieg
   package.json              Abhängigkeiten und Build-Skripte
   package-lock.json         Exakte npm-Versionen für Vercel
+  docs/                     Technische Dokumentation, z. B. Kunden-Follow-up-System
   scripts/                  Build-Hilfen für die lokale Startdatei
   supabase/                 SQL-Dateien für Datenbank und Policies
+  api/                      Vercel Server Functions und Cron-Endpunkte
   vercel.json               Vercel-Konfiguration
   src/
     main.tsx                React-Einstieg
@@ -196,7 +214,7 @@ asea-verkaufsanhaenger-website/
         ui/                 Wiederverwendbare UI-Basiskomponenten
         figma/              Bild-Hilfskomponente aus dem Export
       context/              Admin-Daten und Sprache
-      translations/         Deutsche und englische Texte
+      translations/         Deutsche, englische und slowakische Texte
   dist/                     Wird beim Build automatisch neu erzeugt
 ```
 

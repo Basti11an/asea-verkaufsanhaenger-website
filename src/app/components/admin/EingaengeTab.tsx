@@ -159,9 +159,13 @@ export function EingaengeTab() {
     try {
       await updateReference(reference.id, {
         status: 'approved',
-        sichtbar: true,
+        sichtbar: reference.publicConsent !== false,
       });
-      toast.success(`"${reference.kundenname}" ist jetzt online`);
+      toast.success(
+        reference.publicConsent === false
+          ? `"${reference.kundenname}" wurde intern geprüft und bleibt nicht öffentlich`
+          : `"${reference.kundenname}" ist jetzt online`,
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Freigabe fehlgeschlagen';
       toast.error(message);
@@ -376,6 +380,11 @@ export function EingaengeTab() {
                         <CalendarDays size={12} className="text-[#b08a57]" />
                         {reference.jahr}
                       </span>
+                      {reference.rating ? (
+                        <span className="inline-flex items-center gap-1 text-[#9a7445]">
+                          {'★'.repeat(reference.rating)}
+                        </span>
+                      ) : null}
                       {reference.kontaktEmail && (
                         <span className="inline-flex max-w-full items-center gap-1 break-all">
                           <Mail size={12} className="text-[#b08a57]" />
@@ -390,6 +399,16 @@ export function EingaengeTab() {
                       )}
                     </div>
 
+                    <div className={`mb-3 rounded-md border px-3 py-2 text-xs ${
+                      reference.publicConsent === false
+                        ? 'border-amber-200 bg-amber-50 text-amber-800'
+                        : 'border-emerald-100 bg-emerald-50 text-emerald-700'
+                    }`}>
+                      {reference.publicConsent === false
+                        ? 'Keine Zustimmung zur öffentlichen Anzeige. Der Eintrag bleibt nach Prüfung intern.'
+                        : 'Zustimmung zur öffentlichen Anzeige liegt vor. Veröffentlichung erst nach Freigabe.'}
+                    </div>
+
                     <p className="text-sm text-[#55524c] leading-relaxed mb-4">
                       {reference.beschreibung || 'Keine Beschreibung angegeben.'}
                     </p>
@@ -402,7 +421,7 @@ export function EingaengeTab() {
                         className="w-full sm:w-auto bg-emerald-700 hover:bg-emerald-800 text-white"
                       >
                         <Check size={14} className="mr-1.5" />
-                        Freigeben
+                        {reference.publicConsent === false ? 'Intern prüfen' : 'Freigeben'}
                       </Button>
                       <Button
                         size="sm"

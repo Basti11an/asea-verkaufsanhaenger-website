@@ -13,6 +13,7 @@ interface ReferenceSubmitPanelProps {
   titleKey?: TranslationKey;
   descriptionKey?: TranslationKey;
   buttonLabelKey?: TranslationKey;
+  initiallyOpen?: boolean;
 }
 
 const INITIAL_FORM = {
@@ -40,10 +41,11 @@ export function ReferenceSubmitPanel({
   titleKey = 'reference_submit_title',
   descriptionKey = 'reference_submit_desc',
   buttonLabelKey = 'reference_submit_button',
+  initiallyOpen = false,
 }: ReferenceSubmitPanelProps) {
   const { submitReference } = useAdminData();
   const { t } = useLanguage();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(initiallyOpen);
   const [form, setForm] = useState(INITIAL_FORM);
   const [companyWebsite, setCompanyWebsite] = useState('');
   const [state, setState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');

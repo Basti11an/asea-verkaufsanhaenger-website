@@ -12,12 +12,16 @@ create table if not exists public.customer_references (
   status text not null default 'approved',
   kontakt_email text not null default '',
   kontakt_telefon text not null default '',
+  rating integer,
+  public_consent boolean not null default true,
   created_at timestamptz not null default now()
 );
 
 alter table public.customer_references add column if not exists status text not null default 'approved';
 alter table public.customer_references add column if not exists kontakt_email text not null default '';
 alter table public.customer_references add column if not exists kontakt_telefon text not null default '';
+alter table public.customer_references add column if not exists rating integer;
+alter table public.customer_references add column if not exists public_consent boolean not null default true;
 alter table public.customer_references add column if not exists created_at timestamptz not null default now();
 
 do $$
@@ -30,6 +34,19 @@ begin
     alter table public.customer_references
       add constraint customer_references_status_check
       check (status in ('approved', 'pending', 'rejected'));
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'customer_references_rating_check'
+  ) then
+    alter table public.customer_references
+      add constraint customer_references_rating_check
+      check (rating is null or rating between 1 and 5);
   end if;
 end $$;
 
@@ -58,6 +75,8 @@ grant insert (
   jahr,
   beschreibung,
   bild_url,
+  rating,
+  public_consent,
   sichtbar,
   status,
   kontakt_email,
@@ -71,6 +90,7 @@ grant select (
   jahr,
   beschreibung,
   bild_url,
+  rating,
   sichtbar,
   status,
   created_at
@@ -131,7 +151,7 @@ create policy "customer references public visible read"
 on public.customer_references
 for select
 to anon
-using (status = 'approved' and sichtbar = true);
+using (status = 'approved' and sichtbar = true and public_consent = true);
 
 drop policy if exists "customer references admin read" on public.customer_references;
 create policy "customer references admin read"
@@ -180,10 +200,12 @@ select
   bild_url,
   sichtbar,
   status,
-  created_at
+  created_at,
+  rating
 from public.customer_references
 where status = 'approved'
-  and sichtbar = true;
+  and sichtbar = true
+  and public_consent = true;
 
 grant select on public.customer_references_public to anon, authenticated;
 

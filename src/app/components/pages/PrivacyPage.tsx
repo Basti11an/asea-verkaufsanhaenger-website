@@ -83,6 +83,15 @@ const COPY: Record<Lang, PrivacyCopy> = {
         ],
       },
       {
+        title: 'Kundenverwaltung und Bewertungs-Follow-up',
+        paragraphs: [
+          'Nach einem tatsächlichen Verkauf kann ASEA Kundendaten wie Name, E-Mail-Adresse, Kaufdatum, gekauftes Produkt und interne Notizen im geschützten Adminbereich verwalten. Normale Kontaktformular-Absender werden dadurch nicht automatisch zu Kunden.',
+          'Wenn eine zulässige Versandberechtigung dokumentiert ist, kann das System zeitlich gestaffelte Zufriedenheits- und Bewertungsanfragen vorbereiten. Ohne dokumentierte Berechtigung, nach Widerspruch, nach vorhandener Bewertung oder nach manueller Deaktivierung werden keine automatischen Bewertungsmails versendet.',
+          'Zur internen Zuordnung kann die E-Mail-Adresse aus einer eingereichten Bewertung mit Kundendaten verglichen werden. Diese E-Mail-Adresse wird nicht öffentlich angezeigt und nicht in öffentlichen Ausgaben oder URLs verwendet.',
+          'Jede automatische Bewertungsanfrage enthält einen Abmeldelink mit zufälligem Token. In der Datenbank wird nur der Hash dieses Tokens gespeichert. Der Betreiber muss Rechtsgrundlage, Einwilligungstexte, Speicherdauer und eingesetzten E-Mail-Dienstleister organisatorisch prüfen und dokumentieren.',
+        ],
+      },
+      {
         title: 'Statistik und lokaler Speicher',
         paragraphs: [
           'Die Statistik ist optional. Sie startet erst, wenn Sie Statistik in den Datenschutzeinstellungen erlauben. Aktuell wird dafür Vercel Web Analytics für die allgemeine Auswertung von Seitenaufrufen eingebunden.',
@@ -168,6 +177,15 @@ const COPY: Record<Lang, PrivacyCopy> = {
         ],
       },
       {
+        title: 'Customer Management and Review Follow-up',
+        paragraphs: [
+          'After an actual sale, ASEA may manage customer data such as name, email address, purchase date, purchased product and internal notes in the protected admin area. Normal contact form senders are not automatically turned into customers.',
+          'If a lawful sending permission is documented, the system can prepare staged satisfaction and review requests. Without documented permission, after opt-out, after an existing review or after manual deactivation, no automatic review emails are sent.',
+          'For internal matching, the email address from a submitted review may be compared with customer data. This email address is not displayed publicly and is not used in public output or URLs.',
+          'Every automatic review request contains an unsubscribe link with a random token. Only the hash of this token is stored in the database. The operator must organisationally review and document the legal basis, consent texts, retention period and email service provider used.',
+        ],
+      },
+      {
         title: 'Statistics and Local Storage',
         paragraphs: [
           'Statistics are optional. They only start after you allow statistics in the privacy settings. Currently, Vercel Web Analytics is included for general page-view analysis.',
@@ -250,6 +268,15 @@ const COPY: Record<Lang, PrivacyCopy> = {
         paragraphs: [
           'Zákaznícke skúsenosti je možné odoslať cez referenčný formulár. Tieto údaje sa ukladajú v Supabase a kontrolujú sa v administrácii.',
           'Verejne sa zobrazujú iba referencie schválené a označené ako viditeľné v administrácii. Pred zverejnením osobných údajov, obrázkov, evidenčných čísel alebo rozpoznateľných osôb musí prevádzkovateľ organizačne zabezpečiť potrebné práva a súhlasy.',
+        ],
+      },
+      {
+        title: 'Správa zákazníkov a následné hodnotenia',
+        paragraphs: [
+          'Po skutočnom predaji môže ASEA spravovať údaje zákazníka, napríklad meno, e-mailovú adresu, dátum nákupu, zakúpený produkt a interné poznámky v chránenom administračnom priestore. Odosielatelia bežného kontaktného formulára sa automaticky nestávajú zákazníkmi.',
+          'Ak je zdokumentované povolenie na odosielanie, systém môže pripraviť postupné otázky spokojnosti a žiadosti o hodnotenie. Bez zdokumentovaného povolenia, po odmietnutí, po existujúcom hodnotení alebo po manuálnej deaktivácii sa automatické e-maily s hodnotením neodosielajú.',
+          'Na interné priradenie sa môže e-mailová adresa z odoslaného hodnotenia porovnať s údajmi zákazníka. Táto e-mailová adresa sa verejne nezobrazuje a nepoužíva sa vo verejných výstupoch ani v URL.',
+          'Každá automatická žiadosť o hodnotenie obsahuje odhlasovací odkaz s náhodným tokenom. V databáze sa ukladá iba hash tohto tokenu. Prevádzkovateľ musí organizačne skontrolovať a zdokumentovať právny základ, texty súhlasu, dobu uchovávania a použitého e-mailového poskytovateľa.',
         ],
       },
       {

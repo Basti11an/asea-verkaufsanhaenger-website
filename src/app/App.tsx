@@ -13,6 +13,8 @@ import { EquipmentPage } from './components/pages/EquipmentPage';
 import { ContactPage } from './components/pages/ContactPage';
 import { ImprintPage } from './components/pages/ImprintPage';
 import { PrivacyPage } from './components/pages/PrivacyPage';
+import { CustomerReviewPage } from './components/pages/CustomerReviewPage';
+import { ReviewOptOutPage } from './components/pages/ReviewOptOutPage';
 import { MessagesPage } from './components/pages/MessagesPage';
 import { AdminLogin } from './components/AdminLogin';
 import { ConfiguratorPage } from './components/pages/ConfiguratorPage';
@@ -30,6 +32,8 @@ const PAGE_PATHS: Record<string, string> = {
   contact: '/kontakt',
   imprint: '/impressum',
   privacy: '/datenschutz',
+  customerReview: '/bewertung',
+  reviewOptOut: '/bewertung-abmelden',
   messages: '/admin',
 };
 
@@ -49,6 +53,10 @@ const PATH_PAGES: Record<string, string> = {
   '/imprint': 'imprint',
   '/datenschutz': 'privacy',
   '/privacy': 'privacy',
+  '/bewertung': 'customerReview',
+  '/review': 'customerReview',
+  '/bewertung-abmelden': 'reviewOptOut',
+  '/review-unsubscribe': 'reviewOptOut',
   '/admin': 'messages',
 };
 
@@ -277,6 +285,10 @@ function AppInner() {
         return <ImprintPage />;
       case 'privacy':
         return <PrivacyPage />;
+      case 'customerReview':
+        return <CustomerReviewPage onNavigate={handleNavigate} />;
+      case 'reviewOptOut':
+        return <ReviewOptOutPage onNavigate={handleNavigate} />;
       case 'messages':
         if (adminAccessStatus === 'checking') {
           return <AdminAccessLoading />;
