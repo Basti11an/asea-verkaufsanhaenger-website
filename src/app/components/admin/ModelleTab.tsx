@@ -6,6 +6,7 @@ import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { Save, ImageIcon, Eye, EyeOff } from 'lucide-react';
 import { useAdminData, AdminModel } from '../../context/AdminDataContext';
+import { ImageUploadField } from '../ImageUploadField';
 
 export function ModelleTab() {
   const { models, setModels } = useAdminData();
@@ -119,14 +120,14 @@ export function ModelleTab() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                    Bild-URL
-                  </label>
-                  <Input
+                  <ImageUploadField
+                    label="Bild vom Gerät hochladen"
                     value={draft.imageUrl}
-                    onChange={(e) => handleChange(model.id, 'imageUrl', e.target.value)}
-                    className="h-8 text-xs border-gray-200 focus:border-[#b08a57] font-mono"
-                    placeholder="https://..."
+                    onChange={(url) => handleChange(model.id, 'imageUrl', url)}
+                    folder="models"
+                    compact
+                    showPreview={false}
+                    previewAlt={draft.name}
                   />
                 </div>
 

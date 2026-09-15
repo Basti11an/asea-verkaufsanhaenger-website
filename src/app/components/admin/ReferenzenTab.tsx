@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Plus, Pencil, Trash2, Check, X, ImageIcon } from 'lucide-react';
 import { useAdminData, AdminReference } from '../../context/AdminDataContext';
 import { StarRating } from '../reviews/StarRating';
+import { ImageUploadField } from '../ImageUploadField';
 
 const MODELLE = ['Verkaufsanhänger', 'Kühlanhänger', 'Messe- und Präsentationsanhänger'];
 
@@ -149,6 +150,7 @@ export function ReferenzenTab() {
           publishedRefs.map((ref) => {
             const isEditing = ref.id in editState;
             const draft = editState[ref.id] ?? {};
+            const currentImageUrl = draft.bildUrl ?? ref.bildUrl;
 
             return (
               <div
@@ -156,13 +158,13 @@ export function ReferenzenTab() {
                 className={`bg-white rounded-xl border shadow-sm overflow-hidden ${isEditing ? 'border-[#b08a57]' : 'border-gray-200'}`}
               >
                 <div className="h-40 bg-[#f8f7f3]">
-                  {ref.bildUrl ? (
+                  {currentImageUrl ? (
                     <button
                       type="button"
-                      onClick={() => setPreviewImage(ref.bildUrl)}
+                      onClick={() => setPreviewImage(currentImageUrl)}
                       className="w-full h-full block overflow-hidden"
                     >
-                      <img src={ref.bildUrl} alt={ref.kundenname} className="w-full h-full object-cover" />
+                      <img src={currentImageUrl} alt={ref.kundenname} className="w-full h-full object-cover" />
                     </button>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-[#b08a57]/50">
@@ -232,12 +234,14 @@ export function ReferenzenTab() {
                         />
                       </div>
                       <div>
-                        <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Bild-URL</label>
-                        <Input
+                        <ImageUploadField
+                          label="Bild vom Gerät hochladen"
                           value={draft.bildUrl ?? ref.bildUrl}
-                          onChange={(e) => handleEditChange(ref.id, 'bildUrl', e.target.value)}
-                          className="text-xs border-[#b08a57] font-mono"
-                          placeholder="https://..."
+                          onChange={(url) => handleEditChange(ref.id, 'bildUrl', url)}
+                          folder="references"
+                          previewAlt={ref.kundenname}
+                          compact
+                          showPreview={false}
                         />
                       </div>
                     </div>
@@ -331,7 +335,7 @@ export function ReferenzenTab() {
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">Jahr</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-36">Bewertung</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Beschreibung</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-14">Bild</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-44">Bild</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">Sichtbar</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">Aktionen</th>
               </tr>
@@ -340,6 +344,7 @@ export function ReferenzenTab() {
               {publishedRefs.map((ref) => {
                 const isEditing = ref.id in editState;
                 const draft = editState[ref.id] ?? {};
+                const currentImageUrl = draft.bildUrl ?? ref.bildUrl;
                 return (
                   <tr key={ref.id} className={`hover:bg-gray-50/50 transition-colors ${isEditing ? 'bg-blue-50/40' : ''}`}>
                     <td className="px-4 py-2.5">
@@ -417,18 +422,21 @@ export function ReferenzenTab() {
                     </td>
                     <td className="px-4 py-2.5">
                       {isEditing ? (
-                        <Input
-                          value={draft.bildUrl ?? ref.bildUrl}
-                          onChange={(e) => handleEditChange(ref.id, 'bildUrl', e.target.value)}
-                          className="h-7 text-xs border-[#b08a57] w-28 font-mono"
-                          placeholder="https://..."
+                        <ImageUploadField
+                          label="Bild"
+                          value={currentImageUrl}
+                          onChange={(url) => handleEditChange(ref.id, 'bildUrl', url)}
+                          folder="references"
+                          previewAlt={ref.kundenname}
+                          compact
+                          showPreview={false}
                         />
-                      ) : ref.bildUrl ? (
+                      ) : currentImageUrl ? (
                         <button
-                          onClick={() => setPreviewImage(ref.bildUrl)}
+                          onClick={() => setPreviewImage(currentImageUrl)}
                           className="w-8 h-8 rounded overflow-hidden border border-gray-200 hover:border-[#b08a57] transition-colors"
                         >
-                          <img src={ref.bildUrl} alt="" className="w-full h-full object-cover" />
+                          <img src={currentImageUrl} alt="" className="w-full h-full object-cover" />
                         </button>
                       ) : (
                         <span className="text-gray-300"><ImageIcon size={16} /></span>

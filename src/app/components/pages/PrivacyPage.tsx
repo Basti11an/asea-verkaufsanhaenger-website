@@ -63,7 +63,7 @@ const COPY: Record<Lang, PrivacyCopy> = {
         title: 'Supabase',
         paragraphs: [
           'Diese Website nutzt Supabase für freigegebene Kundenbewertungen, neu eingereichte Bewertungen, Kontaktanfragen und den geschützten Admin-Login.',
-          'Bewertungseinreichungen können Name/Firma, Ort, Anhängermodell, Jahr, Beschreibung, Sternebewertung, E-Mail, Telefonnummer und optional einen Bildlink enthalten. Neue Bewertungen werden zunächst nicht öffentlich angezeigt und erst nach Prüfung im Adminbereich freigegeben.',
+          'Bewertungseinreichungen können Name/Firma, Ort, Anhängermodell, Jahr, Beschreibung, Sternebewertung, E-Mail, Telefonnummer und optional ein hochgeladenes Bild enthalten. Neue Bewertungen werden zunächst nicht öffentlich angezeigt und erst nach Prüfung im Adminbereich freigegeben.',
           'Rechtsgrundlagen sind je nach Verarbeitung Art. 6 Abs. 1 lit. b DSGVO für angefragte Leistungen, Art. 6 Abs. 1 lit. f DSGVO für Betrieb, Sicherheit und Adminverwaltung sowie Art. 6 Abs. 1 lit. a DSGVO für optionale Statistik. Der Betreiber muss die Supabase-Region, Auftragsverarbeitung, Unterauftragsverarbeiter und Löschfristen organisatorisch bestätigen.',
         ],
       },
@@ -157,7 +157,7 @@ const COPY: Record<Lang, PrivacyCopy> = {
         title: 'Supabase',
         paragraphs: [
           'This website uses Supabase for approved customer reviews, newly submitted reviews, contact requests and protected admin login.',
-          'Review submissions may contain name/company, place, trailer model, year, description, star rating, email address, phone number and optionally an image link. New reviews are initially not public and are only published after review in the admin area.',
+          'Review submissions may contain name/company, place, trailer model, year, description, star rating, email address, phone number and optionally an uploaded image. New reviews are initially not public and are only published after review in the admin area.',
           'Depending on the processing activity, the legal bases are Art. 6(1)(b) GDPR for requested services, Art. 6(1)(f) GDPR for operation, security and admin management, and Art. 6(1)(a) GDPR for optional statistics. The operator must confirm the Supabase region, data processing agreement, subprocessors and retention periods organisationally.',
         ],
       },
@@ -251,7 +251,7 @@ const COPY: Record<Lang, PrivacyCopy> = {
         title: 'Supabase',
         paragraphs: [
           'Táto webová stránka používa Supabase pre schválené zákaznícke referencie, novo odoslané referencie, kontaktné požiadavky a chránené prihlásenie do administrácie.',
-          'Odoslané referencie môžu obsahovať meno/firmu, miesto, model prívesu, rok, popis, e-mail, telefónne číslo a voliteľne odkaz na obrázok. Nové referencie nie sú najskôr verejné a zverejnia sa až po kontrole v administrácii.',
+          'Odoslané referencie môžu obsahovať meno/firmu, miesto, model prívesu, rok, popis, e-mail, telefónne číslo a voliteľne nahraný obrázok. Nové referencie nie sú najskôr verejné a zverejnia sa až po kontrole v administrácii.',
           'Právnym základom je podľa typu spracúvania čl. 6 ods. 1 písm. b GDPR pre požadované služby, čl. 6 ods. 1 písm. f GDPR pre prevádzku, bezpečnosť a správu administrácie a čl. 6 ods. 1 písm. a GDPR pre voliteľné štatistiky. Prevádzkovateľ musí organizačne potvrdiť región Supabase, zmluvu o spracúvaní, subdodávateľov a lehoty uchovávania.',
         ],
       },

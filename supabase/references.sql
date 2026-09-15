@@ -139,6 +139,70 @@ $$;
 revoke all on function public.is_admin() from public;
 grant execute on function public.is_admin() to anon, authenticated;
 
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'asea-uploads',
+  'asea-uploads',
+  true,
+  5242880,
+  array['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+)
+on conflict (id) do update set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "asea uploads public read" on storage.objects;
+create policy "asea uploads public read"
+on storage.objects
+for select
+to anon, authenticated
+using (bucket_id = 'asea-uploads');
+
+drop policy if exists "asea uploads public reference insert" on storage.objects;
+create policy "asea uploads public reference insert"
+on storage.objects
+for insert
+to anon, authenticated
+with check (
+  bucket_id = 'asea-uploads'
+  and (storage.foldername(name))[1] = 'references'
+);
+
+drop policy if exists "asea uploads admin insert" on storage.objects;
+create policy "asea uploads admin insert"
+on storage.objects
+for insert
+to authenticated
+with check (
+  bucket_id = 'asea-uploads'
+  and public.is_admin()
+);
+
+drop policy if exists "asea uploads admin update" on storage.objects;
+create policy "asea uploads admin update"
+on storage.objects
+for update
+to authenticated
+using (
+  bucket_id = 'asea-uploads'
+  and public.is_admin()
+)
+with check (
+  bucket_id = 'asea-uploads'
+  and public.is_admin()
+);
+
+drop policy if exists "asea uploads admin delete" on storage.objects;
+create policy "asea uploads admin delete"
+on storage.objects
+for delete
+to authenticated
+using (
+  bucket_id = 'asea-uploads'
+  and public.is_admin()
+);
+
 drop policy if exists "admin users admin read" on public.admin_users;
 create policy "admin users admin read"
 on public.admin_users
