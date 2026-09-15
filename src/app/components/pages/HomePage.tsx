@@ -5,10 +5,10 @@ import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { motion } from 'motion/react';
 import { useAdminData } from '../../context/AdminDataContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { ReferenceCarousel } from '../references/ReferenceCarousel';
 import { getLatestApprovedReferences } from '../../lib/referenceUtils';
 import { getRevealAnimate, getRevealInitial, useTouchFriendlyMotion } from '../../lib/useTouchFriendlyMotion';
 import { AseaWordmark } from '../AseaWordmark';
+import { ReviewCard } from '../reviews/ReviewCard';
 
 interface HomePageProps {
   onNavigate: (page: string, data?: any) => void;
@@ -59,7 +59,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
   const { references } = useAdminData();
   const { t } = useLanguage();
   const touchFriendlyMotion = useTouchFriendlyMotion();
-  const visibleRefs = getLatestApprovedReferences(references, 6);
+  const visibleRefs = getLatestApprovedReferences(references, 8);
 
   const features = [
     { titleKey: 'home_feature1_title' as const, descKey: 'home_feature1_desc' as const },
@@ -155,15 +155,39 @@ export function HomePage({ onNavigate }: HomePageProps) {
       </section>
 
       {/* Erfahrungen Section */}
-      <section className="py-10 md:py-12 gradient-accent relative overflow-hidden">
-        <div className="relative z-10 w-full">
-          <ReferenceCarousel references={visibleRefs} />
-          <div className="mt-6 flex justify-center px-6">
+      <section className="relative overflow-hidden bg-[#f5f3ee] py-14 md:py-20">
+        <div className="absolute inset-0 opacity-[0.45] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(176,138,87,0.12) 1px, transparent 0)', backgroundSize: '28px 28px' }} />
+        <div className="container relative z-10 mx-auto px-6 md:px-8 lg:px-12 xl:px-24">
+          <div className="mx-auto mb-9 max-w-3xl text-center md:mb-12">
+            <h2 className="text-2xl font-bold text-[#2f2f2d] md:text-4xl lg:text-5xl">
+              {t('home_refs_title')}
+            </h2>
+            <p className="mt-3 text-base leading-relaxed text-[#77756f] md:text-lg">
+              {t('home_refs_subtitle')}
+            </p>
+          </div>
+
+          {visibleRefs.length > 0 && (
+            <div className="grid grid-cols-1 gap-x-6 gap-y-9 px-1 py-3 sm:grid-cols-2 md:px-3 lg:grid-cols-4 lg:gap-x-7 lg:gap-y-11">
+              {visibleRefs.map((review, index) => (
+                <ReviewCard
+                  key={review.id}
+                  review={review}
+                  variant="polaroid"
+                  index={index}
+                  truncateText
+                  className="mx-auto w-full max-w-[320px]"
+                />
+              ))}
+            </div>
+          )}
+
+          <div className="mt-9 flex justify-center px-6 md:mt-12">
             <Button
               type="button"
               variant="outline"
               onClick={() => onNavigate('reviews')}
-              className="border-[#b08a57]/50 bg-white/75 text-[#2f2f2d] hover:bg-white"
+              className="border-[#b08a57]/50 bg-white/80 text-[#2f2f2d] shadow-sm hover:bg-white"
             >
               {t('reviews_all_button')}
               <ArrowRight className="ml-2" size={16} />

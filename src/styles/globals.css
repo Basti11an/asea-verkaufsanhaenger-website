@@ -289,6 +289,33 @@ body,
   scroll-snap-align: start;
 }
 
+.polaroid-review-card {
+  transform: rotate(var(--review-rotation, 0deg));
+  transform-origin: 50% 22px;
+  isolation: isolate;
+}
+
+.polaroid-review-pin {
+  position: absolute;
+  top: -1.16rem;
+  left: 50%;
+  z-index: 5;
+  width: 2.65rem;
+  height: 2.38rem;
+  pointer-events: none;
+  transform: translateX(-50%) rotate(var(--pin-rotation, -12deg));
+  transform-origin: 50% 78%;
+}
+
+.polaroid-review-pin-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  filter: drop-shadow(0 0.16rem 0.13rem rgba(47, 47, 45, 0.28));
+}
+
 @media (hover: none), (pointer: coarse), (max-width: 1023px) {
   .reference-carousel {
     cursor: auto;
@@ -308,6 +335,10 @@ body,
   .hover\:shadow-2xl:hover {
     transform: none !important;
   }
+
+  .polaroid-review-card {
+    transform: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -320,6 +351,10 @@ body,
   .reference-carousel-track {
     transform: none;
     will-change: auto;
+  }
+
+  .polaroid-review-card {
+    transform: none;
   }
 }
 

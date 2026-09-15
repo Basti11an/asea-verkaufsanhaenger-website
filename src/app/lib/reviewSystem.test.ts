@@ -47,12 +47,37 @@ describe('central review system', () => {
       .toEqual([5, 1]);
   });
 
+  it('limits the homepage review wall to the latest eight public reviews', () => {
+    const manyApprovedReviews = Array.from({ length: 10 }, (_, index) => ({
+      ...baseReview,
+      id: index + 1,
+    }));
+
+    expect(getLatestApprovedReferences(manyApprovedReviews, 8).map((review) => review.id))
+      .toEqual([10, 9, 8, 7, 6, 5, 4, 3]);
+  });
+
   it('uses one shared star and review form system across public and admin review surfaces', () => {
     expect(read('src/app/components/pages/CustomerReviewPage.tsx')).toContain("import { ReviewForm }");
     expect(read('src/app/components/references/ReferenceSubmitPanel.tsx')).toContain("import { ReviewForm }");
     expect(read('src/app/components/admin/ReferenzenTab.tsx')).toContain("import { StarRating }");
     expect(read('src/app/components/admin/EingaengeTab.tsx')).toContain("import { StarRating }");
     expect(read('src/app/components/reviews/ReviewCard.tsx')).toContain("import { StarRating }");
+  });
+
+  it('renders public reviews as shared polaroid cards without the old homepage carousel', () => {
+    const homePage = read('src/app/components/pages/HomePage.tsx');
+    const reviewsPage = read('src/app/components/pages/ReviewsPage.tsx');
+    const reviewCard = read('src/app/components/reviews/ReviewCard.tsx');
+
+    expect(homePage).toContain('getLatestApprovedReferences(references, 8)');
+    expect(homePage).not.toContain('ReferenceCarousel');
+    expect(homePage).toContain('lg:grid-cols-4');
+    expect(homePage).toContain('variant="polaroid"');
+    expect(reviewsPage).toContain('lg:grid-cols-4');
+    expect(reviewsPage).toContain('variant="polaroid"');
+    expect(reviewCard).toContain('polaroid-review-card');
+    expect(reviewCard).toContain('--review-rotation');
   });
 
   it('exposes the public reviews page and keeps public fallback reads consent-filtered', () => {

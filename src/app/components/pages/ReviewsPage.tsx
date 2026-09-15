@@ -48,7 +48,7 @@ export function ReviewsPage() {
   };
 
   return (
-    <div className="bg-[#f8f7f3]">
+    <div className="overflow-hidden bg-[#f8f7f3]">
       <section className="border-b border-[#dfd9cf] bg-white py-14 md:py-20">
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24">
           <div className="max-w-3xl">
@@ -65,9 +65,10 @@ export function ReviewsPage() {
         </div>
       </section>
 
-      <section className="py-8 md:py-10">
+      <section className="relative overflow-hidden py-8 md:py-10">
+        <div className="absolute inset-0 opacity-[0.35] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(176,138,87,0.11) 1px, transparent 0)', backgroundSize: '30px 30px' }} />
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24">
-          <div className="rounded-xl border border-[#dfd9cf] bg-white p-4 shadow-sm md:p-5">
+          <div className="relative z-10 rounded-xl border border-[#dfd9cf] bg-white p-4 shadow-sm md:p-5">
             <div className="grid gap-3 md:grid-cols-[1fr_180px_1fr_auto] md:items-end">
               <label className="block">
                 <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.08em] text-[#77756f]">
@@ -146,9 +147,15 @@ export function ReviewsPage() {
               <p className="mt-2 text-sm text-[#77756f]">{t('reviews_empty_desc')}</p>
             </div>
           ) : (
-            <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {filteredReviews.map((review) => (
-                <ReviewCard key={review.id} review={review} />
+            <div className="relative z-10 mt-10 grid grid-cols-1 gap-x-6 gap-y-9 px-1 py-3 sm:grid-cols-2 md:px-3 lg:grid-cols-4 lg:gap-x-7 lg:gap-y-11">
+              {filteredReviews.map((review, index) => (
+                <ReviewCard
+                  key={review.id}
+                  review={review}
+                  variant="polaroid"
+                  index={index}
+                  className="mx-auto w-full max-w-[320px]"
+                />
               ))}
             </div>
           )}
