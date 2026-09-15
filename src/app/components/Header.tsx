@@ -2,6 +2,7 @@ import { Menu, X, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { availableLanguages, useLanguage } from '../context/LanguageContext';
+import { AseaWordmark } from './AseaWordmark';
 
 interface HeaderProps {
   currentPage: string;
@@ -56,10 +57,9 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
           <div className="flex items-center">
             <button
               onClick={() => handleNavigate('home')}
-              className="text-[#b08a57] tracking-[0.22em] hover:opacity-75 transition-opacity duration-500 outline-none -ml-2 border-r-2 border-[#2f2f2d]/15 pr-8"
-              style={{ fontSize: '30px', fontWeight: 700, lineHeight: 1 }}
+              className="hover:opacity-75 transition-opacity duration-500 outline-none -ml-2 border-r-2 border-[#2f2f2d]/15 pr-8"
             >
-              ASEA
+              <AseaWordmark size="header" />
             </button>
           </div>
 

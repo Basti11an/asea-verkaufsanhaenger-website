@@ -2,6 +2,12 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { AdminReference } from '../context/AdminDataContext';
+import {
+  CUSTOMER_REVIEW_RPC_NAME,
+  CUSTOMER_REVIEW_RPC_PARAM_NAMES,
+  createCustomerReviewRpcPayload,
+  createSafeReviewRpcErrorLog,
+} from './customerReviewRpc';
 import { getLatestApprovedReferences, isApprovedVisibleReference } from './referenceUtils';
 
 const ROOT = process.cwd();
@@ -53,5 +59,61 @@ describe('central review system', () => {
     expect(read('src/app/App.tsx')).toContain("reviews: '/bewertungen'");
     expect(read('src/app/App.tsx')).toContain("'/bewertungen': 'reviews'");
     expect(read('src/app/lib/referencesRepository.ts')).toContain(".eq('public_consent', true)");
+  });
+
+  it('calls the customer review RPC with the exact public SQL signature', () => {
+    expect(CUSTOMER_REVIEW_RPC_NAME).toBe('submit_customer_review_with_token');
+    expect(CUSTOMER_REVIEW_RPC_PARAM_NAMES).toEqual([
+      'p_token',
+      'p_rating',
+      'p_beschreibung',
+      'p_ort',
+      'p_public_consent',
+    ]);
+  });
+
+  it('normalizes review RPC payload types for rating, empty location and consent', () => {
+    expect(createCustomerReviewRpcPayload({
+      token: 'review-token',
+      rating: 1,
+      description: 'Eine gute Bewertung.',
+      location: '',
+      publicConsent: true,
+    })).toEqual({
+      p_token: 'review-token',
+      p_rating: 1,
+      p_beschreibung: 'Eine gute Bewertung.',
+      p_ort: '',
+      p_public_consent: true,
+    });
+
+    expect(createCustomerReviewRpcPayload({
+      token: 'review-token',
+      rating: 5.8,
+      description: 'Noch eine Bewertung.',
+      location: null,
+      publicConsent: false,
+    })).toMatchObject({
+      p_rating: 5,
+      p_ort: '',
+      p_public_consent: false,
+    });
+  });
+
+  it('logs safe 42883 RPC diagnostics without exposing the review token', () => {
+    const safeLog = createSafeReviewRpcErrorLog({
+      code: '42883',
+      message: 'function digest(text, unknown) does not exist',
+      details: 'No function matches the given name and argument types.',
+      hint: 'You might need to add explicit type casts.',
+    });
+
+    expect(safeLog).toMatchObject({
+      provider: 'supabase',
+      rpc: 'submit_customer_review_with_token',
+      code: '42883',
+      param_names: CUSTOMER_REVIEW_RPC_PARAM_NAMES,
+    });
+    expect(JSON.stringify(safeLog)).not.toContain('review-token');
   });
 });

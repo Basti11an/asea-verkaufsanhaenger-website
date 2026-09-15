@@ -8,6 +8,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { ReferenceCarousel } from '../references/ReferenceCarousel';
 import { getLatestApprovedReferences } from '../../lib/referenceUtils';
 import { getRevealAnimate, getRevealInitial, useTouchFriendlyMotion } from '../../lib/useTouchFriendlyMotion';
+import { AseaWordmark } from '../AseaWordmark';
 
 interface HomePageProps {
   onNavigate: (page: string, data?: any) => void;
@@ -106,9 +107,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
             <h1 className="text-[28px] sm:text-[34px] md:text-[27px] lg:text-[34px] xl:text-[42px] font-bold leading-tight tracking-[0.1em] text-[#2f2f2d] uppercase mb-0">
               {t('home_hero_title')}
             </h1>
-            <p className="text-[60px] sm:text-[72px] md:text-[96px] lg:text-[116px] xl:text-[136px] font-extrabold leading-[0.85] tracking-tight text-[#b08a57] uppercase mb-4 md:mb-6">
-              ASEA
-            </p>
+            <AseaWordmark size="hero" className="mb-4 md:mb-6" />
 
             <div className="mb-5 md:mb-8 pl-3 md:pl-4 border-l-2 border-[#b08a57]/40 space-y-1 md:space-y-2">
               <p className="text-[12px] md:text-[15px] font-medium tracking-[0.06em] text-[#2f2f2d]/70">{t('home_hero_claim1')}</p>

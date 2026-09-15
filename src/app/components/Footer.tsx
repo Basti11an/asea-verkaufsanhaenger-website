@@ -1,6 +1,6 @@
 import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
-import logoImage from '../../imports/LOGO_Neu.png';
+import { AseaWordmark } from './AseaWordmark';
 
 interface FooterProps {
   onNavigate: (page: string, data?: any) => void;
@@ -26,11 +26,7 @@ export function Footer({ onNavigate, onOpenPrivacySettings }: FooterProps) {
           {/* Company Info */}
           <div className="group">
             <div className="flex items-center gap-3 mb-4">
-              <img
-                src={logoImage}
-                alt="ASEA Logo"
-                className="h-10 w-auto brightness-0 invert"
-              />
+              <AseaWordmark size="footer" />
             </div>
             <p className="text-sm leading-relaxed text-[#77756f]">
               {t('footer_desc')}

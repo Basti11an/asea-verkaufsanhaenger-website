@@ -2,6 +2,12 @@ import { FormEvent, useMemo, useRef, useState } from 'react';
 import { Button } from '../ui/button';
 import { useLanguage } from '../../context/LanguageContext';
 import { isSupabaseConfigured, supabase } from '../../lib/supabase';
+import {
+  CUSTOMER_REVIEW_RPC_NAME,
+  createCustomerReviewRpcPayload,
+  createSafeReviewRpcErrorLog,
+  getReviewErrorCode,
+} from '../../lib/customerReviewRpc';
 import { ReviewForm } from '../reviews/ReviewForm';
 
 interface CustomerReviewPageProps {
@@ -66,25 +72,6 @@ function getTokenFromUrl() {
   }
 
   return readRememberedReviewToken();
-}
-
-function getReviewErrorCode(error: unknown) {
-  const maybeError = error as { code?: unknown; message?: unknown; status?: unknown } | null;
-
-  if (typeof maybeError?.code === 'string' && maybeError.code.trim()) {
-    return `supabase_${maybeError.code.trim().toLowerCase()}`;
-  }
-
-  if (typeof maybeError?.status === 'number') {
-    return `http_${maybeError.status}`;
-  }
-
-  const message = typeof maybeError?.message === 'string' ? maybeError.message.toLowerCase() : '';
-  if (message.includes('failed to fetch') || message.includes('network')) return 'network_error';
-  if (message.includes('row-level security')) return 'rls_blocked';
-  if (message.includes('function') && message.includes('does not exist')) return 'rpc_missing';
-
-  return 'review_rpc_error';
 }
 
 function logReviewSubmitDiagnostic(diagnostic: ReviewSubmitDiagnostic) {
@@ -185,13 +172,15 @@ export function CustomerReviewPage({ onNavigate }: CustomerReviewPageProps) {
     let finished = false;
 
     try {
-      const { data, error } = await supabase.rpc('submit_customer_review_with_token', {
-        p_token: token,
-        p_rating: rating,
-        p_beschreibung: trimmedDescription,
-        p_ort: location.trim(),
-        p_public_consent: publicConsent,
+      const rpcPayload = createCustomerReviewRpcPayload({
+        token,
+        rating,
+        description: trimmedDescription,
+        location: location.trim(),
+        publicConsent,
       });
+
+      const { data, error } = await supabase.rpc(CUSTOMER_REVIEW_RPC_NAME, rpcPayload);
 
       if (error) throw error;
 
@@ -213,6 +202,7 @@ export function CustomerReviewPage({ onNavigate }: CustomerReviewPageProps) {
         error_code: errorCode,
       });
       console.error('Customer review submission failed:', {
+        ...createSafeReviewRpcErrorLog(error),
         error_code: errorCode,
         token_present: Boolean(token),
         rating_present: rating >= 1 && rating <= 5,

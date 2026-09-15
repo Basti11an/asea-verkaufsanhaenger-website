@@ -87,6 +87,18 @@ describe('customer follow-up security migration', () => {
     expect(SQL).toContain("v_token_hash := encode(digest(p_token, 'sha256'), 'hex');");
   });
 
+  it('keeps the review token RPC signature unique and pgcrypto resolvable', () => {
+    const reviewFunction = SQL.match(/create or replace function public\.submit_customer_review_with_token[\s\S]+?revoke all on function public\.submit_customer_review_with_token\(text, integer, text, text, boolean\) from public;/)?.[0] ?? '';
+    const unsubscribeFunction = SQL.match(/create or replace function public\.unsubscribe_customer_followup[\s\S]+?revoke all on function public\.unsubscribe_customer_followup\(text\) from public;/)?.[0] ?? '';
+
+    expect(SQL).toContain('create extension if not exists pgcrypto with schema extensions;');
+    expect(SQL).toContain('drop function if exists public.submit_customer_review_with_token(text, integer, text, text, boolean);');
+    expect(SQL).toContain('drop function if exists public.submit_customer_review_with_token(text, text, text, text, text);');
+    expect(reviewFunction).toContain('set search_path = public, extensions');
+    expect(unsubscribeFunction).toContain('set search_path = public, extensions');
+    expect(SQL).toContain("notify pgrst, 'reload schema';");
+  });
+
   it('does not consume review tokens before the review is safely stored', () => {
     const reviewFunction = SQL.match(/create or replace function public\.submit_customer_review_with_token[\s\S]+?revoke all on function public\.submit_customer_review_with_token\(text, integer, text, text, boolean\) from public;/)?.[0] ?? '';
     const insertReferenceIndex = reviewFunction.indexOf('insert into public.customer_references');
