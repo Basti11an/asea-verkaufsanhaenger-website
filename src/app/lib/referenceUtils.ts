@@ -23,7 +23,7 @@ export function getReferenceDescription(reference: AdminReference) {
 }
 
 export function isApprovedVisibleReference(reference: AdminReference) {
-  return reference.status === 'approved' && reference.sichtbar;
+  return reference.status === 'approved' && reference.sichtbar && reference.publicConsent !== false;
 }
 
 export function sortReferencesNewestFirst(references: AdminReference[]) {

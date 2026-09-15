@@ -62,8 +62,8 @@ const COPY: Record<Lang, PrivacyCopy> = {
       {
         title: 'Supabase',
         paragraphs: [
-          'Diese Website nutzt Supabase für freigegebene Kundenreferenzen, neu eingereichte Referenzen, Kontaktanfragen und den geschützten Admin-Login.',
-          'Referenzeinreichungen können Name/Firma, Ort, Anhängermodell, Jahr, Beschreibung, E-Mail, Telefonnummer und optional einen Bildlink enthalten. Neue Referenzen werden zunächst nicht öffentlich angezeigt und erst nach Prüfung im Adminbereich freigegeben.',
+          'Diese Website nutzt Supabase für freigegebene Kundenbewertungen, neu eingereichte Bewertungen, Kontaktanfragen und den geschützten Admin-Login.',
+          'Bewertungseinreichungen können Name/Firma, Ort, Anhängermodell, Jahr, Beschreibung, Sternebewertung, E-Mail, Telefonnummer und optional einen Bildlink enthalten. Neue Bewertungen werden zunächst nicht öffentlich angezeigt und erst nach Prüfung im Adminbereich freigegeben.',
           'Rechtsgrundlagen sind je nach Verarbeitung Art. 6 Abs. 1 lit. b DSGVO für angefragte Leistungen, Art. 6 Abs. 1 lit. f DSGVO für Betrieb, Sicherheit und Adminverwaltung sowie Art. 6 Abs. 1 lit. a DSGVO für optionale Statistik. Der Betreiber muss die Supabase-Region, Auftragsverarbeitung, Unterauftragsverarbeiter und Löschfristen organisatorisch bestätigen.',
         ],
       },
@@ -78,8 +78,8 @@ const COPY: Record<Lang, PrivacyCopy> = {
       {
         title: 'Kundenreferenzen',
         paragraphs: [
-          'Über das Referenzformular können Kundenerfahrungen eingereicht werden. Diese Daten werden bei Supabase gespeichert und im Adminbereich geprüft.',
-          'Öffentlich angezeigt werden nur Referenzen, die im Adminbereich freigegeben und sichtbar geschaltet wurden. Vor der Veröffentlichung von personenbezogenen Angaben, Bildern, Kennzeichen oder erkennbaren Personen muss der Betreiber die erforderlichen Rechte und Einwilligungen organisatorisch sicherstellen.',
+          'Über das Bewertungsformular können Kundenerfahrungen eingereicht werden. Diese Daten werden bei Supabase gespeichert und im Adminbereich geprüft.',
+          'Öffentlich angezeigt werden nur Bewertungen, die im Adminbereich freigegeben, sichtbar geschaltet und mit öffentlicher Zustimmung versehen wurden. Vor der Veröffentlichung von personenbezogenen Angaben, Bildern, Kennzeichen oder erkennbaren Personen muss der Betreiber die erforderlichen Rechte und Einwilligungen organisatorisch sicherstellen.',
         ],
       },
       {
@@ -156,8 +156,8 @@ const COPY: Record<Lang, PrivacyCopy> = {
       {
         title: 'Supabase',
         paragraphs: [
-          'This website uses Supabase for approved customer references, newly submitted references, contact requests and protected admin login.',
-          'Reference submissions may contain name/company, place, trailer model, year, description, email address, phone number and optionally an image link. New references are initially not public and are only published after review in the admin area.',
+          'This website uses Supabase for approved customer reviews, newly submitted reviews, contact requests and protected admin login.',
+          'Review submissions may contain name/company, place, trailer model, year, description, star rating, email address, phone number and optionally an image link. New reviews are initially not public and are only published after review in the admin area.',
           'Depending on the processing activity, the legal bases are Art. 6(1)(b) GDPR for requested services, Art. 6(1)(f) GDPR for operation, security and admin management, and Art. 6(1)(a) GDPR for optional statistics. The operator must confirm the Supabase region, data processing agreement, subprocessors and retention periods organisationally.',
         ],
       },
@@ -172,8 +172,8 @@ const COPY: Record<Lang, PrivacyCopy> = {
       {
         title: 'Customer References',
         paragraphs: [
-          'Customer experiences can be submitted via the reference form. These data are stored in Supabase and reviewed in the admin area.',
-          'Only references approved and marked visible in the admin area are displayed publicly. Before publishing personal details, images, licence plates or recognisable persons, the operator must ensure the required rights and consents organisationally.',
+          'Customer experiences can be submitted via the review form. These data are stored in Supabase and reviewed in the admin area.',
+          'Only reviews approved, marked visible and covered by publication consent in the admin area are displayed publicly. Before publishing personal details, images, licence plates or recognisable persons, the operator must ensure the required rights and consents organisationally.',
         ],
       },
       {

@@ -159,6 +159,17 @@ export function HomePage({ onNavigate }: HomePageProps) {
       <section className="py-10 md:py-12 gradient-accent relative overflow-hidden">
         <div className="relative z-10 w-full">
           <ReferenceCarousel references={visibleRefs} />
+          <div className="mt-6 flex justify-center px-6">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onNavigate('reviews')}
+              className="border-[#b08a57]/50 bg-white/75 text-[#2f2f2d] hover:bg-white"
+            >
+              {t('reviews_all_button')}
+              <ArrowRight className="ml-2" size={16} />
+            </Button>
+          </div>
         </div>
       </section>
 

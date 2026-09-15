@@ -6,6 +6,7 @@ import { Switch } from '../ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
 import { Plus, Pencil, Trash2, Check, X, ImageIcon } from 'lucide-react';
 import { useAdminData, AdminReference } from '../../context/AdminDataContext';
+import { StarRating } from '../reviews/StarRating';
 
 const MODELLE = ['Verkaufsanhänger', 'Kühlanhänger', 'Messe- und Präsentationsanhänger'];
 
@@ -93,6 +94,8 @@ export function ReferenzenTab() {
         jahr: new Date().getFullYear(),
         beschreibung: '',
         bildUrl: '',
+        rating: null,
+        publicConsent: true,
         sichtbar: true,
         status: 'approved',
         kontaktEmail: '',
@@ -100,7 +103,7 @@ export function ReferenzenTab() {
       });
       setEditState((prev) => ({ ...prev, [newRef.id]: { ...newRef } }));
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Referenz konnte nicht angelegt werden';
+      const message = error instanceof Error ? error.message : 'Bewertung konnte nicht angelegt werden';
       toast.error(message);
     } finally {
       setIsCreating(false);
@@ -111,7 +114,7 @@ export function ReferenzenTab() {
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">
         <h2 className="text-lg font-semibold text-[#2f2f2d]">
-          Kundenreferenzen
+          Kundenbewertungen
           <span className="ml-2 text-sm font-normal text-gray-400">({publishedRefs.length} Einträge)</span>
         </h2>
         <Button
@@ -121,13 +124,13 @@ export function ReferenzenTab() {
           className="w-full sm:w-auto bg-[#77756f] hover:bg-[#2f2f2d] text-white h-8 text-xs"
         >
           <Plus size={14} className="mr-1.5" />
-          {isCreating ? 'Wird angelegt...' : 'Neue Referenz hinzufügen'}
+          {isCreating ? 'Wird angelegt...' : 'Neue Bewertung hinzufügen'}
         </Button>
       </div>
 
       {referencesLoading && (
         <div className="mb-4 rounded-lg border border-[#b08a57]/20 bg-[#b08a57]/10 px-4 py-3 text-sm text-[#2f2f2d]">
-          Referenzen werden aus Supabase geladen...
+          Bewertungen werden aus Supabase geladen...
         </div>
       )}
 
@@ -140,7 +143,7 @@ export function ReferenzenTab() {
       <div className="lg:hidden space-y-4">
         {publishedRefs.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 text-center text-sm text-[#77756f]">
-            Noch keine Referenzen vorhanden.
+            Noch keine Bewertungen vorhanden.
           </div>
         ) : (
           publishedRefs.map((ref) => {
@@ -212,6 +215,14 @@ export function ReferenzenTab() {
                         </select>
                       </div>
                       <div>
+                        <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Bewertung</label>
+                        <StarRating
+                          value={draft.rating ?? ref.rating ?? null}
+                          onChange={(value) => handleEditChange(ref.id, 'rating', value)}
+                          size="sm"
+                        />
+                      </div>
+                      <div>
                         <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Beschreibung</label>
                         <Input
                           value={draft.beschreibung ?? ref.beschreibung}
@@ -242,6 +253,9 @@ export function ReferenzenTab() {
                         </span>
                       </div>
                       <p className="mt-2 text-xs text-gray-500">{ref.ort} · {ref.jahr}</p>
+                      <div className="mt-2">
+                        <StarRating value={ref.rating} size="sm" />
+                      </div>
                       <p className="mt-3 text-sm text-[#55524c] leading-relaxed break-words">{ref.beschreibung || 'Keine Beschreibung angegeben.'}</p>
                     </div>
                   )}
@@ -315,6 +329,7 @@ export function ReferenzenTab() {
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">Ort</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-44">Modell</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">Jahr</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-36">Bewertung</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Beschreibung</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-14">Bild</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">Sichtbar</th>
@@ -375,6 +390,17 @@ export function ReferenzenTab() {
                         />
                       ) : (
                         <span className="text-gray-500 text-xs">{ref.jahr}</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2.5">
+                      {isEditing ? (
+                        <StarRating
+                          value={draft.rating ?? ref.rating ?? null}
+                          onChange={(value) => handleEditChange(ref.id, 'rating', value)}
+                          size="sm"
+                        />
+                      ) : (
+                        <StarRating value={ref.rating} size="sm" />
                       )}
                     </td>
                     <td className="px-4 py-2.5">
@@ -488,7 +514,7 @@ export function ReferenzenTab() {
       <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <DialogContent className="w-[calc(100vw-2rem)] max-w-sm">
           <DialogHeader>
-            <DialogTitle>Referenz löschen?</DialogTitle>
+            <DialogTitle>Bewertung löschen?</DialogTitle>
             <DialogDescription>
               <strong>„{deleteTarget?.kundenname}"</strong> wird unwiderruflich gelöscht.
             </DialogDescription>

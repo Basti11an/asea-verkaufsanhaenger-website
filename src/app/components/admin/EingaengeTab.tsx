@@ -16,6 +16,7 @@ import {
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { AdminReference, ContactRequest, useAdminData } from '../../context/AdminDataContext';
+import { StarRating } from '../reviews/StarRating';
 
 function formatDateTime(value: string) {
   if (!value) return 'Kein Datum';
@@ -224,7 +225,7 @@ export function EingaengeTab() {
             <span className="text-sm font-normal text-gray-400">({totalOpenCount} offen)</span>
           </h2>
           <p className="text-sm text-[#77756f]">
-            Kontaktanfragen und neue Kundenreferenzen werden hier gesammelt.
+            Kontaktanfragen und neue Kundenbewertungen werden hier gesammelt.
           </p>
         </div>
       </div>
@@ -237,7 +238,7 @@ export function EingaengeTab() {
 
       {referencesError && (
         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          Supabase-Hinweis Referenzen: {referencesError}
+          Supabase-Hinweis Bewertungen: {referencesError}
         </div>
       )}
 
@@ -323,7 +324,7 @@ export function EingaengeTab() {
         <div className="mb-3">
           <h3 className="text-base font-semibold text-[#2f2f2d] flex items-center gap-2">
             <Inbox size={17} className="text-[#b08a57]" />
-            Eingereichte Kundenreferenzen
+            Eingereichte Kundenbewertungen
             <span className="text-sm font-normal text-gray-400">({pendingRefs.length} offen)</span>
           </h3>
           <p className="text-xs text-[#77756f]">Diese Einträge werden erst nach deiner Freigabe öffentlich angezeigt.</p>
@@ -332,8 +333,8 @@ export function EingaengeTab() {
         {pendingRefs.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
             <Inbox size={32} className="mx-auto mb-3 text-[#b08a57]/60" />
-            <h4 className="text-[#2f2f2d] font-semibold mb-1">Keine offenen Referenzen</h4>
-            <p className="text-sm text-[#77756f]">Neue Kundeneinreichungen erscheinen automatisch hier.</p>
+            <h4 className="text-[#2f2f2d] font-semibold mb-1">Keine offenen Bewertungen</h4>
+            <p className="text-sm text-[#77756f]">Neue Kundenbewertungen erscheinen automatisch hier.</p>
           </div>
         ) : (
           <div className="grid lg:grid-cols-2 gap-5">
@@ -381,9 +382,7 @@ export function EingaengeTab() {
                         {reference.jahr}
                       </span>
                       {reference.rating ? (
-                        <span className="inline-flex items-center gap-1 text-[#9a7445]">
-                          {'★'.repeat(reference.rating)}
-                        </span>
+                        <StarRating value={reference.rating} size="sm" />
                       ) : null}
                       {reference.kontaktEmail && (
                         <span className="inline-flex max-w-full items-center gap-1 break-all">

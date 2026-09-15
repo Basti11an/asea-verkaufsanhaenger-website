@@ -14,6 +14,7 @@ import { ContactPage } from './components/pages/ContactPage';
 import { ImprintPage } from './components/pages/ImprintPage';
 import { PrivacyPage } from './components/pages/PrivacyPage';
 import { CustomerReviewPage } from './components/pages/CustomerReviewPage';
+import { ReviewsPage } from './components/pages/ReviewsPage';
 import { ReviewOptOutPage } from './components/pages/ReviewOptOutPage';
 import { MessagesPage } from './components/pages/MessagesPage';
 import { AdminLogin } from './components/AdminLogin';
@@ -32,6 +33,7 @@ const PAGE_PATHS: Record<string, string> = {
   contact: '/kontakt',
   imprint: '/impressum',
   privacy: '/datenschutz',
+  reviews: '/bewertungen',
   customerReview: '/bewertung',
   reviewOptOut: '/bewertung-abmelden',
   messages: '/admin',
@@ -53,6 +55,8 @@ const PATH_PAGES: Record<string, string> = {
   '/imprint': 'imprint',
   '/datenschutz': 'privacy',
   '/privacy': 'privacy',
+  '/bewertungen': 'reviews',
+  '/reviews': 'reviews',
   '/bewertung': 'customerReview',
   '/review': 'customerReview',
   '/bewertung-abmelden': 'reviewOptOut',
@@ -285,6 +289,8 @@ function AppInner() {
         return <ImprintPage />;
       case 'privacy':
         return <PrivacyPage />;
+      case 'reviews':
+        return <ReviewsPage />;
       case 'customerReview':
         return <CustomerReviewPage onNavigate={handleNavigate} />;
       case 'reviewOptOut':

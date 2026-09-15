@@ -105,9 +105,10 @@ export async function fetchReferencesFromSupabase(includePrivateFields = false):
 
   const fallbackResult = await client
     .from('customer_references')
-    .select(basePublicColumns)
+    .select(`${publicColumns},public_consent`)
     .eq('status', 'approved')
     .eq('sichtbar', true)
+    .eq('public_consent', true)
     .order('id', { ascending: false });
 
   if (fallbackResult.error) throw fallbackResult.error;

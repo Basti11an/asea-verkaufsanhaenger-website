@@ -87,6 +87,21 @@ describe('customer follow-up security migration', () => {
     expect(SQL).toContain("v_token_hash := encode(digest(p_token, 'sha256'), 'hex');");
   });
 
+  it('does not consume review tokens before the review is safely stored', () => {
+    const reviewFunction = SQL.match(/create or replace function public\.submit_customer_review_with_token[\s\S]+?revoke all on function public\.submit_customer_review_with_token\(text, integer, text, text, boolean\) from public;/)?.[0] ?? '';
+    const insertReferenceIndex = reviewFunction.indexOf('insert into public.customer_references');
+    const updateCustomerIndex = reviewFunction.indexOf('update public.customers');
+    const finalizeTokenIndex = reviewFunction.lastIndexOf('update public.customer_review_tokens');
+
+    expect(reviewFunction).toContain('for update;');
+    expect(insertReferenceIndex).toBeGreaterThan(0);
+    expect(updateCustomerIndex).toBeGreaterThan(insertReferenceIndex);
+    expect(finalizeTokenIndex).toBeGreaterThan(updateCustomerIndex);
+    expect(reviewFunction.slice(0, insertReferenceIndex)).not.toContain('set used_at = now()');
+    expect(reviewFunction).toContain('v_existing_review');
+    expect(reviewFunction).toContain('set used_at = coalesce(used_at, now())');
+  });
+
   it('keeps non-consented reviews out of public reference reads', () => {
     expect(SQL).toContain('public_consent boolean not null default true');
     expect(SQL).toContain('status = \'approved\' and sichtbar = true and public_consent = true');

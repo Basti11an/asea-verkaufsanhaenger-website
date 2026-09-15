@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import type { AdminReference } from '../../context/AdminDataContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { ReferenceCard } from './ReferenceCard';
 
 interface ReferenceCarouselProps {
@@ -11,6 +12,7 @@ const AUTOPLAY_SPEED = 36;
 const RESUME_DELAY = 2000;
 
 export function ReferenceCarousel({ references, className = '' }: ReferenceCarouselProps) {
+  const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const frameRef = useRef<number | null>(null);
   const resumeTimerRef = useRef<number | null>(null);
@@ -222,7 +224,7 @@ export function ReferenceCarousel({ references, className = '' }: ReferenceCarou
       ref={containerRef}
       className={`reference-carousel ${className}`}
       tabIndex={0}
-      aria-label="Erfahrungen unserer Kunden"
+      aria-label={t('reviews_carousel_label')}
     >
       <div className="reference-carousel-track">
         {carouselItems.map((reference, index) => (

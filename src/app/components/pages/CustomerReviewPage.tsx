@@ -1,10 +1,8 @@
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useMemo, useRef, useState } from 'react';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Textarea } from '../ui/textarea';
 import { useLanguage } from '../../context/LanguageContext';
 import { isSupabaseConfigured, supabase } from '../../lib/supabase';
+import { ReviewForm } from '../reviews/ReviewForm';
 
 interface CustomerReviewPageProps {
   onNavigate?: (page: string) => void;
@@ -12,47 +10,179 @@ interface CustomerReviewPageProps {
 
 type SubmitState = 'idle' | 'sending' | 'success' | 'invalid' | 'error';
 
+type ReviewRpcResult = 'not_called' | 'success' | 'invalid' | 'error';
+
+interface ReviewSubmitDiagnostic {
+  token_present: boolean;
+  rating_present: boolean;
+  description_length: number;
+  rpc_called: boolean;
+  rpc_result: ReviewRpcResult;
+  error_code?: string;
+}
+
+const REVIEW_TOKEN_STORAGE_KEY = 'asea-customer-review-token';
+
+function readTokenFromParams(params: string) {
+  try {
+    return new URLSearchParams(params).get('token')?.trim() ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function rememberReviewToken(token: string) {
+  try {
+    sessionStorage.setItem(REVIEW_TOKEN_STORAGE_KEY, token);
+  } catch {
+    // Session storage is only a convenience for mobile browsers that rewrite URLs.
+  }
+}
+
+function readRememberedReviewToken() {
+  try {
+    return sessionStorage.getItem(REVIEW_TOKEN_STORAGE_KEY)?.trim() ?? '';
+  } catch {
+    return '';
+  }
+}
+
 function getTokenFromUrl() {
   if (typeof window === 'undefined') return '';
-  return new URLSearchParams(window.location.search).get('token')?.trim() ?? '';
+
+  const searchToken = readTokenFromParams(window.location.search);
+  if (searchToken) {
+    rememberReviewToken(searchToken);
+    return searchToken;
+  }
+
+  const hash = window.location.hash ?? '';
+  const hashQueryStart = hash.indexOf('?');
+  const hashParams = hashQueryStart >= 0 ? hash.slice(hashQueryStart) : hash.replace(/^#/, '');
+  const hashToken = readTokenFromParams(hashParams);
+  if (hashToken) {
+    rememberReviewToken(hashToken);
+    return hashToken;
+  }
+
+  return readRememberedReviewToken();
+}
+
+function getReviewErrorCode(error: unknown) {
+  const maybeError = error as { code?: unknown; message?: unknown; status?: unknown } | null;
+
+  if (typeof maybeError?.code === 'string' && maybeError.code.trim()) {
+    return `supabase_${maybeError.code.trim().toLowerCase()}`;
+  }
+
+  if (typeof maybeError?.status === 'number') {
+    return `http_${maybeError.status}`;
+  }
+
+  const message = typeof maybeError?.message === 'string' ? maybeError.message.toLowerCase() : '';
+  if (message.includes('failed to fetch') || message.includes('network')) return 'network_error';
+  if (message.includes('row-level security')) return 'rls_blocked';
+  if (message.includes('function') && message.includes('does not exist')) return 'rpc_missing';
+
+  return 'review_rpc_error';
+}
+
+function logReviewSubmitDiagnostic(diagnostic: ReviewSubmitDiagnostic) {
+  const logPayload = {
+    token_present: diagnostic.token_present,
+    rating_present: diagnostic.rating_present,
+    description_length: diagnostic.description_length,
+    rpc_called: diagnostic.rpc_called,
+    rpc_result: diagnostic.rpc_result,
+    error_code: diagnostic.error_code,
+  };
+
+  if (diagnostic.rpc_result === 'error' || diagnostic.error_code) {
+    console.warn('Customer review submit diagnostic:', logPayload);
+    return;
+  }
+
+  console.info('Customer review submit diagnostic:', logPayload);
 }
 
 export function CustomerReviewPage({ onNavigate }: CustomerReviewPageProps) {
   const { t } = useLanguage();
   const token = useMemo(getTokenFromUrl, []);
+  const submitInFlightRef = useRef(false);
   const [rating, setRating] = useState(0);
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
   const [publicConsent, setPublicConsent] = useState(false);
   const [state, setState] = useState<SubmitState>(token ? 'idle' : 'invalid');
   const [validationMessage, setValidationMessage] = useState('');
+  const [submitDiagnostic, setSubmitDiagnostic] = useState<ReviewSubmitDiagnostic | null>(null);
+
+  const updateDiagnostic = (diagnostic: ReviewSubmitDiagnostic) => {
+    setSubmitDiagnostic(diagnostic);
+    logReviewSubmitDiagnostic(diagnostic);
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setValidationMessage('');
+    setSubmitDiagnostic(null);
+
+    const trimmedDescription = description.trim();
+    const baseDiagnostic = {
+      token_present: Boolean(token),
+      rating_present: rating >= 1 && rating <= 5,
+      description_length: trimmedDescription.length,
+    };
 
     if (!token) {
+      updateDiagnostic({
+        ...baseDiagnostic,
+        rpc_called: false,
+        rpc_result: 'not_called',
+        error_code: 'missing_token',
+      });
       setState('invalid');
       return;
     }
 
     if (rating < 1 || rating > 5) {
+      updateDiagnostic({
+        ...baseDiagnostic,
+        rpc_called: false,
+        rpc_result: 'not_called',
+        error_code: 'missing_rating',
+      });
       setValidationMessage(t('customer_review_rating_required'));
       return;
     }
 
-    const trimmedDescription = description.trim();
     if (trimmedDescription.length < 10) {
+      updateDiagnostic({
+        ...baseDiagnostic,
+        rpc_called: false,
+        rpc_result: 'not_called',
+        error_code: 'description_too_short',
+      });
       setValidationMessage(t('customer_review_text_required'));
       return;
     }
 
     if (!isSupabaseConfigured || !supabase) {
+      updateDiagnostic({
+        ...baseDiagnostic,
+        rpc_called: false,
+        rpc_result: 'error',
+        error_code: 'supabase_not_configured',
+      });
       setState('error');
       return;
     }
 
+    if (submitInFlightRef.current) return;
+
+    submitInFlightRef.current = true;
     setState('sending');
+    let finished = false;
 
     try {
       const { data, error } = await supabase.rpc('submit_customer_review_with_token', {
@@ -65,10 +195,34 @@ export function CustomerReviewPage({ onNavigate }: CustomerReviewPageProps) {
 
       if (error) throw error;
 
-      setState(data === false ? 'invalid' : 'success');
+      const nextState = data === false ? 'invalid' : 'success';
+      updateDiagnostic({
+        ...baseDiagnostic,
+        rpc_called: true,
+        rpc_result: data === false ? 'invalid' : 'success',
+        error_code: data === false ? 'token_rejected' : undefined,
+      });
+      setState(nextState);
+      finished = true;
     } catch (error) {
-      console.error('Customer review submission failed:', error);
+      const errorCode = getReviewErrorCode(error);
+      updateDiagnostic({
+        ...baseDiagnostic,
+        rpc_called: true,
+        rpc_result: 'error',
+        error_code: errorCode,
+      });
+      console.error('Customer review submission failed:', {
+        error_code: errorCode,
+        token_present: Boolean(token),
+        rating_present: rating >= 1 && rating <= 5,
+        description_length: trimmedDescription.length,
+      });
       setState('error');
+    } finally {
+      if (!finished) {
+        submitInFlightRef.current = false;
+      }
     }
   };
 
@@ -117,90 +271,32 @@ export function CustomerReviewPage({ onNavigate }: CustomerReviewPageProps) {
             </div>
           </div>
 
-          <form
+          <ReviewForm
             onSubmit={handleSubmit}
+            rating={rating}
+            onRatingChange={setRating}
+            description={description}
+            onDescriptionChange={setDescription}
+            location={location}
+            onLocationChange={setLocation}
+            publicConsent={publicConsent}
+            onPublicConsentChange={setPublicConsent}
+            submitLabel={t('customer_review_submit')}
+            sendingLabel={t('customer_review_sending')}
+            isSending={state === 'sending'}
+            validationMessage={validationMessage}
             className="rounded-xl border border-[#dfd9cf] bg-white p-6 md:p-8 shadow-sm"
-          >
-            <div>
-              <Label className="text-[#2f2f2d]">{t('customer_review_rating_label')}</Label>
-              <div className="mt-3 flex flex-wrap gap-2" role="radiogroup" aria-label={t('customer_review_rating_label')}>
-                {[1, 2, 3, 4, 5].map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    role="radio"
-                    aria-checked={rating === value}
-                    onClick={() => setRating(value)}
-                    className={`h-12 w-12 rounded-md border text-2xl transition-colors ${
-                      value <= rating
-                        ? 'border-[#b08a57] bg-[#b08a57] text-white'
-                        : 'border-[#dfd9cf] bg-[#f8f7f3] text-[#8a867d] hover:border-[#b08a57]'
-                    }`}
-                  >
-                    ★
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <Label htmlFor="review-description" className="text-[#2f2f2d]">
-                {t('customer_review_text_label')}
-              </Label>
-              <Textarea
-                id="review-description"
-                value={description}
-                onChange={(event) => setDescription(event.target.value)}
-                placeholder={t('customer_review_text_placeholder')}
-                maxLength={1600}
-                className="mt-2 min-h-36 border-[#dfd9cf] bg-[#fbfaf7] focus-visible:border-[#b08a57] focus-visible:ring-[#b08a57]/25"
-              />
-            </div>
-
-            <div className="mt-6">
-              <Label htmlFor="review-location" className="text-[#2f2f2d]">
-                {t('customer_review_location_label')}
-              </Label>
-              <Input
-                id="review-location"
-                value={location}
-                onChange={(event) => setLocation(event.target.value)}
-                placeholder={t('customer_review_location_placeholder')}
-                maxLength={120}
-                className="mt-2 border-[#dfd9cf] bg-[#fbfaf7] focus-visible:border-[#b08a57] focus-visible:ring-[#b08a57]/25"
-              />
-            </div>
-
-            <label className="mt-6 flex items-start gap-3 rounded-lg border border-[#dfd9cf] bg-[#f8f7f3] p-4 text-sm leading-relaxed text-[#5f5b53]">
-              <input
-                type="checkbox"
-                checked={publicConsent}
-                onChange={(event) => setPublicConsent(event.target.checked)}
-                className="mt-1 h-4 w-4 accent-[#b08a57]"
-              />
-              <span>{t('customer_review_public_consent')}</span>
-            </label>
-
-            {validationMessage && (
-              <p className="mt-4 rounded-md border border-[#c85d4f]/25 bg-[#c85d4f]/10 px-3 py-2 text-sm text-[#8b332a]">
-                {validationMessage}
-              </p>
-            )}
-
-            {state === 'error' && (
+            errorContent={state === 'error' ? (
               <p className="mt-4 rounded-md border border-[#c85d4f]/25 bg-[#c85d4f]/10 px-3 py-2 text-sm text-[#8b332a]">
                 {t('customer_review_error')}
+                {submitDiagnostic?.error_code && (
+                  <span className="mt-1 block text-xs text-[#8b332a]/80">
+                    {t('customer_review_error_code')}: {submitDiagnostic.error_code}
+                  </span>
+                )}
               </p>
-            )}
-
-            <Button
-              type="submit"
-              disabled={state === 'sending'}
-              className="mt-6 w-full bg-[#b08a57] hover:bg-[#9a7445] text-white"
-            >
-              {state === 'sending' ? t('customer_review_sending') : t('customer_review_submit')}
-            </Button>
-          </form>
+            ) : null}
+          />
         </div>
       </div>
     </section>

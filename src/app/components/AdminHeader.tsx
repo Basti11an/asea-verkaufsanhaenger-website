@@ -13,7 +13,7 @@ const TABS = [
   { id: 'eingaenge', label: 'Eingänge' },
   { id: 'kunden', label: 'Kunden' },
   { id: 'modelle', label: 'Modelle' },
-  { id: 'referenzen', label: 'Referenzen' },
+  { id: 'referenzen', label: 'Bewertungen' },
 ];
 
 export function AdminHeader({ activeTab, setActiveTab, onNavigate, onLogout }: AdminHeaderProps) {

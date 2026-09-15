@@ -702,6 +702,7 @@ declare
   v_description text;
   v_location text;
   v_year integer;
+  v_existing_review boolean;
 begin
   if p_token is null or length(p_token) < 32 then
     return false;
@@ -724,23 +725,11 @@ begin
   into v_token
   from public.customer_review_tokens
   where token_hash = v_token_hash
-  limit 1;
+  limit 1
+  for update;
 
   if not found then
     return false;
-  end if;
-
-  if v_token.used_at is not null then
-    return true;
-  end if;
-
-  update public.customer_review_tokens
-  set used_at = now()
-  where id = v_token.id
-    and used_at is null;
-
-  if not found then
-    return true;
   end if;
 
   select
@@ -749,7 +738,11 @@ begin
     email,
     email_normalized,
     purchased_item,
-    purchase_date
+    purchase_date,
+    review_status,
+    review_found_at,
+    manual_review_confirmed_at,
+    matched_reference_id
   into v_customer
   from public.customers
   where id = v_token.customer_id
@@ -758,6 +751,27 @@ begin
 
   if not found then
     return false;
+  end if;
+
+  select exists (
+    select 1
+    from public.customer_references
+    where customer_id = v_token.customer_id
+    limit 1
+  )
+  into v_existing_review;
+
+  if v_existing_review
+    or coalesce(v_customer.review_status, 'none') <> 'none'
+    or v_customer.review_found_at is not null
+    or v_customer.manual_review_confirmed_at is not null
+    or v_customer.matched_reference_id is not null
+  then
+    update public.customer_review_tokens
+    set used_at = coalesce(used_at, now())
+    where id = v_token.id;
+
+    return true;
   end if;
 
   v_year := coalesce(
@@ -817,6 +831,18 @@ begin
       else twelve_month_email_status
     end
   where id = v_customer.id;
+
+  if not found then
+    raise exception 'customer_review_customer_update_failed';
+  end if;
+
+  update public.customer_review_tokens
+  set used_at = coalesce(used_at, now())
+  where id = v_token.id;
+
+  if not found then
+    raise exception 'customer_review_token_finalize_failed';
+  end if;
 
   perform public.log_customer_followup_event(
     v_customer.id,
