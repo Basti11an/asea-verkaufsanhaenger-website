@@ -5,7 +5,7 @@ import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { motion } from 'motion/react';
 import { useAdminData } from '../../context/AdminDataContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { getLatestApprovedReferences } from '../../lib/referenceUtils';
+import { getHomepagePreviewReferences, getLatestApprovedReferences } from '../../lib/referenceUtils';
 import { getRevealAnimate, getRevealInitial, useTouchFriendlyMotion } from '../../lib/useTouchFriendlyMotion';
 import { AseaWordmark } from '../AseaWordmark';
 import { ReviewCard } from '../reviews/ReviewCard';
@@ -60,6 +60,8 @@ export function HomePage({ onNavigate }: HomePageProps) {
   const { t } = useLanguage();
   const touchFriendlyMotion = useTouchFriendlyMotion();
   const visibleRefs = getLatestApprovedReferences(references, 8);
+  const mobilePreviewRefs = getHomepagePreviewReferences(references, 1);
+  const tabletPreviewRefs = getHomepagePreviewReferences(references, 2);
 
   const features = [
     { titleKey: 'home_feature1_title' as const, descKey: 'home_feature1_desc' as const },
@@ -167,8 +169,42 @@ export function HomePage({ onNavigate }: HomePageProps) {
             </p>
           </div>
 
+          {mobilePreviewRefs.length > 0 && (
+            <div className="grid grid-cols-1 justify-items-center gap-y-9 px-4 py-3 md:hidden">
+              {mobilePreviewRefs.map((review, index) => (
+                <ReviewCard
+                  key={review.id}
+                  review={review}
+                  variant="polaroid"
+                  index={index}
+                  truncateText
+                  className="w-full max-w-[315px]"
+                />
+              ))}
+            </div>
+          )}
+
+          {tabletPreviewRefs.length > 0 && (
+            <div
+              className={`hidden justify-items-center gap-x-6 gap-y-9 px-3 py-3 md:grid lg:hidden ${
+                tabletPreviewRefs.length === 1 ? 'mx-auto max-w-[330px] grid-cols-1' : 'mx-auto max-w-[700px] grid-cols-2'
+              }`}
+            >
+              {tabletPreviewRefs.map((review, index) => (
+                <ReviewCard
+                  key={review.id}
+                  review={review}
+                  variant="polaroid"
+                  index={index}
+                  truncateText
+                  className="w-full max-w-[320px]"
+                />
+              ))}
+            </div>
+          )}
+
           {visibleRefs.length > 0 && (
-            <div className="grid grid-cols-1 gap-x-6 gap-y-9 px-1 py-3 sm:grid-cols-2 md:px-3 lg:grid-cols-4 lg:gap-x-7 lg:gap-y-11">
+            <div className="hidden grid-cols-4 gap-x-7 gap-y-11 px-3 py-3 lg:grid">
               {visibleRefs.map((review, index) => (
                 <ReviewCard
                   key={review.id}

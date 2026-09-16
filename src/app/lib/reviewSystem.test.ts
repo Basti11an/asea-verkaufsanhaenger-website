@@ -8,7 +8,7 @@ import {
   createCustomerReviewRpcPayload,
   createSafeReviewRpcErrorLog,
 } from './customerReviewRpc';
-import { getLatestApprovedReferences, isApprovedVisibleReference } from './referenceUtils';
+import { getHomepagePreviewReferences, getLatestApprovedReferences, isApprovedVisibleReference } from './referenceUtils';
 
 const ROOT = process.cwd();
 const read = (path: string) => readFileSync(join(ROOT, path), 'utf8');
@@ -57,6 +57,22 @@ describe('central review system', () => {
       .toEqual([10, 9, 8, 7, 6, 5, 4, 3]);
   });
 
+  it('uses only four and five star reviews for the responsive homepage preview', () => {
+    const reviews: AdminReference[] = [
+      { ...baseReview, id: 1, rating: 3 },
+      { ...baseReview, id: 2, rating: 4 },
+      { ...baseReview, id: 3, rating: 5 },
+      { ...baseReview, id: 4, rating: 4 },
+      { ...baseReview, id: 5, rating: null },
+      { ...baseReview, id: 6, rating: 5 },
+    ];
+
+    expect(getHomepagePreviewReferences(reviews, 1).map((review) => review.id))
+      .toEqual([6]);
+    expect(getHomepagePreviewReferences(reviews, 2).map((review) => review.id))
+      .toEqual([6, 3]);
+  });
+
   it('uses one shared star and review form system across public and admin review surfaces', () => {
     expect(read('src/app/components/pages/CustomerReviewPage.tsx')).toContain("import { ReviewForm }");
     expect(read('src/app/components/references/ReferenceSubmitPanel.tsx')).toContain("import { ReviewForm }");
@@ -71,8 +87,12 @@ describe('central review system', () => {
     const reviewCard = read('src/app/components/reviews/ReviewCard.tsx');
 
     expect(homePage).toContain('getLatestApprovedReferences(references, 8)');
+    expect(homePage).toContain('getHomepagePreviewReferences(references, 1)');
+    expect(homePage).toContain('getHomepagePreviewReferences(references, 2)');
     expect(homePage).not.toContain('ReferenceCarousel');
     expect(homePage).toContain('lg:grid-cols-4');
+    expect(homePage).toContain('md:hidden');
+    expect(homePage).toContain('md:grid lg:hidden');
     expect(homePage).toContain('variant="polaroid"');
     expect(reviewsPage).toContain('lg:grid-cols-4');
     expect(reviewsPage).toContain('variant="polaroid"');

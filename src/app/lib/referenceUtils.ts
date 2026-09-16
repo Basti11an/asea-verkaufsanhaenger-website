@@ -36,6 +36,17 @@ export function getLatestApprovedReferences(references: AdminReference[], limit:
     .slice(0, limit);
 }
 
+export function getHomepagePreviewReferences(references: AdminReference[], limit: number) {
+  return sortReferencesNewestFirst(references)
+    .filter((reference) => (
+      isApprovedVisibleReference(reference)
+      && typeof reference.rating === 'number'
+      && reference.rating >= 4
+    ))
+    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0) || b.id - a.id)
+    .slice(0, limit);
+}
+
 export function getApprovedReferencesForModel(
   references: AdminReference[],
   modelName: string,
