@@ -1,8 +1,13 @@
-import { useEffect, useId, useRef, useState, type ChangeEvent } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type ChangeEvent } from 'react';
 import { ImageIcon, Loader2, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '../context/LanguageContext';
-import { uploadImageFile, type ImageUploadFolder } from '../lib/imageUploads';
+import {
+  ACCEPTED_IMAGE_MIME_TYPES,
+  uploadImageFile,
+  validateImageFile,
+  type ImageUploadFolder,
+} from '../lib/imageUploads';
 
 interface ImageUploadFieldProps {
   label: string;
@@ -33,17 +38,47 @@ export function ImageUploadField({
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const isMountedRef = useRef(true);
+  const uploadStateChangeRef = useRef(onUploadStateChange);
+  const previewUrlRef = useRef('');
   const [isUploading, setIsUploading] = useState(false);
   const [isChoosingFile, setIsChoosingFile] = useState(false);
   const [error, setError] = useState('');
-
-  const setUploading = (nextValue: boolean) => {
-    if (!isMountedRef.current) return;
-    setIsUploading(nextValue);
-    onUploadStateChange?.(nextValue);
-  };
+  const [localPreviewUrl, setLocalPreviewUrl] = useState('');
+  const [previewFailed, setPreviewFailed] = useState(false);
 
   useEffect(() => {
+    uploadStateChangeRef.current = onUploadStateChange;
+  }, [onUploadStateChange]);
+
+  const revokeLocalPreview = useCallback(() => {
+    if (!previewUrlRef.current) return;
+
+    try {
+      if (typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
+        URL.revokeObjectURL(previewUrlRef.current);
+      }
+    } catch {
+      // Some older browsers can fail here; the preview is already being discarded.
+    }
+
+    previewUrlRef.current = '';
+  }, []);
+
+  const clearLocalPreview = useCallback(() => {
+    revokeLocalPreview();
+    if (!isMountedRef.current) return;
+    setLocalPreviewUrl('');
+  }, [revokeLocalPreview]);
+
+  const setUploading = useCallback((nextValue: boolean) => {
+    if (!isMountedRef.current) return;
+    setIsUploading(nextValue);
+    uploadStateChangeRef.current?.(nextValue);
+  }, []);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
     const handlePageShow = () => {
       setIsChoosingFile(false);
       if (!inputRef.current?.files?.length) {
@@ -66,12 +101,35 @@ export function ImageUploadField({
 
     return () => {
       isMountedRef.current = false;
+      revokeLocalPreview();
       window.removeEventListener('pageshow', handlePageShow);
       window.removeEventListener('focus', handlePageShow);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      onUploadStateChange?.(false);
+      uploadStateChangeRef.current?.(false);
     };
-  }, [onUploadStateChange]);
+  }, [revokeLocalPreview, setUploading]);
+
+  useEffect(() => {
+    setPreviewFailed(false);
+  }, [value, localPreviewUrl]);
+
+  const createLocalPreview = (file: File) => {
+    clearLocalPreview();
+
+    if (typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') {
+      return;
+    }
+
+    try {
+      const previewUrl = URL.createObjectURL(file);
+      previewUrlRef.current = previewUrl;
+      if (isMountedRef.current) {
+        setLocalPreviewUrl(previewUrl);
+      }
+    } catch (previewError) {
+      console.warn('Image preview could not be created:', previewError);
+    }
+  };
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     setIsChoosingFile(false);
@@ -84,29 +142,65 @@ export function ImageUploadField({
     }
 
     setError('');
+    setPreviewFailed(false);
+    clearLocalPreview();
+
+    try {
+      validateImageFile(file);
+    } catch (validationError) {
+      const message = validationError instanceof Error ? validationError.message : t('image_upload_error');
+      setError(message);
+      setUploading(false);
+      toast.error(message);
+      return;
+    }
+
+    createLocalPreview(file);
     setUploading(true);
 
     try {
       const uploadedUrl = await uploadImageFile(file, folder);
       if (!isMountedRef.current) return;
       onChange(uploadedUrl);
+      clearLocalPreview();
       toast.success(t('image_upload_success'));
     } catch (uploadError) {
       if (!isMountedRef.current) return;
       const message = uploadError instanceof Error ? uploadError.message : t('image_upload_error');
+      clearLocalPreview();
       setError(message);
+      console.warn('Image upload failed:', {
+        folder,
+        fileType: file.type || 'unknown',
+        fileSize: file.size,
+        error: message,
+      });
       toast.error(message);
     } finally {
       setUploading(false);
     }
   };
 
+  const handleRemoveImage = () => {
+    clearLocalPreview();
+    setError('');
+    setPreviewFailed(false);
+    setUploading(false);
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
+    onChange('');
+  };
+
+  const previewSrc = localPreviewUrl || value;
+  const canShowImagePreview = Boolean(previewSrc) && !previewFailed;
+
   const input = (
     <input
       ref={inputRef}
       id={inputId}
       type="file"
-      accept="image/jpeg,image/png,image/webp,image/gif"
+      accept={ACCEPTED_IMAGE_MIME_TYPES.join(',')}
       onChange={handleFileChange}
       disabled={disabled || isUploading}
       className="sr-only"
@@ -134,7 +228,7 @@ export function ImageUploadField({
           {value && (
             <button
               type="button"
-              onClick={() => onChange('')}
+              onClick={handleRemoveImage}
               disabled={disabled || isUploading}
               className="inline-flex h-8 items-center justify-center rounded-md border border-red-200 px-2.5 text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-60"
             >
@@ -154,8 +248,13 @@ export function ImageUploadField({
       <div className="rounded-lg border border-[#dfd9cf] bg-[#fbfaf7] p-3">
         {showPreview && (
           <div className="mb-3 h-36 overflow-hidden rounded-md border border-[#dfd9cf] bg-white">
-            {value ? (
-              <img src={value} alt={previewAlt} className="h-full w-full object-cover" />
+            {canShowImagePreview ? (
+              <img
+                src={previewSrc}
+                alt={previewAlt}
+                className={`h-full w-full object-cover ${isUploading ? 'opacity-75' : ''}`}
+                onError={() => setPreviewFailed(true)}
+              />
             ) : (
               <div className="flex h-full flex-col items-center justify-center gap-2 text-sm text-[#77756f]">
                 <ImageIcon size={28} className="text-[#b08a57]/60" />
@@ -179,7 +278,7 @@ export function ImageUploadField({
           {value && (
             <button
               type="button"
-              onClick={() => onChange('')}
+              onClick={handleRemoveImage}
               disabled={disabled || isUploading}
               className="inline-flex items-center justify-center rounded-md border border-red-200 px-4 py-2.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 disabled:opacity-60"
             >

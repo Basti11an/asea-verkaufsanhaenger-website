@@ -5,6 +5,7 @@ export type ImageUploadFolder = 'references' | 'models';
 export const ASEA_UPLOADS_BUCKET = 'asea-uploads';
 export const MAX_IMAGE_UPLOAD_SIZE = 5 * 1024 * 1024;
 export const ACCEPTED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+export const ACCEPTED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
 
 const EXTENSION_BY_MIME_TYPE: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -18,7 +19,7 @@ function getSafeFileExtension(file: File) {
   if (fromType) return fromType;
 
   const fromName = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '');
-  return fromName || 'jpg';
+  return fromName && ACCEPTED_IMAGE_EXTENSIONS.includes(fromName) ? fromName : 'jpg';
 }
 
 function createUploadPath(file: File, folder: ImageUploadFolder) {
@@ -34,7 +35,12 @@ function createUploadPath(file: File, folder: ImageUploadFolder) {
 }
 
 export function validateImageFile(file: File) {
-  if (!ACCEPTED_IMAGE_MIME_TYPES.includes(file.type)) {
+  const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+  const hasAcceptedMimeType = ACCEPTED_IMAGE_MIME_TYPES.includes(file.type);
+  const hasAcceptedExtension = ACCEPTED_IMAGE_EXTENSIONS.includes(extension);
+  const hasUnknownMimeType = !file.type;
+
+  if (!hasAcceptedMimeType && !(hasUnknownMimeType && hasAcceptedExtension)) {
     throw new Error('Bitte wählen Sie ein Bild im Format JPG, PNG, WebP oder GIF aus.');
   }
 
