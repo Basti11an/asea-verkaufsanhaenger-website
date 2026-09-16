@@ -228,6 +228,7 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
       {/* Models Grid */}
       <section className="gradient-accent pt-10 pb-16 md:pt-14 md:pb-20">
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24">
+          <h1 className="sr-only">{t('models_hero_title')}</h1>
           {models.length === 0 ? (
             <p className="text-center text-[#77756f] py-16 md:py-20">{t('models_no_models')}</p>
           ) : (

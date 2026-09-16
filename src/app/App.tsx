@@ -20,6 +20,7 @@ import { ReviewOptOutPage } from './components/pages/ReviewOptOutPage';
 import { MessagesPage } from './components/pages/MessagesPage';
 import { AdminLogin } from './components/AdminLogin';
 import { ConfiguratorPage } from './components/pages/ConfiguratorPage';
+import { NotFoundPage } from './components/pages/NotFoundPage';
 import { PrivacyConsentBanner } from './components/PrivacyConsentBanner';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
 import { hasStatisticsConsent } from './lib/privacyConsent';
@@ -38,6 +39,7 @@ const PAGE_PATHS: Record<string, string> = {
   customerReview: '/bewertung',
   reviewOptOut: '/bewertung-abmelden',
   messages: '/admin',
+  notFound: '/',
 };
 
 const SITE_ORIGIN = 'https://asea-anhaenger.com';
@@ -119,6 +121,12 @@ const SEO_CONFIG: Record<string, SeoConfig> = {
     path: '/admin',
     robots: 'noindex,nofollow',
   },
+  notFound: {
+    title: 'Seite nicht gefunden | ASEA',
+    description: 'Die angeforderte Seite wurde nicht gefunden.',
+    path: '/',
+    robots: 'noindex,nofollow',
+  },
 };
 
 const PATH_PAGES: Record<string, string> = {
@@ -150,7 +158,7 @@ function getPageFromLocation() {
   if (typeof window === 'undefined') return 'home';
 
   const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/';
-  return PATH_PAGES[normalizedPath] ?? 'home';
+  return PATH_PAGES[normalizedPath] ?? 'notFound';
 }
 
 function canUseCleanBrowserUrls() {
@@ -216,6 +224,19 @@ function upsertCanonical(href: string) {
   link.href = href;
 }
 
+function upsertJsonLd(id: string, data: unknown) {
+  let script = document.head.querySelector<HTMLScriptElement>(`script[type="application/ld+json"][data-asea-schema="${id}"]`);
+
+  if (!script) {
+    script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.dataset.aseaSchema = id;
+    document.head.appendChild(script);
+  }
+
+  script.textContent = JSON.stringify(data);
+}
+
 function getSeoForPage(page: string, navData?: any): SeoConfig {
   if (page === 'model-detail' && navData?.model?.name) {
     const modelName = String(navData.model.name).toLowerCase();
@@ -246,6 +267,96 @@ function getSeoForPage(page: string, navData?: any): SeoConfig {
   return SEO_CONFIG[page] ?? SEO_CONFIG.home;
 }
 
+function getBreadcrumbName(page: string, navData?: any) {
+  if (page === 'model-detail' && navData?.model?.name) {
+    return String(navData.model.name);
+  }
+
+  const names: Record<string, string> = {
+    home: 'Startseite',
+    models: 'Modelle',
+    equipment: 'Ausstattung',
+    about: 'Über uns',
+    contact: 'Kontakt',
+    reviews: 'Bewertungen',
+    configurator: 'Konfigurator',
+    imprint: 'Impressum',
+    privacy: 'Datenschutz',
+  };
+
+  return names[page] ?? 'Seite';
+}
+
+function buildStructuredData(page: string, seo: SeoConfig, canonicalUrl: string, navData?: any) {
+  const organizationId = `${SITE_ORIGIN}/#organization`;
+  const websiteId = `${SITE_ORIGIN}/#website`;
+  const currentPageName = getBreadcrumbName(page, navData);
+
+  const graph: unknown[] = [
+    {
+      '@type': 'WebSite',
+      '@id': websiteId,
+      url: SITE_ORIGIN,
+      name: 'ASEA Verkaufsanhänger',
+      publisher: {
+        '@id': organizationId,
+      },
+      inLanguage: 'de-AT',
+    },
+    {
+      '@type': ['Organization', 'LocalBusiness'],
+      '@id': organizationId,
+      name: 'Verkaufsanhänger ASEA',
+      url: SITE_ORIGIN,
+      logo: `${SITE_ORIGIN}/asea-logo.png`,
+      image: DEFAULT_OG_IMAGE,
+      telephone: '+43 664 410 5 007',
+      email: 'office@verkaufsanhaenger-asea.at',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: 'Lahrndorf 34',
+        postalCode: '4240',
+        addressLocality: 'Waldburg',
+        addressCountry: 'AT',
+      },
+      openingHours: [
+        'Mo-Fr 08:00-17:00',
+        'Sa 09:00-13:00',
+      ],
+    },
+  ];
+
+  if (!seo.robots?.includes('noindex')) {
+    const itemListElement = [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Startseite',
+        item: `${SITE_ORIGIN}/`,
+      },
+    ];
+
+    if (page !== 'home') {
+      itemListElement.push({
+        '@type': 'ListItem',
+        position: 2,
+        name: currentPageName,
+        item: canonicalUrl,
+      });
+    }
+
+    graph.push({
+      '@type': 'BreadcrumbList',
+      itemListElement,
+    });
+  }
+
+  return {
+    '@context': 'https://schema.org',
+    '@graph': graph,
+  };
+}
+
 function applySeoForPage(page: string, navData?: any) {
   const seo = getSeoForPage(page, navData);
   const canonicalUrl = `${SITE_ORIGIN}${seo.path}`;
@@ -264,6 +375,7 @@ function applySeoForPage(page: string, navData?: any) {
   upsertMetaByName('twitter:title', seo.title);
   upsertMetaByName('twitter:description', seo.description);
   upsertMetaByName('twitter:image', DEFAULT_OG_IMAGE);
+  upsertJsonLd('main', buildStructuredData(page, seo, canonicalUrl, navData));
 }
 
 function AdminAccessLoading() {
@@ -481,8 +593,10 @@ function AppInner() {
         ) : (
           <AdminLogin onLogin={refreshAdminAccess} onNavigate={handleNavigate} accessMessage={adminAccessMessage} />
         );
+      case 'notFound':
+        return <NotFoundPage onNavigate={handleNavigate} />;
       default:
-        return <HomePage onNavigate={handleNavigate} />;
+        return <NotFoundPage onNavigate={handleNavigate} />;
     }
   };
 

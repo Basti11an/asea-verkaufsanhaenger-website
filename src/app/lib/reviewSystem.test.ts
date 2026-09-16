@@ -150,6 +150,43 @@ describe('central review system', () => {
     expect(app).toContain("getSeoForPage(page: string, navData?: any)");
     expect(app).toContain("title: 'Kühlanhänger nach Maß | ASEA Oberösterreich'");
     expect(app).toContain("title: 'Messe- & Präsentationsanhänger | ASEA'");
+    expect(app).toContain("function upsertJsonLd");
+    expect(app).toContain("'@type': ['Organization', 'LocalBusiness']");
+    expect(app).toContain("'@type': 'WebSite'");
+    expect(app).toContain("'@type': 'BreadcrumbList'");
+    expect(app).toContain("telephone: '+43 664 410 5 007'");
+    expect(app).toContain("streetAddress: 'Lahrndorf 34'");
+  });
+
+  it('shows a noindex client 404 for unknown SPA routes instead of silently rendering home', () => {
+    const app = read('src/app/App.tsx');
+    const notFound = read('src/app/components/pages/NotFoundPage.tsx');
+
+    expect(app).toContain("return PATH_PAGES[normalizedPath] ?? 'notFound';");
+    expect(app).toContain("notFound: {\n    title: 'Seite nicht gefunden | ASEA'");
+    expect(app).toContain("case 'notFound':\n        return <NotFoundPage onNavigate={handleNavigate} />;");
+    expect(notFound).toContain('<h1');
+    expect(notFound).toContain('Seite nicht gefunden');
+  });
+
+  it('keeps every main public page with a clear h1 source', () => {
+    expect(read('src/app/components/pages/HomePage.tsx')).toContain('<h1');
+    expect(read('src/app/components/pages/ModelsPage.tsx')).toContain('<h1 className="sr-only">{t(\'models_hero_title\')}</h1>');
+    expect(read('src/app/components/pages/EquipmentPage.tsx')).toContain('<h1');
+    expect(read('src/app/components/pages/AboutPage.tsx')).toContain('<h1');
+    expect(read('src/app/components/pages/ContactPage.tsx')).toContain('<h1');
+    expect(read('src/app/components/pages/ReviewsPage.tsx')).toContain('<h1');
+    expect(read('src/app/components/pages/ImprintPage.tsx')).toContain('<h1');
+    expect(read('src/app/components/pages/PrivacyPage.tsx')).toContain('<h1');
+  });
+
+  it('uses lazy async image defaults while keeping the homepage hero eager', () => {
+    const imageWithFallback = read('src/app/components/figma/ImageWithFallback.tsx');
+    const homePage = read('src/app/components/pages/HomePage.tsx');
+
+    expect(imageWithFallback).toContain("loading={loading ?? 'lazy'}");
+    expect(imageWithFallback).toContain("decoding={decoding ?? 'async'}");
+    expect(homePage).toContain('loading="eager"');
   });
 
   it('publishes robots.txt and a sitemap with only real public routes', () => {
