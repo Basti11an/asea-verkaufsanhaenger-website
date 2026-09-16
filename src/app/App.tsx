@@ -111,6 +111,40 @@ function AdminAccessLoading() {
   );
 }
 
+function scrollPageToTop() {
+  const html = document.documentElement;
+  const body = document.body;
+  const root = document.getElementById('root');
+  const scrollingElement = document.scrollingElement || html;
+  const previousHtmlBehavior = html.style.scrollBehavior;
+  const previousBodyBehavior = body.style.scrollBehavior;
+
+  html.style.scrollBehavior = 'auto';
+  body.style.scrollBehavior = 'auto';
+
+  const run = () => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    scrollingElement.scrollTop = 0;
+    html.scrollTop = 0;
+    body.scrollTop = 0;
+
+    if (root) {
+      root.scrollTop = 0;
+    }
+  };
+
+  run();
+  requestAnimationFrame(run);
+  requestAnimationFrame(() => requestAnimationFrame(run));
+  window.setTimeout(run, 0);
+  window.setTimeout(run, 80);
+  window.setTimeout(run, 180);
+  window.setTimeout(() => {
+    html.style.scrollBehavior = previousHtmlBehavior;
+    body.style.scrollBehavior = previousBodyBehavior;
+  }, 220);
+}
+
 function AppInner() {
   const [currentPage, setCurrentPage] = useState<string>(getPageFromLocation);
   const [navData, setNavData] = useState<any>(null);
@@ -120,35 +154,6 @@ function AppInner() {
   const [navigationTick, setNavigationTick] = useState(0);
   const [privacySettingsOpen, setPrivacySettingsOpen] = useState(false);
   const [statisticsAllowed, setStatisticsAllowed] = useState(hasStatisticsConsent);
-
-  const scrollToTop = () => {
-    const html = document.documentElement;
-    const body = document.body;
-    const scrollingElement = document.scrollingElement || html;
-    const previousHtmlBehavior = html.style.scrollBehavior;
-    const previousBodyBehavior = body.style.scrollBehavior;
-
-    html.style.scrollBehavior = 'auto';
-    body.style.scrollBehavior = 'auto';
-
-    const run = () => {
-      window.scrollTo(0, 0);
-      scrollingElement.scrollTop = 0;
-      html.scrollTop = 0;
-      body.scrollTop = 0;
-    };
-
-    run();
-    requestAnimationFrame(run);
-    requestAnimationFrame(() => requestAnimationFrame(run));
-    window.setTimeout(run, 0);
-    window.setTimeout(run, 80);
-    window.setTimeout(run, 180);
-    window.setTimeout(() => {
-      html.style.scrollBehavior = previousHtmlBehavior;
-      body.style.scrollBehavior = previousBodyBehavior;
-    }, 220);
-  };
 
   const handleNavigate = (page: string, data?: any) => {
     setNavData(data ?? null);
@@ -201,7 +206,7 @@ function AppInner() {
   }, []);
 
   useLayoutEffect(() => {
-    scrollToTop();
+    scrollPageToTop();
   }, [currentPage, navigationTick]);
 
   useEffect(() => {
@@ -210,7 +215,7 @@ function AppInner() {
     }
 
     const handlePageShow = () => {
-      scrollToTop();
+      scrollPageToTop();
     };
 
     window.addEventListener('pageshow', handlePageShow);

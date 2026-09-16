@@ -124,6 +124,16 @@ describe('central review system', () => {
     expect(referencesSql).toContain('using (status = \'approved\' and sichtbar = true and public_consent = true)');
   });
 
+  it('keeps scroll restoration centralized and instant for internal page changes', () => {
+    const app = read('src/app/App.tsx');
+
+    expect(app).toContain('function scrollPageToTop()');
+    expect(app).toContain("window.history.scrollRestoration = 'manual'");
+    expect(app).toContain("window.scrollTo({ top: 0, left: 0, behavior: 'auto' })");
+    expect(app).toContain('root.scrollTop = 0');
+    expect(app).toContain('useLayoutEffect(() => {\n    scrollPageToTop();\n  }, [currentPage, navigationTick]);');
+  });
+
   it('calls the customer review RPC with the exact public SQL signature', () => {
     expect(CUSTOMER_REVIEW_RPC_NAME).toBe('submit_customer_review_with_token');
     expect(CUSTOMER_REVIEW_RPC_PARAM_NAMES).toEqual([
