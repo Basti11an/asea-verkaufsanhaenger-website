@@ -38,8 +38,10 @@ export function ImageUploadField({
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const isMountedRef = useRef(true);
+  const isChoosingFileRef = useRef(false);
   const uploadStateChangeRef = useRef(onUploadStateChange);
   const previewUrlRef = useRef('');
+  const filePickerScrollRef = useRef({ left: 0, top: 0 });
   const [isUploading, setIsUploading] = useState(false);
   const [isChoosingFile, setIsChoosingFile] = useState(false);
   const [error, setError] = useState('');
@@ -76,11 +78,40 @@ export function ImageUploadField({
     uploadStateChangeRef.current?.(nextValue);
   }, []);
 
+  const restoreScrollAfterFilePicker = useCallback(() => {
+    if (typeof window === 'undefined') return;
+
+    const { left, top } = filePickerScrollRef.current;
+    const restore = () => {
+      if (!isMountedRef.current) return;
+      window.scrollTo({ left, top, behavior: 'auto' });
+    };
+
+    restore();
+    window.requestAnimationFrame(() => window.requestAnimationFrame(restore));
+    window.setTimeout(restore, 120);
+  }, []);
+
+  const finishChoosingFile = useCallback(() => {
+    if (!isChoosingFileRef.current) return;
+    isChoosingFileRef.current = false;
+    setIsChoosingFile(false);
+    restoreScrollAfterFilePicker();
+  }, [restoreScrollAfterFilePicker]);
+
+  const handleFilePickerOpen = () => {
+    if (typeof window !== 'undefined') {
+      filePickerScrollRef.current = { left: window.scrollX, top: window.scrollY };
+    }
+    isChoosingFileRef.current = true;
+    setIsChoosingFile(true);
+  };
+
   useEffect(() => {
     isMountedRef.current = true;
 
     const handlePageShow = () => {
-      setIsChoosingFile(false);
+      finishChoosingFile();
       if (!inputRef.current?.files?.length) {
         setUploading(false);
       }
@@ -88,7 +119,7 @@ export function ImageUploadField({
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        setIsChoosingFile(false);
+        finishChoosingFile();
         if (!inputRef.current?.files?.length) {
           setUploading(false);
         }
@@ -107,7 +138,7 @@ export function ImageUploadField({
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       uploadStateChangeRef.current?.(false);
     };
-  }, [revokeLocalPreview, setUploading]);
+  }, [finishChoosingFile, revokeLocalPreview, setUploading]);
 
   useEffect(() => {
     setPreviewFailed(false);
@@ -132,7 +163,7 @@ export function ImageUploadField({
   };
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    setIsChoosingFile(false);
+    finishChoosingFile();
     const file = event.target.files?.[0];
     event.target.value = '';
 
@@ -201,6 +232,7 @@ export function ImageUploadField({
       id={inputId}
       type="file"
       accept={ACCEPTED_IMAGE_MIME_TYPES.join(',')}
+      onClick={handleFilePickerOpen}
       onChange={handleFileChange}
       disabled={disabled || isUploading}
       className="sr-only"
@@ -217,7 +249,6 @@ export function ImageUploadField({
           {input}
           <label
             htmlFor={inputId}
-            onClick={() => setIsChoosingFile(true)}
             className={`inline-flex h-8 cursor-pointer items-center justify-center rounded-md border border-[#b08a57]/35 bg-white px-3 text-xs font-medium text-[#2f2f2d] transition-colors hover:bg-[#f8f7f3] ${
               disabled || isUploading ? 'pointer-events-none opacity-60' : ''
             }`}
@@ -267,7 +298,6 @@ export function ImageUploadField({
           {input}
           <label
             htmlFor={inputId}
-            onClick={() => setIsChoosingFile(true)}
             className={`inline-flex cursor-pointer items-center justify-center rounded-md bg-[#2f2f2d] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#1c1c1a] ${
               disabled || isUploading ? 'pointer-events-none opacity-60' : ''
             }`}

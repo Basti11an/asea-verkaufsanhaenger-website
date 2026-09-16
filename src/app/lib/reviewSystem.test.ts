@@ -81,6 +81,18 @@ describe('central review system', () => {
     expect(read('src/app/components/reviews/ReviewCard.tsx')).toContain("import { StarRating }");
   });
 
+  it('keeps the contact review form stable when returning from the native image picker', () => {
+    const submitPanel = read('src/app/components/references/ReferenceSubmitPanel.tsx');
+    const imageUpload = read('src/app/components/ImageUploadField.tsx');
+    const globalStyles = read('src/styles/globals.css');
+
+    expect(submitPanel).not.toContain("from 'motion/react'");
+    expect(submitPanel).not.toContain("height: 'auto'");
+    expect(submitPanel).toContain('className="border-t border-[#dfd9cf] p-6 md:p-8"');
+    expect(imageUpload).toContain('restoreScrollAfterFilePicker');
+    expect(globalStyles).toContain('overflow-x: clip;');
+  });
+
   it('renders public reviews as shared polaroid cards without the old homepage carousel', () => {
     const homePage = read('src/app/components/pages/HomePage.tsx');
     const reviewsPage = read('src/app/components/pages/ReviewsPage.tsx');

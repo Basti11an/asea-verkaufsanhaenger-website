@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { motion } from 'motion/react';
 import { useAdminData } from '../../context/AdminDataContext';
 import { useLanguage, type TranslationKey } from '../../context/LanguageContext';
 import { ReviewForm } from '../reviews/ReviewForm';
@@ -128,12 +127,7 @@ export function ReferenceSubmitPanel({
       </button>
 
       {isOpen && (
-        <motion.div
-          className="border-t border-[#dfd9cf] p-6 md:p-8"
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          transition={{ duration: 0.3 }}
-        >
+        <div className="border-t border-[#dfd9cf] p-6 md:p-8">
           <ReviewForm
             onSubmit={handleSubmit}
             rating={form.rating}
@@ -251,7 +245,7 @@ export function ReferenceSubmitPanel({
               </>
             )}
           />
-        </motion.div>
+        </div>
       )}
     </div>
   );
