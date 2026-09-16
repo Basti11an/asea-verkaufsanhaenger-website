@@ -2,9 +2,14 @@ User-agent: *
 Allow: /
 
 Disallow: /admin
-Disallow: /bewertung
-Disallow: /bewertung-abmelden
-Disallow: /review
-Disallow: /review-unsubscribe
+Disallow: /admin/
+Disallow: /bewertung$
+Disallow: /bewertung?
+Disallow: /bewertung-abmelden$
+Disallow: /bewertung-abmelden?
+Disallow: /review$
+Disallow: /review?
+Disallow: /review-unsubscribe$
+Disallow: /review-unsubscribe?
 
 Sitemap: https://asea-anhaenger.com/sitemap.xml
