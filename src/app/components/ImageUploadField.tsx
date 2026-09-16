@@ -1,4 +1,4 @@
-import { useId, useState, type ChangeEvent } from 'react';
+import { useEffect, useId, useRef, useState, type ChangeEvent } from 'react';
 import { ImageIcon, Loader2, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '../context/LanguageContext';
@@ -31,28 +31,68 @@ export function ImageUploadField({
 }: ImageUploadFieldProps) {
   const { t } = useLanguage();
   const inputId = useId();
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const isMountedRef = useRef(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [isChoosingFile, setIsChoosingFile] = useState(false);
   const [error, setError] = useState('');
 
   const setUploading = (nextValue: boolean) => {
+    if (!isMountedRef.current) return;
     setIsUploading(nextValue);
     onUploadStateChange?.(nextValue);
   };
 
+  useEffect(() => {
+    const handlePageShow = () => {
+      setIsChoosingFile(false);
+      if (!inputRef.current?.files?.length) {
+        setUploading(false);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        setIsChoosingFile(false);
+        if (!inputRef.current?.files?.length) {
+          setUploading(false);
+        }
+      }
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+    window.addEventListener('focus', handlePageShow);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      isMountedRef.current = false;
+      window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener('focus', handlePageShow);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      onUploadStateChange?.(false);
+    };
+  }, [onUploadStateChange]);
+
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    setIsChoosingFile(false);
     const file = event.target.files?.[0];
     event.target.value = '';
 
-    if (!file) return;
+    if (!file) {
+      setUploading(false);
+      return;
+    }
 
     setError('');
     setUploading(true);
 
     try {
       const uploadedUrl = await uploadImageFile(file, folder);
+      if (!isMountedRef.current) return;
       onChange(uploadedUrl);
       toast.success(t('image_upload_success'));
     } catch (uploadError) {
+      if (!isMountedRef.current) return;
       const message = uploadError instanceof Error ? uploadError.message : t('image_upload_error');
       setError(message);
       toast.error(message);
@@ -63,6 +103,7 @@ export function ImageUploadField({
 
   const input = (
     <input
+      ref={inputRef}
       id={inputId}
       type="file"
       accept="image/jpeg,image/png,image/webp,image/gif"
@@ -82,12 +123,13 @@ export function ImageUploadField({
           {input}
           <label
             htmlFor={inputId}
+            onClick={() => setIsChoosingFile(true)}
             className={`inline-flex h-8 cursor-pointer items-center justify-center rounded-md border border-[#b08a57]/35 bg-white px-3 text-xs font-medium text-[#2f2f2d] transition-colors hover:bg-[#f8f7f3] ${
               disabled || isUploading ? 'pointer-events-none opacity-60' : ''
             }`}
           >
             {isUploading ? <Loader2 size={13} className="mr-1.5 animate-spin" /> : <Upload size={13} className="mr-1.5" />}
-            {isUploading ? t('image_upload_uploading') : value ? t('image_upload_replace') : t('image_upload_choose')}
+            {isUploading && !isChoosingFile ? t('image_upload_uploading') : value ? t('image_upload_replace') : t('image_upload_choose')}
           </label>
           {value && (
             <button
@@ -126,12 +168,13 @@ export function ImageUploadField({
           {input}
           <label
             htmlFor={inputId}
+            onClick={() => setIsChoosingFile(true)}
             className={`inline-flex cursor-pointer items-center justify-center rounded-md bg-[#2f2f2d] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#1c1c1a] ${
               disabled || isUploading ? 'pointer-events-none opacity-60' : ''
             }`}
           >
             {isUploading ? <Loader2 size={16} className="mr-2 animate-spin" /> : <Upload size={16} className="mr-2" />}
-            {isUploading ? t('image_upload_uploading') : value ? t('image_upload_replace') : t('image_upload_choose')}
+            {isUploading && !isChoosingFile ? t('image_upload_uploading') : value ? t('image_upload_replace') : t('image_upload_choose')}
           </label>
           {value && (
             <button

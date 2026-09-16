@@ -97,18 +97,22 @@ export async function fetchReferencesFromSupabase(includePrivateFields = false):
     }
   }
 
-  if (publicResult.error.code !== 'PGRST205' && publicResult.error.code !== '42P01') {
+  const canFallbackToPublicTable =
+    publicResult.error.code === 'PGRST205' ||
+    publicResult.error.code === '42P01' ||
+    publicResult.error.code === '42501';
+
+  if (!canFallbackToPublicTable) {
     throw publicResult.error;
   }
 
-  console.warn('Public references view is missing. Falling back to filtered table read until supabase/references.sql is applied.');
+  console.warn('Public references view is unavailable. Falling back to RLS-filtered table read until supabase/references.sql is applied.');
 
   const fallbackResult = await client
     .from('customer_references')
-    .select(`${publicColumns},public_consent`)
+    .select(publicColumns)
     .eq('status', 'approved')
     .eq('sichtbar', true)
-    .eq('public_consent', true)
     .order('id', { ascending: false });
 
   if (fallbackResult.error) throw fallbackResult.error;

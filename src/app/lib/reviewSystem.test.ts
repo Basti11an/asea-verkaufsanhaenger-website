@@ -101,9 +101,15 @@ describe('central review system', () => {
   });
 
   it('exposes the public reviews page and keeps public fallback reads consent-filtered', () => {
+    const referencesRepository = read('src/app/lib/referencesRepository.ts');
+    const referencesSql = read('supabase/references.sql');
+
     expect(read('src/app/App.tsx')).toContain("reviews: '/bewertungen'");
     expect(read('src/app/App.tsx')).toContain("'/bewertungen': 'reviews'");
-    expect(read('src/app/lib/referencesRepository.ts')).toContain(".eq('public_consent', true)");
+    expect(referencesRepository).toContain("publicResult.error.code === '42501'");
+    expect(referencesRepository).toContain('RLS-filtered table read');
+    expect(referencesSql).toContain('public_consent,\n  sichtbar,\n  status,\n  created_at');
+    expect(referencesSql).toContain('using (status = \'approved\' and sichtbar = true and public_consent = true)');
   });
 
   it('calls the customer review RPC with the exact public SQL signature', () => {

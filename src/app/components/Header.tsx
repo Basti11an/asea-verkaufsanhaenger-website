@@ -38,7 +38,7 @@ function LanguageDropdown() {
         onClick={() => setOpen((value) => !value)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex h-10 min-w-[72px] items-center justify-between gap-2 border border-[#161615]/15 bg-[#f8f7f3] px-3 text-[12px] font-medium uppercase tracking-[0.14em] text-[#2f2f2d] outline-none transition-colors duration-200 hover:border-[#b08a57]/50 hover:text-[#9a7445] md:min-w-[78px]"
+        className="flex h-9 min-w-[58px] items-center justify-center gap-1.5 border border-[#161615]/15 bg-[#f8f7f3] px-2.5 text-[12px] font-medium uppercase tracking-[0.12em] text-[#2f2f2d] outline-none transition-colors duration-200 hover:border-[#b08a57]/50 hover:text-[#9a7445]"
       >
         <span>{lang.toUpperCase()}</span>
         <span className="text-[10px] leading-none text-[#b08a57]" aria-hidden="true">▾</span>
@@ -89,7 +89,7 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 bg-[#f8f7f3] border-b-2 border-[#b08a57] shadow-[0_1px_24px_rgba(22,22,21,0.05)]">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 xl:px-12">
-        <div className="relative flex h-[92px] items-center justify-between lg:grid lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-8 xl:gap-10">
+        <div className="relative flex h-[92px] items-center justify-between lg:grid lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-12 xl:gap-16 2xl:gap-20">
           {/* Wordmark */}
           <div className="flex items-center">
             <button
@@ -101,7 +101,7 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden min-w-0 items-center justify-center gap-11 lg:flex xl:gap-14">
+          <nav className="hidden min-w-0 items-center justify-center gap-12 lg:flex xl:gap-16 2xl:gap-20">
             {navItems.map((item) => (
               <button
                 key={item.id}

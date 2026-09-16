@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { Analytics as VercelAnalytics, type BeforeSendEvent } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { AdminDataProvider } from './context/AdminDataContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { Header } from './components/Header';
@@ -75,13 +76,27 @@ function canUseCleanBrowserUrls() {
   return typeof window !== 'undefined' && window.location.protocol !== 'file:';
 }
 
-function filterPublicVercelAnalyticsEvent(event: BeforeSendEvent) {
+function filterPublicVercelEvent<T extends { url: string }>(event: T): T | null {
   try {
-    const pathname = new URL(event.url, window.location.origin).pathname;
-    return pathname.startsWith('/admin') ? null : event;
+    const url = new URL(event.url, window.location.origin);
+
+    if (url.pathname.startsWith('/admin')) {
+      return null;
+    }
+
+    if (url.pathname === '/bewertung' || url.pathname === '/review' || url.pathname === '/bewertung-abmelden') {
+      url.search = '';
+      return { ...event, url: url.toString() };
+    }
+
+    return event;
   } catch {
     return event;
   }
+}
+
+function filterPublicVercelAnalyticsEvent(event: BeforeSendEvent) {
+  return filterPublicVercelEvent(event);
 }
 
 function AdminAccessLoading() {
@@ -345,7 +360,10 @@ function AppInner() {
         />
       )}
       {statisticsAllowed && (
-        <VercelAnalytics beforeSend={filterPublicVercelAnalyticsEvent} />
+        <>
+          <VercelAnalytics beforeSend={filterPublicVercelAnalyticsEvent} />
+          <SpeedInsights beforeSend={filterPublicVercelEvent} />
+        </>
       )}
     </div>
   );

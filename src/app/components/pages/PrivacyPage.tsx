@@ -94,7 +94,7 @@ const COPY: Record<Lang, PrivacyCopy> = {
       {
         title: 'Statistik und lokaler Speicher',
         paragraphs: [
-          'Die Statistik ist optional. Sie startet erst, wenn Sie Statistik in den Datenschutzeinstellungen erlauben. Aktuell wird dafür Vercel Web Analytics für die allgemeine Auswertung von Seitenaufrufen eingebunden.',
+          'Die Statistik ist optional. Sie startet erst, wenn Sie Statistik in den Datenschutzeinstellungen erlauben. Aktuell werden dafür Vercel Web Analytics für die allgemeine Auswertung von Seitenaufrufen und Vercel Speed Insights für technische Performance-Messwerte eingebunden.',
         ],
         bullets: [
           'asea-lang: lokale Spracheinstellung im localStorage, technisch zweckmäßig, bis zur Änderung oder Löschung im Browser',
@@ -188,7 +188,7 @@ const COPY: Record<Lang, PrivacyCopy> = {
       {
         title: 'Statistics and Local Storage',
         paragraphs: [
-          'Statistics are optional. They only start after you allow statistics in the privacy settings. Currently, Vercel Web Analytics is included for general page-view analysis.',
+          'Statistics are optional. They only start after you allow statistics in the privacy settings. Currently, Vercel Web Analytics is included for general page-view analysis and Vercel Speed Insights for technical performance metrics.',
         ],
         bullets: [
           'asea-lang: local language preference in localStorage, technically useful, until changed or deleted in the browser',
@@ -282,7 +282,7 @@ const COPY: Record<Lang, PrivacyCopy> = {
       {
         title: 'Štatistika a lokálne úložisko',
         paragraphs: [
-          'Štatistiky sú voliteľné. Spustia sa až po vašom povolení v nastaveniach ochrany údajov. Aktuálne sa používa Vercel Web Analytics na všeobecnú analýzu zobrazení stránok.',
+          'Štatistiky sú voliteľné. Spustia sa až po vašom povolení v nastaveniach ochrany údajov. Aktuálne sa používa Vercel Web Analytics na všeobecnú analýzu zobrazení stránok a Vercel Speed Insights na technické metriky výkonu.',
         ],
         bullets: [
           'asea-lang: lokálne nastavenie jazyka v localStorage, technicky účelné, do zmeny alebo vymazania v prehliadači',

@@ -91,6 +91,7 @@ grant select (
   beschreibung,
   bild_url,
   rating,
+  public_consent,
   sichtbar,
   status,
   created_at
@@ -214,7 +215,7 @@ drop policy if exists "customer references public visible read" on public.custom
 create policy "customer references public visible read"
 on public.customer_references
 for select
-to anon
+to anon, authenticated
 using (status = 'approved' and sichtbar = true and public_consent = true);
 
 drop policy if exists "customer references admin read" on public.customer_references;
@@ -253,7 +254,8 @@ for delete
 to authenticated
 using (public.is_admin());
 
-create or replace view public.customer_references_public as
+create or replace view public.customer_references_public
+with (security_invoker = true) as
 select
   id,
   kundenname,

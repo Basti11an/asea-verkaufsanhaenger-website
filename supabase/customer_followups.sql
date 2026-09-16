@@ -580,6 +580,22 @@ for select
 to authenticated
 using (public.is_admin());
 
+drop policy if exists "customer followup unsubscribe tokens no client access" on public.customer_followup_unsubscribe_tokens;
+create policy "customer followup unsubscribe tokens no client access"
+on public.customer_followup_unsubscribe_tokens
+for all
+to anon, authenticated
+using (false)
+with check (false);
+
+drop policy if exists "customer review tokens no client access" on public.customer_review_tokens;
+create policy "customer review tokens no client access"
+on public.customer_review_tokens
+for all
+to anon, authenticated
+using (false)
+with check (false);
+
 create or replace function public.unsubscribe_customer_followup(p_token text)
 returns boolean
 language plpgsql
@@ -1246,14 +1262,30 @@ $$;
 revoke all on function public.reset_failed_customer_reminder_for_admin(bigint, text) from public;
 grant execute on function public.reset_failed_customer_reminder_for_admin(bigint, text) to authenticated;
 
+grant select (
+  id,
+  kundenname,
+  ort,
+  modell,
+  jahr,
+  beschreibung,
+  bild_url,
+  rating,
+  public_consent,
+  sichtbar,
+  status,
+  created_at
+) on table public.customer_references to anon, authenticated;
+
 drop policy if exists "customer references public visible read" on public.customer_references;
 create policy "customer references public visible read"
 on public.customer_references
 for select
-to anon
+to anon, authenticated
 using (status = 'approved' and sichtbar = true and public_consent = true);
 
-create or replace view public.customer_references_public as
+create or replace view public.customer_references_public
+with (security_invoker = true) as
 select
   id,
   kundenname,

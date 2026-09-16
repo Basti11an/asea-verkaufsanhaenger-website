@@ -32,6 +32,14 @@ describe('customer follow-up security migration', () => {
     expect(SQL).not.toMatch(/grant\s+(select|insert|update|delete|all)[^;]+on table public\.customer_review_tokens\s+to anon/);
   });
 
+  it('keeps token tables covered by explicit deny-all RLS policies', () => {
+    expect(SQL).toContain('create policy "customer followup unsubscribe tokens no client access"');
+    expect(SQL).toContain('on public.customer_followup_unsubscribe_tokens');
+    expect(SQL).toContain('create policy "customer review tokens no client access"');
+    expect(SQL).toContain('on public.customer_review_tokens');
+    expect(SQL).toMatch(/for all\s+to anon, authenticated\s+using \(false\)\s+with check \(false\);/);
+  });
+
   it('keeps reminder cron RPCs service-role only', () => {
     expect(SQL).toContain('grant execute on function public.claim_due_customer_reminders(integer) to service_role;');
     expect(SQL).toContain('grant execute on function public.verify_customer_reminder_claim(bigint, text) to service_role;');
