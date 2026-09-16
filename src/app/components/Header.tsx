@@ -1,7 +1,7 @@
-import { Menu, X, ArrowRight } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from './ui/button';
-import { availableLanguages, useLanguage } from '../context/LanguageContext';
+import { availableLanguages, useLanguage, type Lang } from '../context/LanguageContext';
 import { AseaWordmark } from './AseaWordmark';
 
 interface HeaderProps {
@@ -9,26 +9,63 @@ interface HeaderProps {
   onNavigate: (page: string, data?: any) => void;
 }
 
-function LanguageToggle() {
+const languageLabels: Record<Lang, string> = {
+  de: 'Deutsch',
+  en: 'English',
+  sk: 'Slovenčina',
+};
+
+function LanguageDropdown() {
   const { lang, setLang } = useLanguage();
+  const [open, setOpen] = useState(false);
+
+  const selectLanguage = (code: Lang) => {
+    setLang(code);
+    setOpen(false);
+  };
+
   return (
-    <div className="flex items-center gap-2 select-none">
-      {availableLanguages.map((code, i) => (
-        <div key={code} className="flex items-center gap-2">
-          {i > 0 && <span className="text-[#161615]/25">|</span>}
-          <button
-            onClick={() => setLang(code)}
-            aria-pressed={lang === code}
-            className={`text-[13px] uppercase tracking-[0.12em] transition-colors duration-300 outline-none ${
-              lang === code
-                ? 'text-[#b08a57] font-semibold'
-                : 'text-[#161615]/45 hover:text-[#161615]'
-            }`}
-          >
-            {code.toUpperCase()}
-          </button>
+    <div
+      className="relative select-none"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setOpen(false);
+        }
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="flex h-10 min-w-[72px] items-center justify-between gap-2 border border-[#161615]/15 bg-[#f8f7f3] px-3 text-[12px] font-medium uppercase tracking-[0.14em] text-[#2f2f2d] outline-none transition-colors duration-200 hover:border-[#b08a57]/50 hover:text-[#9a7445] md:min-w-[78px]"
+      >
+        <span>{lang.toUpperCase()}</span>
+        <span className="text-[10px] leading-none text-[#b08a57]" aria-hidden="true">▾</span>
+      </button>
+
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-[calc(100%+8px)] z-50 w-36 border border-[#161615]/10 bg-[#f8f7f3] py-1 shadow-[0_8px_20px_rgba(22,22,21,0.08)]"
+        >
+          {availableLanguages.map((code) => (
+            <button
+              key={code}
+              type="button"
+              role="menuitem"
+              onClick={() => selectLanguage(code)}
+              className={`block w-full px-4 py-2.5 text-left text-[13px] transition-colors duration-150 ${
+                lang === code
+                  ? 'bg-[#b08a57]/10 text-[#9a7445]'
+                  : 'text-[#2f2f2d]/70 hover:bg-[#b08a57]/[0.07] hover:text-[#2f2f2d]'
+              }`}
+            >
+              {languageLabels[code]}
+            </button>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 }
@@ -50,26 +87,26 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-[#f8f7f3] border-b-2 border-[#b08a57] shadow-[0_1px_24px_rgba(22,22,21,0.05)] transition-all duration-500">
-      <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24">
-        <div className="relative flex items-center justify-between h-[92px]">
+    <header className="sticky top-0 z-50 bg-[#f8f7f3] border-b-2 border-[#b08a57] shadow-[0_1px_24px_rgba(22,22,21,0.05)]">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 xl:px-12">
+        <div className="relative flex h-[92px] items-center justify-between lg:grid lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-8 xl:gap-10">
           {/* Wordmark */}
           <div className="flex items-center">
             <button
               onClick={() => handleNavigate('home')}
-              className="hover:opacity-75 transition-opacity duration-500 outline-none -ml-2 border-r-2 border-[#2f2f2d]/15 pr-8"
+              className="outline-none transition-opacity duration-200 hover:opacity-80"
             >
               <AseaWordmark size="header" />
             </button>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-12 xl:gap-16">
+          <nav className="hidden min-w-0 items-center justify-center gap-11 lg:flex xl:gap-14">
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => handleNavigate(item.id)}
-                className={`relative py-2 transition-all duration-500 text-[13px] xl:text-[14px] uppercase tracking-[0.15em] group outline-none ${
+                className={`group relative py-2 text-[13px] uppercase tracking-[0.15em] outline-none transition-colors duration-200 xl:text-[14px] ${
                   currentPage === item.id
                     ? 'text-[#b08a57]'
                     : 'text-[#161615]/70 hover:text-[#161615]'
@@ -77,7 +114,7 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
               >
                 {item.label}
                 <span
-                  className={`absolute -bottom-1 left-1/2 -translate-x-1/2 h-[2px] bg-[#b08a57] transition-all duration-500 ease-out ${
+                  className={`absolute -bottom-1 left-1/2 h-[2px] -translate-x-1/2 bg-[#b08a57] transition-all duration-200 ease-out ${
                     currentPage === item.id ? 'w-6 opacity-100' : 'w-0 opacity-0 group-hover:w-6 group-hover:opacity-50'
                   }`}
                 />
@@ -86,20 +123,19 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
           </nav>
 
           {/* Desktop Right: CTA + Language */}
-          <div className="hidden lg:flex items-center gap-6 xl:gap-8 pr-4 xl:pr-8">
+          <div className="hidden items-center gap-4 lg:flex xl:gap-5">
             <Button
               onClick={() => handleNavigate('contact')}
-              className="bg-[#b08a57] text-white hover:bg-[#9a7749] text-[13px] uppercase tracking-[0.15em] h-[50px] px-8 rounded-[2px] transition-all duration-500 hover:shadow-[0_4px_24px_rgba(176,138,87,0.3)] flex items-center gap-2.5"
+              className="h-[50px] rounded-[2px] bg-[#b08a57] px-8 text-[13px] uppercase tracking-[0.15em] text-white transition-colors duration-200 hover:bg-[#9a7749]"
             >
               {t('nav_cta')}
-              <ArrowRight size={16} strokeWidth={2} />
             </Button>
-            <LanguageToggle />
+            <LanguageDropdown />
           </div>
 
           {/* Mobile: Language + Hamburger */}
           <div className="lg:hidden flex items-center gap-4">
-            <LanguageToggle />
+            <LanguageDropdown />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 text-[#161615]/70 hover:text-[#b08a57] transition-colors duration-300 outline-none"
@@ -127,16 +163,12 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
                   {item.label}
                 </button>
               ))}
-              <div className="flex justify-center py-4 border-t border-[#161615]/10">
-                <LanguageToggle />
-              </div>
               <div className="pt-6 mt-2 border-t border-[#161615]/10">
                 <Button
                   onClick={() => handleNavigate('contact')}
                   className="w-full bg-[#b08a57] text-white hover:bg-[#9a7749] text-[13px] uppercase tracking-[0.15em] h-[52px] rounded-[2px] transition-all duration-500 flex items-center justify-center gap-2.5"
                 >
                   {t('nav_cta')}
-                  <ArrowRight size={16} strokeWidth={2} />
                 </Button>
               </div>
             </div>

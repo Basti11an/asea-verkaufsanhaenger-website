@@ -225,63 +225,8 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden" style={{ height: '480px' }}>
-        <ImageWithFallback
-          src="https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-2-1.jpg"
-          alt={t('models_hero_title')}
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: 'center 48%' }}
-        />
-
-        <div
-          className="absolute inset-0 z-10 md:hidden"
-          style={{ background: 'linear-gradient(to top, #f8f7f3 30%, rgba(248,247,243,0.88) 52%, rgba(248,247,243,0.3) 75%, transparent 100%)' }}
-        />
-
-        <div
-          className="absolute inset-0 z-10 hidden md:block"
-          style={{ clipPath: 'polygon(0 0, 54% 0, 42% 100%, 0 100%)', background: '#f8f7f3' }}
-        />
-
-        <div
-          className="absolute inset-0 z-20 hidden md:block"
-          style={{
-            clipPath: 'polygon(53.7% 0, 54.5% 0, 42.3% 100%, 41.5% 100%)',
-            background: 'linear-gradient(to bottom, #161615 0%, #161615 80%, #b08a57 80%, #b08a57 100%)',
-          }}
-        />
-
-        <motion.div
-          className="absolute inset-0 z-30 flex flex-col justify-end md:justify-center pb-8 md:pb-0 px-6 md:px-12 lg:px-16 xl:px-24"
-          initial={getRevealInitial(touchFriendlyMotion, -30)}
-          animate={getRevealAnimate(touchFriendlyMotion)}
-          transition={{ duration: 0.7 }}
-        >
-          <div className="max-w-full md:max-w-[38%]">
-            <h1 className="text-[28px] sm:text-[34px] md:text-[27px] lg:text-[34px] xl:text-[42px] font-bold leading-tight tracking-[0.1em] text-[#2f2f2d] uppercase mb-3 md:mb-5">
-              {t('models_hero_title')}
-            </h1>
-
-            <div className="mb-5 md:mb-8 pl-3 md:pl-4 border-l-2 border-[#b08a57]/40">
-              <p className="text-[13px] md:text-[15px] font-medium leading-relaxed tracking-[0.03em] text-[#2f2f2d]/70">
-                {t('models_hero_desc')}
-              </p>
-            </div>
-
-            <button
-              onClick={() => onNavigate('contact')}
-              className="inline-flex items-center gap-2 border border-[#2f2f2d]/25 text-[#2f2f2d]/70 text-[11px] md:text-[13px] font-medium uppercase tracking-[0.18em] px-5 py-2 md:px-6 md:py-2.5 hover:bg-[#2f2f2d]/5 hover:border-[#2f2f2d]/50 hover:text-[#2f2f2d] transition-all duration-200 w-fit"
-            >
-              {t('models_cta_button')}
-              <ArrowRight size={12} />
-            </button>
-          </div>
-        </motion.div>
-      </section>
-
       {/* Models Grid */}
-      <section className="py-16 md:py-20 gradient-accent">
+      <section className="gradient-accent pt-10 pb-16 md:pt-14 md:pb-20">
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24">
           {models.length === 0 ? (
             <p className="text-center text-[#77756f] py-16 md:py-20">{t('models_no_models')}</p>
