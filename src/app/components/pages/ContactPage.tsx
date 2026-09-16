@@ -97,7 +97,7 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
             {/* Contact Form */}
             <div>
               <div className="mb-8">
-                <h2 className="text-3xl lg:text-4xl text-[#2f2f2d] mb-4">{t('contact_form_title')}</h2>
+                <h1 className="text-3xl lg:text-4xl text-[#2f2f2d] mb-4">{t('contact_form_title')}</h1>
                 <p className="text-[#77756f] leading-relaxed">{t('contact_form_subtitle')}</p>
               </div>
 

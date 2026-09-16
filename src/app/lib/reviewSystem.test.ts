@@ -134,6 +134,45 @@ describe('central review system', () => {
     expect(app).toContain('useLayoutEffect(() => {\n    scrollPageToTop();\n  }, [currentPage, navigationTick]);');
   });
 
+  it('defines public SEO metadata, canonicals and Open Graph tags centrally', () => {
+    const app = read('src/app/App.tsx');
+    const index = read('index.html');
+
+    expect(index).toContain('<title>Verkaufsanhänger nach Maß aus Österreich | ASEA</title>');
+    expect(index).toContain('<link rel="canonical" href="https://asea-anhaenger.com/" />');
+    expect(index).toContain('property="og:url" content="https://asea-anhaenger.com/"');
+    expect(app).toContain('const SEO_CONFIG');
+    expect(app).toContain("models: {\n    title: 'Verkaufsanhänger & Modelle | ASEA Österreich'");
+    expect(app).toContain("reviews: {\n    title: 'Kundenprojekte & Bewertungen | ASEA'");
+    expect(app).toContain("robots: 'noindex,nofollow'");
+    expect(app).toContain("upsertCanonical(canonicalUrl)");
+    expect(app).toContain("upsertMetaByProperty('og:url', canonicalUrl)");
+    expect(app).toContain("getSeoForPage(page: string, navData?: any)");
+    expect(app).toContain("title: 'Kühlanhänger nach Maß | ASEA Oberösterreich'");
+    expect(app).toContain("title: 'Messe- & Präsentationsanhänger | ASEA'");
+  });
+
+  it('publishes robots.txt and a sitemap with only real public routes', () => {
+    const robots = read('public/robots.txt');
+    const sitemap = read('public/sitemap.xml');
+
+    expect(robots).toContain('Sitemap: https://asea-anhaenger.com/sitemap.xml');
+    expect(robots).toContain('Disallow: /admin');
+    expect(robots).toContain('Disallow: /bewertung');
+    expect(sitemap).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
+    expect(sitemap).toContain('<loc>https://asea-anhaenger.com/</loc>');
+    expect(sitemap).toContain('<loc>https://asea-anhaenger.com/modelle</loc>');
+    expect(sitemap).toContain('<loc>https://asea-anhaenger.com/ausstattung</loc>');
+    expect(sitemap).toContain('<loc>https://asea-anhaenger.com/ueber-uns</loc>');
+    expect(sitemap).toContain('<loc>https://asea-anhaenger.com/kontakt</loc>');
+    expect(sitemap).toContain('<loc>https://asea-anhaenger.com/bewertungen</loc>');
+    expect(sitemap).toContain('<loc>https://asea-anhaenger.com/impressum</loc>');
+    expect(sitemap).toContain('<loc>https://asea-anhaenger.com/datenschutz</loc>');
+    expect(sitemap).not.toContain('/admin');
+    expect(sitemap).not.toContain('/bewertung?');
+    expect(sitemap).not.toContain('/bewertung-abmelden');
+  });
+
   it('calls the customer review RPC with the exact public SQL signature', () => {
     expect(CUSTOMER_REVIEW_RPC_NAME).toBe('submit_customer_review_with_token');
     expect(CUSTOMER_REVIEW_RPC_PARAM_NAMES).toEqual([

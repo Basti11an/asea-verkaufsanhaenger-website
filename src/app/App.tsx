@@ -40,6 +40,87 @@ const PAGE_PATHS: Record<string, string> = {
   messages: '/admin',
 };
 
+const SITE_ORIGIN = 'https://asea-anhaenger.com';
+const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/asea-og-image.png`;
+
+type SeoConfig = {
+  title: string;
+  description: string;
+  path: string;
+  robots?: string;
+};
+
+const SEO_CONFIG: Record<string, SeoConfig> = {
+  home: {
+    title: 'Verkaufsanhänger nach Maß aus Österreich | ASEA',
+    description: 'ASEA aus Waldburg in Oberösterreich – individuelle Verkaufsanhänger, Kühlanhänger sowie Messe- und Präsentationsanhänger nach Kundenwunsch.',
+    path: '/',
+  },
+  models: {
+    title: 'Verkaufsanhänger & Modelle | ASEA Österreich',
+    description: 'Entdecken Sie die Anhänger von ASEA: Verkaufsanhänger, Kühlanhänger sowie Messe- und Präsentationsanhänger für individuelle Anforderungen.',
+    path: '/modelle',
+  },
+  'model-detail': {
+    title: 'Verkaufsanhänger & Modelle | ASEA Österreich',
+    description: 'Entdecken Sie die Anhänger von ASEA: Verkaufsanhänger, Kühlanhänger sowie Messe- und Präsentationsanhänger für individuelle Anforderungen.',
+    path: '/modelle',
+  },
+  equipment: {
+    title: 'Ausstattung für Verkaufsanhänger | ASEA',
+    description: 'Entdecken Sie Ausstattungsoptionen und individuelle Lösungen für Ihren Verkaufsanhänger von ASEA.',
+    path: '/ausstattung',
+  },
+  about: {
+    title: 'Über ASEA | Verkaufsanhänger aus Waldburg',
+    description: 'Erfahren Sie mehr über Verkaufsanhänger ASEA aus Waldburg in Oberösterreich und unsere individuelle Planung nach Kundenwunsch.',
+    path: '/ueber-uns',
+  },
+  contact: {
+    title: 'Kontakt & Beratung | Verkaufsanhänger ASEA',
+    description: 'Kontaktieren Sie ASEA für Beratung rund um Verkaufsanhänger, Kühlanhänger und individuelle Anhängerlösungen.',
+    path: '/kontakt',
+  },
+  reviews: {
+    title: 'Kundenprojekte & Bewertungen | ASEA',
+    description: 'Entdecken Sie realisierte Anhängerprojekte und Erfahrungen von Kunden mit Verkaufsanhänger ASEA.',
+    path: '/bewertungen',
+  },
+  configurator: {
+    title: 'Verkaufsanhänger konfigurieren | ASEA',
+    description: 'Planen Sie Ihren Verkaufsanhänger mit dem ASEA Konfigurator und stellen Sie Ausstattung, Farben und Details individuell zusammen.',
+    path: '/konfigurator',
+  },
+  imprint: {
+    title: 'Impressum | ASEA',
+    description: 'Impressum und Unternehmensinformationen von Verkaufsanhänger ASEA.',
+    path: '/impressum',
+  },
+  privacy: {
+    title: 'Datenschutz | ASEA',
+    description: 'Datenschutzerklärung von Verkaufsanhänger ASEA.',
+    path: '/datenschutz',
+  },
+  customerReview: {
+    title: 'Bewertung abgeben | ASEA',
+    description: 'Geschützte Bewertungsseite für ASEA Kundinnen und Kunden.',
+    path: '/bewertung',
+    robots: 'noindex,nofollow',
+  },
+  reviewOptOut: {
+    title: 'Bewertungs-Erinnerungen abmelden | ASEA',
+    description: 'Geschützte Abmeldeseite für automatische ASEA Bewertungs-Erinnerungen.',
+    path: '/bewertung-abmelden',
+    robots: 'noindex,nofollow',
+  },
+  messages: {
+    title: 'Adminbereich | ASEA',
+    description: 'Geschützter Adminbereich der ASEA Website.',
+    path: '/admin',
+    robots: 'noindex,nofollow',
+  },
+};
+
 const PATH_PAGES: Record<string, string> = {
   '/': 'home',
   '/ueber-uns': 'about',
@@ -97,6 +178,92 @@ function filterPublicVercelEvent<T extends { url: string }>(event: T): T | null 
 
 function filterPublicVercelAnalyticsEvent(event: BeforeSendEvent) {
   return filterPublicVercelEvent(event);
+}
+
+function upsertMetaByName(name: string, content: string) {
+  let meta = document.head.querySelector<HTMLMetaElement>(`meta[name="${name}"]`);
+
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.name = name;
+    document.head.appendChild(meta);
+  }
+
+  meta.content = content;
+}
+
+function upsertMetaByProperty(property: string, content: string) {
+  let meta = document.head.querySelector<HTMLMetaElement>(`meta[property="${property}"]`);
+
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.setAttribute('property', property);
+    document.head.appendChild(meta);
+  }
+
+  meta.content = content;
+}
+
+function upsertCanonical(href: string) {
+  let link = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+
+  if (!link) {
+    link = document.createElement('link');
+    link.rel = 'canonical';
+    document.head.appendChild(link);
+  }
+
+  link.href = href;
+}
+
+function getSeoForPage(page: string, navData?: any): SeoConfig {
+  if (page === 'model-detail' && navData?.model?.name) {
+    const modelName = String(navData.model.name).toLowerCase();
+
+    if (modelName.includes('kühl') || modelName.includes('kuehl')) {
+      return {
+        title: 'Kühlanhänger nach Maß | ASEA Oberösterreich',
+        description: 'Kühlanhänger von ASEA für professionelle Anwendungen. Individuelle Planung und persönliche Beratung aus Waldburg in Oberösterreich.',
+        path: '/modelle',
+      };
+    }
+
+    if (modelName.includes('messe') || modelName.includes('präsentation') || modelName.includes('praesentation')) {
+      return {
+        title: 'Messe- & Präsentationsanhänger | ASEA',
+        description: 'Individuelle Messe- und Präsentationsanhänger von ASEA. Maßgeschneiderte Lösungen für Präsentationen, Veranstaltungen und Unternehmen.',
+        path: '/modelle',
+      };
+    }
+
+    return {
+      title: 'Verkaufsanhänger nach Maß | ASEA Oberösterreich',
+      description: 'Individuelle Verkaufsanhänger von ASEA aus Waldburg. Planung nach Kundenwunsch mit passender Ausstattung für Ihren Einsatzbereich.',
+      path: '/modelle',
+    };
+  }
+
+  return SEO_CONFIG[page] ?? SEO_CONFIG.home;
+}
+
+function applySeoForPage(page: string, navData?: any) {
+  const seo = getSeoForPage(page, navData);
+  const canonicalUrl = `${SITE_ORIGIN}${seo.path}`;
+  const robots = seo.robots ?? 'index,follow';
+
+  document.title = seo.title;
+  upsertMetaByName('description', seo.description);
+  upsertMetaByName('robots', robots);
+  upsertCanonical(canonicalUrl);
+  upsertMetaByProperty('og:title', seo.title);
+  upsertMetaByProperty('og:description', seo.description);
+  upsertMetaByProperty('og:url', canonicalUrl);
+  upsertMetaByProperty('og:type', 'website');
+  upsertMetaByProperty('og:image', DEFAULT_OG_IMAGE);
+  upsertMetaByName('twitter:card', 'summary_large_image');
+  upsertMetaByName('twitter:title', seo.title);
+  upsertMetaByName('twitter:description', seo.description);
+  upsertMetaByName('twitter:image', DEFAULT_OG_IMAGE);
 }
 
 function AdminAccessLoading() {
@@ -234,23 +401,8 @@ function AppInner() {
   }, []);
 
   useEffect(() => {
-    const existingMeta = document.querySelector<HTMLMetaElement>('meta[name="robots"][data-asea-dynamic="true"]');
-
-    if (currentPage === 'messages') {
-      const meta = existingMeta ?? document.createElement('meta');
-      meta.name = 'robots';
-      meta.content = 'noindex,nofollow';
-      meta.dataset.aseaDynamic = 'true';
-
-      if (!existingMeta) {
-        document.head.appendChild(meta);
-      }
-
-      return;
-    }
-
-    existingMeta?.remove();
-  }, [currentPage]);
+    applySeoForPage(currentPage, navData);
+  }, [currentPage, navData]);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {

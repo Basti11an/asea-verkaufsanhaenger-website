@@ -55,7 +55,7 @@ export function AboutPage() {
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              <h2 className="text-2xl md:text-3xl lg:text-4xl text-[#2f2f2d] mb-4 md:mb-6">{t('about_story_title')}</h2>
+              <h1 className="text-2xl md:text-3xl lg:text-4xl text-[#2f2f2d] mb-4 md:mb-6">{t('about_story_title')}</h1>
               <div className="space-y-4 text-[#77756f] leading-relaxed">
                 <p>{t('about_story_p1')}</p>
                 <p>{t('about_story_p2')}</p>
