@@ -54,18 +54,18 @@ type SeoConfig = {
 
 const SEO_CONFIG: Record<string, SeoConfig> = {
   home: {
-    title: 'Verkaufsanhänger nach Maß aus Österreich | ASEA',
-    description: 'ASEA aus Waldburg in Oberösterreich – individuelle Verkaufsanhänger, Kühlanhänger sowie Messe- und Präsentationsanhänger nach Kundenwunsch.',
+    title: 'Verkaufsanhänger kaufen | ASEA Oberösterreich',
+    description: 'Verkaufsanhänger kaufen bei ASEA aus Oberösterreich. Persönliche Beratung, direkter Kontakt sowie Unterstützung bei Gasprüfung, Abnahme und Zulassung.',
     path: '/',
   },
   models: {
-    title: 'Verkaufsanhänger & Modelle | ASEA Österreich',
-    description: 'Entdecken Sie die Anhänger von ASEA: Verkaufsanhänger, Kühlanhänger sowie Messe- und Präsentationsanhänger für individuelle Anforderungen.',
+    title: 'Verkaufsanhänger & Modelle | ASEA',
+    description: 'Entdecken Sie Verkaufsanhänger, Kühlanhänger sowie Messe- und Präsentationsanhänger von ASEA. Persönlich beraten und direkt abgestimmt.',
     path: '/modelle',
   },
   'model-detail': {
-    title: 'Verkaufsanhänger & Modelle | ASEA Österreich',
-    description: 'Entdecken Sie die Anhänger von ASEA: Verkaufsanhänger, Kühlanhänger sowie Messe- und Präsentationsanhänger für individuelle Anforderungen.',
+    title: 'Verkaufsanhänger & Modelle | ASEA',
+    description: 'Entdecken Sie Verkaufsanhänger, Kühlanhänger sowie Messe- und Präsentationsanhänger von ASEA. Persönlich beraten und direkt abgestimmt.',
     path: '/modelle',
   },
   equipment: {
@@ -74,18 +74,18 @@ const SEO_CONFIG: Record<string, SeoConfig> = {
     path: '/ausstattung',
   },
   about: {
-    title: 'Über ASEA | Verkaufsanhänger aus Waldburg',
-    description: 'Erfahren Sie mehr über Verkaufsanhänger ASEA aus Waldburg in Oberösterreich und unsere individuelle Planung nach Kundenwunsch.',
+    title: 'Über ASEA | Familienbetrieb aus Oberösterreich',
+    description: 'ASEA ist ein Familienbetrieb aus Oberösterreich. Seit 2021 begleiten wir Kunden persönlich rund um Verkaufsanhänger.',
     path: '/ueber-uns',
   },
   contact: {
-    title: 'Kontakt & Beratung | Verkaufsanhänger ASEA',
-    description: 'Kontaktieren Sie ASEA für Beratung rund um Verkaufsanhänger, Kühlanhänger und individuelle Anhängerlösungen.',
+    title: 'Kontakt & persönliche Beratung | ASEA',
+    description: 'Kontaktieren Sie ASEA über Kontaktformular, Telefon, E-Mail oder WhatsApp. Persönliche Beratung und Antwort in der Regel innerhalb von 24 Stunden.',
     path: '/kontakt',
   },
   reviews: {
-    title: 'Kundenprojekte & Bewertungen | ASEA',
-    description: 'Entdecken Sie realisierte Anhängerprojekte und Erfahrungen von Kunden mit Verkaufsanhänger ASEA.',
+    title: 'Kundenbewertungen | ASEA',
+    description: 'Erfahrungen von Kunden mit ASEA. Veröffentlicht werden nur Bewertungen, die für die öffentliche Anzeige freigegeben wurden.',
     path: '/bewertungen',
   },
   configurator: {
@@ -243,8 +243,8 @@ function getSeoForPage(page: string, navData?: any): SeoConfig {
 
     if (modelName.includes('kühl') || modelName.includes('kuehl')) {
       return {
-        title: 'Kühlanhänger nach Maß | ASEA Oberösterreich',
-        description: 'Kühlanhänger von ASEA für professionelle Anwendungen. Individuelle Planung und persönliche Beratung aus Waldburg in Oberösterreich.',
+        title: 'Kühlanhänger | ASEA',
+        description: 'Kühlanhänger von ASEA als feste Ausführung für gekühlte Waren. Persönliche Beratung und direkter Kontakt.',
         path: '/modelle',
       };
     }
@@ -252,14 +252,14 @@ function getSeoForPage(page: string, navData?: any): SeoConfig {
     if (modelName.includes('messe') || modelName.includes('präsentation') || modelName.includes('praesentation')) {
       return {
         title: 'Messe- & Präsentationsanhänger | ASEA',
-        description: 'Individuelle Messe- und Präsentationsanhänger von ASEA. Maßgeschneiderte Lösungen für Präsentationen, Veranstaltungen und Unternehmen.',
+        description: 'Messe- und Präsentationsanhänger von ASEA für Veranstaltungen, Promotion und professionelle mobile Auftritte.',
         path: '/modelle',
       };
     }
 
     return {
-      title: 'Verkaufsanhänger nach Maß | ASEA Oberösterreich',
-      description: 'Individuelle Verkaufsanhänger von ASEA aus Waldburg. Planung nach Kundenwunsch mit passender Ausstattung für Ihren Einsatzbereich.',
+      title: 'Verkaufsanhänger nach Maß | ASEA',
+      description: 'Verkaufsanhänger von ASEA werden gemeinsam mit Ihnen auf den geplanten Einsatz abgestimmt.',
       path: '/modelle',
     };
   }
@@ -320,8 +320,7 @@ function buildStructuredData(page: string, seo: SeoConfig, canonicalUrl: string,
         addressCountry: 'AT',
       },
       openingHours: [
-        'Mo-Fr 08:00-17:00',
-        'Sa 09:00-13:00',
+        'Mo-Sa 10:00-18:00',
       ],
     },
   ];

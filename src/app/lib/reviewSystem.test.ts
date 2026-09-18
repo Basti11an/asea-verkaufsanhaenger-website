@@ -138,17 +138,17 @@ describe('central review system', () => {
     const app = read('src/app/App.tsx');
     const index = read('index.html');
 
-    expect(index).toContain('<title>Verkaufsanhänger nach Maß aus Österreich | ASEA</title>');
+    expect(index).toContain('<title>Verkaufsanhänger kaufen | ASEA Oberösterreich</title>');
     expect(index).toContain('<link rel="canonical" href="https://asea-anhaenger.com/" />');
     expect(index).toContain('property="og:url" content="https://asea-anhaenger.com/"');
     expect(app).toContain('const SEO_CONFIG');
-    expect(app).toContain("models: {\n    title: 'Verkaufsanhänger & Modelle | ASEA Österreich'");
-    expect(app).toContain("reviews: {\n    title: 'Kundenprojekte & Bewertungen | ASEA'");
+    expect(app).toContain("models: {\n    title: 'Verkaufsanhänger & Modelle | ASEA'");
+    expect(app).toContain("reviews: {\n    title: 'Kundenbewertungen | ASEA'");
     expect(app).toContain("robots: 'noindex,nofollow'");
     expect(app).toContain("upsertCanonical(canonicalUrl)");
     expect(app).toContain("upsertMetaByProperty('og:url', canonicalUrl)");
     expect(app).toContain("getSeoForPage(page: string, navData?: any)");
-    expect(app).toContain("title: 'Kühlanhänger nach Maß | ASEA Oberösterreich'");
+    expect(app).toContain("title: 'Kühlanhänger | ASEA'");
     expect(app).toContain("title: 'Messe- & Präsentationsanhänger | ASEA'");
     expect(app).toContain("function upsertJsonLd");
     expect(app).toContain("'@type': ['Organization', 'LocalBusiness']");
@@ -166,7 +166,7 @@ describe('central review system', () => {
     expect(app).toContain("notFound: {\n    title: 'Seite nicht gefunden | ASEA'");
     expect(app).toContain("case 'notFound':\n        return <NotFoundPage onNavigate={handleNavigate} />;");
     expect(notFound).toContain('<h1');
-    expect(notFound).toContain('Seite nicht gefunden');
+    expect(notFound).toContain("t('not_found_title')");
   });
 
   it('keeps every main public page with a clear h1 source', () => {

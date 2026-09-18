@@ -75,9 +75,7 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
     } catch {
       console.warn('Contact request failed.');
-      setFormError(
-        'Die Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es später erneut oder kontaktieren Sie uns direkt per E-Mail.',
-      );
+      setFormError(t('contact_error'));
     } finally {
       setIsSending(false);
     }
@@ -272,7 +270,7 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
                     {isSending ? (
                       <>
                         <span className="mr-2 h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                        Wird gesendet...
+                        {t('contact_loading')}
                       </>
                     ) : (
                       <>
@@ -408,6 +406,8 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
                 ['contact_faq3_q', 'contact_faq3_a'],
                 ['contact_faq4_q', 'contact_faq4_a'],
                 ['contact_faq5_q', 'contact_faq5_a'],
+                ['contact_faq6_q', 'contact_faq6_a'],
+                ['contact_faq7_q', 'contact_faq7_a'],
               ] as const).map(([qKey, aKey]) => (
                 <div key={qKey} className="bg-[#f8f7f3] p-6 rounded-xl shadow-sm">
                   <h3 className="text-xl text-[#2f2f2d] mb-2">{t(qKey)}</h3>

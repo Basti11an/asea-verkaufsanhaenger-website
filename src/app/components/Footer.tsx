@@ -111,15 +111,15 @@ export function Footer({ onNavigate, onOpenPrivacySettings }: FooterProps) {
           <div>
             <h3 className="text-white mb-4 font-semibold">{t('footer_hours_title')}</h3>
             <ul className="space-y-2 text-sm text-[#77756f]">
-              <li className="flex justify-between">
+              <li className="flex flex-wrap items-baseline gap-x-2">
                 <span>{t('footer_hours_mofr')}</span>
-                <span className="text-white">08:00 - 17:00</span>
+                <span className="text-white">10:00 - 18:00</span>
               </li>
-              <li className="flex justify-between">
+              <li className="flex flex-wrap items-baseline gap-x-2">
                 <span>{t('footer_hours_sat')}</span>
-                <span className="text-white">09:00 - 13:00</span>
+                <span className="text-white">{t('footer_visits_by_appointment')}</span>
               </li>
-              <li className="flex justify-between">
+              <li className="flex flex-wrap items-baseline gap-x-2">
                 <span>{t('footer_hours_sun')}</span>
                 <span className="text-white">{t('footer_hours_closed')}</span>
               </li>

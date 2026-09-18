@@ -148,12 +148,6 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
               )}
             </div>
 
-            {/* Delivery Time */}
-            <div className="glass rounded-xl p-4 border border-[#b08a57]/20 bg-[#b08a57]/5">
-              <p className="text-sm text-[#77756f]">
-                <span className="font-bold">{t('detail_delivery_label')}</span> {t('detail_delivery_weeks')}
-              </p>
-            </div>
           </motion.div>
         </div>
 

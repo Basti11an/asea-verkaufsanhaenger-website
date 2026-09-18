@@ -1,10 +1,13 @@
 import { Button } from '../ui/button';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface NotFoundPageProps {
   onNavigate: (page: string, data?: any) => void;
 }
 
 export function NotFoundPage({ onNavigate }: NotFoundPageProps) {
+  const { t } = useLanguage();
+
   return (
     <div className="bg-[#f8f7f3]">
       <section className="min-h-[62vh] bg-white py-20 md:py-28">
@@ -14,10 +17,10 @@ export function NotFoundPage({ onNavigate }: NotFoundPageProps) {
               404
             </p>
             <h1 className="text-3xl font-bold leading-tight text-[#2f2f2d] md:text-5xl">
-              Seite nicht gefunden
+              {t('not_found_title')}
             </h1>
             <p className="mt-5 text-base leading-relaxed text-[#77756f] md:text-lg">
-              Die angeforderte Seite existiert nicht oder wurde verschoben.
+              {t('not_found_desc')}
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Button
@@ -25,7 +28,7 @@ export function NotFoundPage({ onNavigate }: NotFoundPageProps) {
                 onClick={() => onNavigate('home')}
                 className="bg-[#b08a57] text-white hover:bg-[#9a7445]"
               >
-                Zur Startseite
+                {t('not_found_home')}
               </Button>
               <Button
                 type="button"
@@ -33,7 +36,7 @@ export function NotFoundPage({ onNavigate }: NotFoundPageProps) {
                 onClick={() => onNavigate('models')}
                 className="border-[#b08a57]/45 text-[#2f2f2d]"
               >
-                Modelle ansehen
+                {t('not_found_models')}
               </Button>
             </div>
           </div>

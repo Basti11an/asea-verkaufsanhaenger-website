@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '../ui/button';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
@@ -12,47 +11,6 @@ import { ReviewCard } from '../reviews/ReviewCard';
 
 interface HomePageProps {
   onNavigate: (page: string, data?: any) => void;
-}
-
-function CountUpValue({ value }: { value: string }) {
-  const match = value.match(/^(\d+)(.*)$/);
-  const endValue = match ? Number(match[1]) : 0;
-  const suffix = match?.[2] ?? '';
-  const [currentValue, setCurrentValue] = useState(() => (endValue > 1 ? 1 : endValue));
-
-  useEffect(() => {
-    if (!endValue) return undefined;
-
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduceMotion) {
-      setCurrentValue(endValue);
-      return undefined;
-    }
-
-    const duration = 850;
-    const start = performance.now();
-    let frame = 0;
-
-    const tick = (time: number) => {
-      const progress = Math.min((time - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCurrentValue(Math.max(1, Math.round(1 + (endValue - 1) * eased)));
-
-      if (progress < 1) {
-        frame = requestAnimationFrame(tick);
-      }
-    };
-
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [endValue]);
-
-  return (
-    <>
-      {currentValue}
-      {suffix}
-    </>
-  );
 }
 
 export function HomePage({ onNavigate }: HomePageProps) {
@@ -107,54 +65,42 @@ export function HomePage({ onNavigate }: HomePageProps) {
           transition={{ duration: 0.7 }}
         >
           <div className="max-w-full md:max-w-[38%]">
-            <h1 className="text-[28px] sm:text-[34px] md:text-[27px] lg:text-[34px] xl:text-[42px] font-bold leading-tight tracking-[0.1em] text-[#2f2f2d] uppercase mb-0">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9a7445] md:text-xs">
+              {t('home_badge')}
+            </p>
+            <h1 className="text-[28px] sm:text-[34px] md:text-[27px] lg:text-[34px] xl:text-[42px] font-bold leading-tight tracking-[0.04em] text-[#2f2f2d] mb-0">
               {t('home_hero_title')}
             </h1>
             <AseaWordmark size="hero" className="mb-4 md:mb-6" />
 
+            <p className="mb-4 max-w-xl text-sm leading-relaxed text-[#2f2f2d]/72 md:text-base">
+              {t('home_desc')}
+            </p>
+
             <div className="mb-5 md:mb-8 pl-3 md:pl-4 border-l-2 border-[#b08a57]/40 space-y-1 md:space-y-2">
-              <p className="text-[12px] md:text-[15px] font-medium tracking-[0.06em] text-[#2f2f2d]/70">{t('home_hero_claim1')}</p>
-              <p className="text-[12px] md:text-[15px] font-medium tracking-[0.06em] text-[#2f2f2d]/70">{t('home_hero_claim2')}</p>
-              <p className="text-[12px] md:text-[15px] font-medium tracking-[0.06em] text-[#2f2f2d]/70">{t('home_hero_claim3')}</p>
+              <p className="text-[12px] md:text-[15px] font-medium tracking-[0.04em] text-[#2f2f2d]/70">{t('home_hero_claim1')}</p>
+              <p className="text-[12px] md:text-[15px] font-medium tracking-[0.04em] text-[#2f2f2d]/70">{t('home_hero_claim2')}</p>
+              <p className="text-[12px] md:text-[15px] font-medium tracking-[0.04em] text-[#2f2f2d]/70">{t('home_hero_claim3')}</p>
             </div>
 
-            <button
-              onClick={() => onNavigate('models')}
-              className="inline-flex items-center gap-2 border border-[#2f2f2d]/25 text-[#2f2f2d]/70 text-[11px] md:text-[13px] font-medium uppercase tracking-[0.18em] px-5 py-2 md:px-6 md:py-2.5 hover:bg-[#2f2f2d]/5 hover:border-[#2f2f2d]/50 hover:text-[#2f2f2d] transition-all duration-200 w-fit"
-            >
-              {t('home_model_learn_more')}
-              <ArrowRight size={12} />
-            </button>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <button
+                onClick={() => onNavigate('contact')}
+                className="inline-flex w-fit items-center gap-2 bg-[#2f2f2d] px-5 py-2.5 text-[11px] font-medium uppercase tracking-[0.16em] text-white transition-all duration-200 hover:bg-[#1c1c1a] md:px-6 md:text-[13px]"
+              >
+                {t('home_cta_primary')}
+                <ArrowRight size={12} />
+              </button>
+              <button
+                onClick={() => onNavigate('models')}
+                className="inline-flex w-fit items-center gap-2 border border-[#2f2f2d]/25 px-5 py-2.5 text-[11px] font-medium uppercase tracking-[0.16em] text-[#2f2f2d]/70 transition-all duration-200 hover:border-[#2f2f2d]/50 hover:bg-[#2f2f2d]/5 hover:text-[#2f2f2d] md:px-6 md:text-[13px]"
+              >
+                {t('home_cta_secondary')}
+                <ArrowRight size={12} />
+              </button>
+            </div>
           </div>
         </motion.div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="bg-[#f8f7f3] py-12 md:py-16 relative">
-        <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-            {[
-              { value: '25+', labelKey: 'home_stat1_label' as const, delay: 0 },
-              { value: '750+', labelKey: 'home_stat2_label' as const, delay: 0.1 },
-              { value: '100%', labelKey: 'home_stat3_label' as const, delay: 0.2 },
-              { value: '15', labelKey: 'home_stat4_label' as const, delay: 0.3 },
-            ].map(({ value, labelKey, delay }) => (
-              <motion.div
-                key={labelKey}
-                className="text-center group"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay }}
-              >
-                <div className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#77756f] mb-2 md:mb-3">
-                  <CountUpValue value={value} />
-                </div>
-                <div className="text-sm md:text-base text-[#77756f] font-medium">{t(labelKey)}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* Erfahrungen Section */}
@@ -233,52 +179,9 @@ export function HomePage({ onNavigate }: HomePageProps) {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Models Preview Section */}
       <section className="py-16 md:py-20 bg-white relative overflow-hidden">
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24">
-          <motion.div
-            className="text-center mb-10 md:mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="text-2xl md:text-3xl lg:text-5xl text-[#2f2f2d] mb-3 md:mb-4">{t('home_features_title')}</h2>
-            <p className="text-base md:text-xl text-[#77756f] max-w-2xl mx-auto">{t('home_features_subtitle')}</p>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-9">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                className="relative border-t-2 border-[#b08a57]/35 pt-5 pr-2"
-                initial={{ opacity: 0, y: 28 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.08 }}
-              >
-                <h3 className="text-base md:text-xl text-[#2f2f2d] mb-2 md:mb-3">{t(feature.titleKey)}</h3>
-                <p className="text-sm md:text-base text-[#77756f] leading-relaxed">{t(feature.descKey)}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Models Preview Section */}
-      <section className="py-16 md:py-20 gradient-accent relative">
-        <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24">
-          <motion.div
-            className="text-center mb-10 md:mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="text-2xl md:text-3xl lg:text-5xl text-[#2f2f2d] mb-3 md:mb-4">{t('home_models_title')}</h2>
-            <p className="text-base md:text-xl text-[#77756f] max-w-2xl mx-auto">{t('home_models_subtitle')}</p>
-          </motion.div>
-
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {[
               {
@@ -348,6 +251,38 @@ export function HomePage({ onNavigate }: HomePageProps) {
               {t('home_models_view_all')}
             </Button>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-16 md:py-20 gradient-accent relative">
+        <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24">
+          <motion.div
+            className="text-center mb-10 md:mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-2xl md:text-3xl lg:text-5xl text-[#2f2f2d] mb-3 md:mb-4">{t('home_features_title')}</h2>
+            <p className="text-base md:text-xl text-[#77756f] max-w-2xl mx-auto">{t('home_features_subtitle')}</p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-9">
+            {features.map((feature, index) => (
+              <motion.div
+                key={index}
+                className="relative border-t-2 border-[#b08a57]/35 pt-5 pr-2"
+                initial={{ opacity: 0, y: 28 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+              >
+                <h3 className="text-base md:text-xl text-[#2f2f2d] mb-2 md:mb-3">{t(feature.titleKey)}</h3>
+                <p className="text-sm md:text-base text-[#77756f] leading-relaxed">{t(feature.descKey)}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
