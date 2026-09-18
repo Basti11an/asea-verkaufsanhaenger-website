@@ -1,4 +1,4 @@
-import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin } from 'lucide-react';
+import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, MessageCircle } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { AseaWordmark } from './AseaWordmark';
 
@@ -90,6 +90,18 @@ export function Footer({ onNavigate, onOpenPrivacySettings }: FooterProps) {
                 <Mail size={16} className="flex-shrink-0 text-[#c8a96e] transition-transform duration-300 group-hover:scale-110" />
                 <a href="mailto:office@verkaufsanhaenger-asea.at" className="text-[#77756f] hover:text-[#b08a57] transition-colors break-all">
                   office@verkaufsanhaenger-asea.at
+                </a>
+              </li>
+              <li className="flex items-center gap-2">
+                <MessageCircle size={16} className="flex-shrink-0 text-[#c8a96e]" aria-hidden="true" />
+                <a
+                  href="https://wa.me/436644105007"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={t('contact_whatsapp_accessible_label')}
+                  className="inline-flex min-h-11 items-center rounded-sm text-[#77756f] hover:text-[#b08a57] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#c8a96e]"
+                >
+                  WhatsApp
                 </a>
               </li>
             </ul>

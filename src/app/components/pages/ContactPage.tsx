@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MapPin, Phone, Mail, Clock, Send, CheckCircle2 } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Send, CheckCircle2, MessageCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
@@ -369,6 +369,25 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
                 <p>{t('contact_hours_sun')}</p>
               </div>
             </div>
+          </div>
+
+          <div className="mt-6 flex flex-col gap-3 border-t border-[#dfd9cf] pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <MessageCircle size={20} className="mt-0.5 shrink-0 text-[#b08a57]" aria-hidden="true" />
+              <div>
+                <h3 className="text-base font-medium text-[#2f2f2d]">WhatsApp</h3>
+                <p className="mt-1 text-sm text-[#77756f]">{t('contact_whatsapp_description')}</p>
+              </div>
+            </div>
+            <a
+              href="https://wa.me/436644105007"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={t('contact_whatsapp_accessible_label')}
+              className="inline-flex min-h-11 items-center self-start rounded-sm py-2 text-sm font-medium text-[#9a7445] underline underline-offset-4 hover:text-[#2f2f2d] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#9a7445]"
+            >
+              {t('contact_whatsapp_open')}
+            </a>
           </div>
         </div>
       </section>
