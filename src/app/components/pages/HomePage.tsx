@@ -73,10 +73,6 @@ export function HomePage({ onNavigate }: HomePageProps) {
             </h1>
             <AseaWordmark size="hero" className="mb-4 md:mb-6" />
 
-            <p className="mb-4 max-w-xl text-sm leading-relaxed text-[#2f2f2d]/72 md:text-base">
-              {t('home_desc')}
-            </p>
-
             <div className="mb-5 md:mb-8 pl-3 md:pl-4 border-l-2 border-[#b08a57]/40 space-y-1 md:space-y-2">
               <p className="text-[12px] md:text-[15px] font-medium tracking-[0.04em] text-[#2f2f2d]/70">{t('home_hero_claim1')}</p>
               <p className="text-[12px] md:text-[15px] font-medium tracking-[0.04em] text-[#2f2f2d]/70">{t('home_hero_claim2')}</p>
