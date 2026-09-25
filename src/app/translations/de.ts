@@ -170,7 +170,7 @@ export const de = {
   detail_configure_now: "Konfigurator starten",
 
   // Spec labels (for dynamic model detail)
-  spec_laenge: 'Länge',
+  spec_laenge: 'Innenlänge',
   spec_breite: 'Breite',
   spec_hoehe: 'Höhe',
   spec_eigengewicht: 'Eigengewicht',
@@ -575,7 +575,7 @@ export const de = {
   model_sales_short: "Unser Hauptmodell für individuelle Einsatzzwecke.",
   model_cooling_short: "Feste Ausführung für gekühlte Waren.",
   model_exhibition_short: "Feste Ausführung für Präsentationen und Veranstaltungen.",
-  model_sales_price: "…",
+  model_sales_price: "Netto ab 15.800 €",
   model_cooling_price: "…",
   model_exhibition_price: "…",
   model_sales_feature1: "Individuelle Abstimmung auf den geplanten Einsatz",

@@ -170,7 +170,7 @@ export const en = {
   detail_configure_now: 'Configure Now',
 
   // Spec labels
-  spec_laenge: 'Length',
+  spec_laenge: 'Interior length',
   spec_breite: 'Width',
   spec_hoehe: 'Height',
   spec_eigengewicht: 'Tare Weight',
@@ -575,7 +575,7 @@ export const en = {
   model_sales_short: "Our main model for individual applications.",
   model_cooling_short: "Fixed model for refrigerated goods.",
   model_exhibition_short: "Fixed model for presentations and events.",
-  model_sales_price: "…",
+  model_sales_price: "Net from €15,800",
   model_cooling_price: "…",
   model_exhibition_price: "…",
   model_sales_feature1: "Individually coordinated for the planned use",
