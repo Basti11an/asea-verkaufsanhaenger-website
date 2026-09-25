@@ -16,6 +16,7 @@ import {
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { AdminReference, ContactRequest, useAdminData } from '../../context/AdminDataContext';
+import { getPrimaryReferenceImageUrl } from '../../lib/referenceImages';
 import { StarRating } from '../reviews/StarRating';
 
 function formatDateTime(value: string) {
@@ -338,18 +339,21 @@ export function EingaengeTab() {
           </div>
         ) : (
           <div className="grid lg:grid-cols-2 gap-5">
-            {pendingRefs.map((reference) => (
+            {pendingRefs.map((reference) => {
+              const primaryImageUrl = getPrimaryReferenceImageUrl(reference.bildUrl);
+
+              return (
               <div key={reference.id} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 <div className="grid sm:grid-cols-[180px_1fr]">
                   <div className="h-44 sm:h-full bg-[#f8f7f3]">
-                    {reference.bildUrl ? (
+                    {primaryImageUrl ? (
                       <button
                         type="button"
-                        onClick={() => setPreviewImage(reference.bildUrl)}
+                        onClick={() => setPreviewImage(primaryImageUrl)}
                         className="w-full h-full block group overflow-hidden"
                       >
                         <img
-                          src={reference.bildUrl}
+                          src={primaryImageUrl}
                           alt={reference.kundenname}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
@@ -436,7 +440,8 @@ export function EingaengeTab() {
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useAdminData } from '../../context/AdminDataContext';
 import { useLanguage, type TranslationKey } from '../../context/LanguageContext';
+import { getMaxReferenceImages, getReferenceImageUrls, serializeReferenceImageUrls } from '../../lib/referenceImages';
 import { ReviewForm } from '../reviews/ReviewForm';
 import { ImageUploadField } from '../ImageUploadField';
 
@@ -62,6 +63,13 @@ export function ReferenceSubmitPanel({
     setForm((prev) => ({ ...prev, [field]: value }));
     setState('idle');
     setMessage('');
+  };
+
+  const handleImageChange = (index: number, url: string) => {
+    const imageUrls = getReferenceImageUrls(form.bildUrl);
+    const nextImageUrls = [...imageUrls];
+    nextImageUrls[index] = url;
+    handleFieldChange('bildUrl', serializeReferenceImageUrls(nextImageUrls));
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -203,15 +211,24 @@ export function ReferenceSubmitPanel({
                     placeholder="+43 ..."
                   />
                 </div>
-                <div>
-                  <ImageUploadField
-                    label={t('reference_submit_image')}
-                    value={form.bildUrl}
-                    onChange={(url) => handleFieldChange('bildUrl', url)}
-                    folder="references"
-                    previewAlt={form.kundenname}
-                    onUploadStateChange={setImageUploading}
-                  />
+                <div className="md:col-span-2">
+                  <div className="grid gap-4 md:grid-cols-3">
+                    {Array.from({ length: getMaxReferenceImages() }).map((_, index) => {
+                      const imageUrls = getReferenceImageUrls(form.bildUrl);
+
+                      return (
+                        <ImageUploadField
+                          key={index}
+                          label={`${t('reference_submit_image')} ${index + 1}`}
+                          value={imageUrls[index] ?? ''}
+                          onChange={(url) => handleImageChange(index, url)}
+                          folder="references"
+                          previewAlt={form.kundenname}
+                          onUploadStateChange={setImageUploading}
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             )}

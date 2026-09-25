@@ -6,6 +6,7 @@ import { Switch } from '../ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
 import { Plus, Pencil, Trash2, Check, X, ImageIcon } from 'lucide-react';
 import { useAdminData, AdminReference } from '../../context/AdminDataContext';
+import { getPrimaryReferenceImageUrl } from '../../lib/referenceImages';
 import { StarRating } from '../reviews/StarRating';
 import { ImageUploadField } from '../ImageUploadField';
 
@@ -150,7 +151,8 @@ export function ReferenzenTab() {
           publishedRefs.map((ref) => {
             const isEditing = ref.id in editState;
             const draft = editState[ref.id] ?? {};
-            const currentImageUrl = draft.bildUrl ?? ref.bildUrl;
+            const currentImageValue = draft.bildUrl ?? ref.bildUrl;
+            const currentImageUrl = getPrimaryReferenceImageUrl(currentImageValue);
 
             return (
               <div
@@ -236,7 +238,7 @@ export function ReferenzenTab() {
                       <div>
                         <ImageUploadField
                           label="Bild vom Gerät hochladen"
-                          value={draft.bildUrl ?? ref.bildUrl}
+                          value={currentImageUrl}
                           onChange={(url) => handleEditChange(ref.id, 'bildUrl', url)}
                           folder="references"
                           previewAlt={ref.kundenname}
@@ -344,7 +346,8 @@ export function ReferenzenTab() {
               {publishedRefs.map((ref) => {
                 const isEditing = ref.id in editState;
                 const draft = editState[ref.id] ?? {};
-                const currentImageUrl = draft.bildUrl ?? ref.bildUrl;
+                const currentImageValue = draft.bildUrl ?? ref.bildUrl;
+                const currentImageUrl = getPrimaryReferenceImageUrl(currentImageValue);
                 return (
                   <tr key={ref.id} className={`hover:bg-gray-50/50 transition-colors ${isEditing ? 'bg-blue-50/40' : ''}`}>
                     <td className="px-4 py-2.5">

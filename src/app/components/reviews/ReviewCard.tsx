@@ -1,6 +1,7 @@
-import type { CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import type { AdminReference } from '../../context/AdminDataContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { getReferenceImageUrls } from '../../lib/referenceImages';
 import { getReferenceDescription, getReferenceModelLabel } from '../../lib/referenceUtils';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { StarRating } from './StarRating';
@@ -51,6 +52,13 @@ export function ReviewCard({
   const modelLabel = getReferenceModelLabel(review.modell, t);
   const meta = [review.ort, modelLabel, review.jahr ? String(review.jahr) : ''].filter(Boolean).join(' · ');
   const polaroidMeta = [review.ort, review.jahr ? String(review.jahr) : ''].filter(Boolean).join(' · ');
+  const imageUrls = getReferenceImageUrls(review.bildUrl);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const selectedImageUrl = imageUrls[selectedImageIndex] ?? imageUrls[0] ?? '';
+
+  useEffect(() => {
+    setSelectedImageIndex(0);
+  }, [review.id, review.bildUrl]);
 
   if (variant === 'polaroid') {
     const style = {
@@ -69,9 +77,9 @@ export function ReviewCard({
 
         {showImage && (
           <div className="relative aspect-[4/3] overflow-hidden border border-[#e5ded3] bg-[#f3efe8]">
-            {review.bildUrl ? (
+            {selectedImageUrl ? (
               <ImageWithFallback
-                src={review.bildUrl}
+                src={selectedImageUrl}
                 alt={review.kundenname || modelLabel}
                 className="h-full w-full object-cover"
               />
@@ -81,6 +89,21 @@ export function ReviewCard({
                 <span className="mt-2 text-[11px] font-medium uppercase tracking-[0.14em] text-[#77756f]">
                   {modelLabel}
                 </span>
+              </div>
+            )}
+            {imageUrls.length > 1 && (
+              <div className="absolute bottom-2 left-0 right-0 z-10 flex justify-center gap-1.5">
+                {imageUrls.map((url, imageIndex) => (
+                  <button
+                    key={`${url}-${imageIndex}`}
+                    type="button"
+                    onClick={() => setSelectedImageIndex(imageIndex)}
+                    className={`h-2.5 w-2.5 rounded-full border border-white/90 shadow-sm transition ${
+                      selectedImageIndex === imageIndex ? 'bg-[#b08a57]' : 'bg-white/80 hover:bg-white'
+                    }`}
+                    aria-label={`Bild ${imageIndex + 1} anzeigen`}
+                  />
+                ))}
               </div>
             )}
           </div>
@@ -116,9 +139,9 @@ export function ReviewCard({
     <article className={`overflow-hidden rounded-xl border border-[#dfd9cf] bg-white shadow-sm ${className}`}>
       {showImage && (
         <div className={`relative ${compact ? 'h-32' : 'h-44'} overflow-hidden bg-[#f3efe8]`}>
-          {review.bildUrl ? (
+          {selectedImageUrl ? (
             <ImageWithFallback
-              src={review.bildUrl}
+              src={selectedImageUrl}
               alt={review.kundenname || modelLabel}
               className="h-full w-full object-cover"
             />
@@ -127,6 +150,21 @@ export function ReviewCard({
               <span className="text-2xl font-bold tracking-[0.12em] text-[#b08a57]/70 md:text-3xl">
                 {initials || 'ASEA'}
               </span>
+            </div>
+          )}
+          {imageUrls.length > 1 && (
+            <div className="absolute bottom-2 left-0 right-0 z-10 flex justify-center gap-1.5">
+              {imageUrls.map((url, imageIndex) => (
+                <button
+                  key={`${url}-${imageIndex}`}
+                  type="button"
+                  onClick={() => setSelectedImageIndex(imageIndex)}
+                  className={`h-2.5 w-2.5 rounded-full border border-white/90 shadow-sm transition ${
+                    selectedImageIndex === imageIndex ? 'bg-[#b08a57]' : 'bg-white/80 hover:bg-white'
+                  }`}
+                  aria-label={`Bild ${imageIndex + 1} anzeigen`}
+                />
+              ))}
             </div>
           )}
         </div>
