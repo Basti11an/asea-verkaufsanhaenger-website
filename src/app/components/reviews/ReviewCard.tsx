@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { AdminReference } from '../../context/AdminDataContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { getReferenceImageUrls } from '../../lib/referenceImages';
@@ -60,6 +61,16 @@ export function ReviewCard({
     setSelectedImageIndex(0);
   }, [review.id, review.bildUrl]);
 
+  const showImageControls = imageUrls.length > 1;
+
+  const showPreviousImage = () => {
+    setSelectedImageIndex((current) => (current - 1 + imageUrls.length) % imageUrls.length);
+  };
+
+  const showNextImage = () => {
+    setSelectedImageIndex((current) => (current + 1) % imageUrls.length);
+  };
+
   if (variant === 'polaroid') {
     const style = {
       '--review-rotation': getPolaroidRotation(index),
@@ -91,20 +102,38 @@ export function ReviewCard({
                 </span>
               </div>
             )}
-            {imageUrls.length > 1 && (
-              <div className="absolute bottom-2 left-0 right-0 z-10 flex justify-center gap-1.5">
-                {imageUrls.map((url, imageIndex) => (
-                  <button
-                    key={`${url}-${imageIndex}`}
-                    type="button"
-                    onClick={() => setSelectedImageIndex(imageIndex)}
-                    className={`h-2.5 w-2.5 rounded-full border border-white/90 shadow-sm transition ${
-                      selectedImageIndex === imageIndex ? 'bg-[#b08a57]' : 'bg-white/80 hover:bg-white'
-                    }`}
-                    aria-label={`Bild ${imageIndex + 1} anzeigen`}
-                  />
-                ))}
-              </div>
+            {showImageControls && (
+              <>
+                <button
+                  type="button"
+                  onClick={showPreviousImage}
+                  className="absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/86 text-[#2f2f2d] shadow-md transition hover:bg-white"
+                  aria-label="Vorheriges Bild anzeigen"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  type="button"
+                  onClick={showNextImage}
+                  className="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/86 text-[#2f2f2d] shadow-md transition hover:bg-white"
+                  aria-label="Nächstes Bild anzeigen"
+                >
+                  <ChevronRight size={18} />
+                </button>
+                <div className="absolute bottom-2 left-0 right-0 z-10 flex justify-center gap-1.5">
+                  {imageUrls.map((url, imageIndex) => (
+                    <button
+                      key={`${url}-${imageIndex}`}
+                      type="button"
+                      onClick={() => setSelectedImageIndex(imageIndex)}
+                      className={`h-2.5 w-2.5 rounded-full border border-white/90 shadow-sm transition ${
+                        selectedImageIndex === imageIndex ? 'bg-[#b08a57]' : 'bg-white/80 hover:bg-white'
+                      }`}
+                      aria-label={`Bild ${imageIndex + 1} anzeigen`}
+                    />
+                  ))}
+                </div>
+              </>
             )}
           </div>
         )}
@@ -152,20 +181,38 @@ export function ReviewCard({
               </span>
             </div>
           )}
-          {imageUrls.length > 1 && (
-            <div className="absolute bottom-2 left-0 right-0 z-10 flex justify-center gap-1.5">
-              {imageUrls.map((url, imageIndex) => (
-                <button
-                  key={`${url}-${imageIndex}`}
-                  type="button"
-                  onClick={() => setSelectedImageIndex(imageIndex)}
-                  className={`h-2.5 w-2.5 rounded-full border border-white/90 shadow-sm transition ${
-                    selectedImageIndex === imageIndex ? 'bg-[#b08a57]' : 'bg-white/80 hover:bg-white'
-                  }`}
-                  aria-label={`Bild ${imageIndex + 1} anzeigen`}
-                />
-              ))}
-            </div>
+          {showImageControls && (
+            <>
+              <button
+                type="button"
+                onClick={showPreviousImage}
+                className="absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/86 text-[#2f2f2d] shadow-md transition hover:bg-white"
+                aria-label="Vorheriges Bild anzeigen"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                type="button"
+                onClick={showNextImage}
+                className="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/86 text-[#2f2f2d] shadow-md transition hover:bg-white"
+                aria-label="Nächstes Bild anzeigen"
+              >
+                <ChevronRight size={18} />
+              </button>
+              <div className="absolute bottom-2 left-0 right-0 z-10 flex justify-center gap-1.5">
+                {imageUrls.map((url, imageIndex) => (
+                  <button
+                    key={`${url}-${imageIndex}`}
+                    type="button"
+                    onClick={() => setSelectedImageIndex(imageIndex)}
+                    className={`h-2.5 w-2.5 rounded-full border border-white/90 shadow-sm transition ${
+                      selectedImageIndex === imageIndex ? 'bg-[#b08a57]' : 'bg-white/80 hover:bg-white'
+                    }`}
+                    aria-label={`Bild ${imageIndex + 1} anzeigen`}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </div>
       )}
