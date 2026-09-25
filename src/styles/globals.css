@@ -297,7 +297,7 @@ body,
 
 .polaroid-review-pin {
   position: absolute;
-  top: -0.64rem;
+  top: -0.82rem;
   left: 50%;
   z-index: 5;
   width: 1.72rem;
@@ -341,7 +341,7 @@ body,
 
 @media (max-width: 767px) {
   .polaroid-review-pin {
-    top: -0.5rem;
+    top: -0.66rem;
     width: 1.45rem;
     height: 1.3rem;
   }
