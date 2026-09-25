@@ -13,6 +13,20 @@ import { sendContactRequestEmails } from '../../lib/emailService';
 
 const CONFIGURATOR_REQUEST_SUBJECT = 'Anfrage Konfigurator';
 
+function getContactErrorDetails(error: unknown) {
+  if (error && typeof error === 'object') {
+    const maybeStatus = error as { status?: unknown; text?: unknown; message?: unknown; code?: unknown };
+    return {
+      status: maybeStatus.status,
+      code: maybeStatus.code,
+      text: maybeStatus.text,
+      message: maybeStatus.message,
+    };
+  }
+
+  return { message: String(error) };
+}
+
 export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; onNavigate?: (page: string) => void }) {
   const { t } = useLanguage();
   const { submitContactRequest } = useAdminData();
@@ -73,8 +87,8 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
       setReviewOfferDismissed(false);
 
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
-    } catch {
-      console.warn('Contact request failed.');
+    } catch (error) {
+      console.warn('Contact request failed.', getContactErrorDetails(error));
       setFormError(t('contact_error'));
     } finally {
       setIsSending(false);

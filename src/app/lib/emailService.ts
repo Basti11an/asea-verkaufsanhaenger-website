@@ -30,12 +30,11 @@ function formatSubmittedAt(date = new Date()) {
   return `${formattedDate}, ${formattedTime} Uhr`;
 }
 
-function assertEmailJsConfigured() {
+function assertInternalEmailJsConfigured() {
   if (
     !emailJsConfig.serviceId ||
     !emailJsConfig.publicKey ||
     !emailJsConfig.internalTemplateId ||
-    !emailJsConfig.customerTemplateId ||
     !emailJsConfig.internalRecipient
   ) {
     throw new Error('EmailJS ist noch nicht vollständig konfiguriert.');
@@ -47,13 +46,29 @@ export function isEmailJsConfigured() {
     emailJsConfig.serviceId &&
       emailJsConfig.publicKey &&
       emailJsConfig.internalTemplateId &&
-      emailJsConfig.customerTemplateId &&
       emailJsConfig.internalRecipient,
   );
 }
 
+function isCustomerConfirmationConfigured() {
+  return Boolean(emailJsConfig.customerTemplateId);
+}
+
+function getEmailJsErrorDetails(error: unknown) {
+  if (error && typeof error === 'object') {
+    const maybeStatus = error as { status?: unknown; text?: unknown; message?: unknown };
+    return {
+      status: maybeStatus.status,
+      text: maybeStatus.text,
+      message: maybeStatus.message,
+    };
+  }
+
+  return { message: String(error) };
+}
+
 export async function sendContactRequestEmails(request: ContactRequestInput) {
-  assertEmailJsConfigured();
+  assertInternalEmailJsConfigured();
 
   const templateParams = {
     customer_name: request.name,
@@ -75,16 +90,26 @@ export async function sendContactRequestEmails(request: ContactRequestInput) {
     { publicKey: emailJsConfig.publicKey },
   );
 
-  await wait(EMAILJS_SEND_DELAY_MS);
+  if (!isCustomerConfirmationConfigured()) {
+    console.warn('EmailJS customer confirmation template is not configured.');
+    return;
+  }
 
-  await emailjs.send(
-    emailJsConfig.serviceId,
-    emailJsConfig.customerTemplateId,
-    {
-      ...templateParams,
-      to_email: request.email,
-      recipient_email: request.email,
-    },
-    { publicKey: emailJsConfig.publicKey },
-  );
+  try {
+    await wait(EMAILJS_SEND_DELAY_MS);
+
+    await emailjs.send(
+      emailJsConfig.serviceId,
+      emailJsConfig.customerTemplateId,
+      {
+        ...templateParams,
+        submitted_at: formatSubmittedAt(),
+        to_email: request.email,
+        recipient_email: request.email,
+      },
+      { publicKey: emailJsConfig.publicKey },
+    );
+  } catch (error) {
+    console.warn('EmailJS customer confirmation failed.', getEmailJsErrorDetails(error));
+  }
 }
