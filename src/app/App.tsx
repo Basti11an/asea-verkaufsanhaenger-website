@@ -90,7 +90,7 @@ const SEO_CONFIG: Record<string, SeoConfig> = {
   },
   configurator: {
     title: 'Verkaufsanhänger konfigurieren | ASEA',
-    description: 'Planen Sie Ihren Verkaufsanhänger mit dem ASEA Konfigurator und stellen Sie Ausstattung, Farben und Details individuell zusammen.',
+    description: 'Der neue ASEA-Innenraum-Konfigurator befindet sich derzeit in Arbeit.',
     path: '/konfigurator',
   },
   imprint: {
@@ -557,7 +557,7 @@ function AppInner() {
       case 'about':
         return <AboutPage />;
       case 'configurator':
-        return <ConfiguratorPage onNavigate={handleNavigate} navData={navData} />;
+        return <ConfiguratorPage />;
       case 'models':
         return <ModelsPage onNavigate={handleNavigate} />;
       case 'model-detail':
@@ -600,12 +600,11 @@ function AppInner() {
   };
 
   const isAdminMode = currentPage === 'messages' && adminAccessStatus === 'admin';
-  const isFullscreenPage = currentPage === 'configurator';
   const showNormalHeader = currentPage !== 'messages';
-  const showFooter = currentPage !== 'messages' && !isFullscreenPage;
+  const showFooter = currentPage !== 'messages';
 
   return (
-    <div className={`flex flex-col bg-gray-50 ${isFullscreenPage ? 'min-h-screen lg:h-screen lg:overflow-hidden' : 'min-h-screen'}`}>
+    <div className="flex min-h-screen flex-col bg-gray-50">
       {showNormalHeader && (
         <Header currentPage={currentPage} onNavigate={handleNavigate} />
       )}
@@ -617,11 +616,11 @@ function AppInner() {
           onLogout={handleAdminLogout}
         />
       )}
-      <main className={isFullscreenPage ? 'flex-1 min-h-0 flex flex-col relative lg:overflow-hidden' : 'flex-1'}>
+      <main className="flex-1">
         {renderPage()}
       </main>
       {showFooter && <Footer onNavigate={handleNavigate} onOpenPrivacySettings={() => setPrivacySettingsOpen(true)} />}
-      {showNormalHeader && !isFullscreenPage && (
+      {showNormalHeader && (
         <PrivacyConsentBanner
           forceOpen={privacySettingsOpen}
           onClose={() => setPrivacySettingsOpen(false)}

@@ -140,7 +140,7 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
               {model.category === 'sales' && (
                 <Button
                   size="lg"
-                  onClick={() => onNavigate('configurator', { returnPage: 'model-detail', model })}
+                  onClick={() => onNavigate('configurator')}
                   className="flex-1 gradient-primary text-[#2f2f2d] hover:shadow-xl transition-all duration-300 text-lg py-6 border-2 border-[#b08a57]"
                 >
                   {t('detail_configure')}
@@ -259,7 +259,7 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
                 {model.category === 'sales' && (
                   <Button
                     size="lg"
-                    onClick={() => onNavigate('configurator', { returnPage: 'model-detail', model })}
+                    onClick={() => onNavigate('configurator')}
                     className="bg-white text-[#1c1c1a] hover:bg-[#f8f7f3] hover:shadow-xl transition-all duration-300 text-lg px-10 py-6 border border-white"
                   >
                   {t('detail_configure_now')}

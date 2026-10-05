@@ -488,7 +488,7 @@ export function EingaengeTab() {
                 <div className="rounded-xl border border-gray-200 bg-[#f8f7f3] p-4">
                   <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Quelle</p>
                   <p className="text-sm font-medium text-[#2f2f2d]">
-                    {selectedContact.source === 'configurator' ? 'Konfigurator' : 'Kontaktformular'}
+                    Kontaktformular
                   </p>
                 </div>
               </div>

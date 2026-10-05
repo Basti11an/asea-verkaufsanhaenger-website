@@ -1,6 +1,6 @@
 # ASEA Verkaufsanhänger Website
 
-Dieses Projekt ist die React/Vite-Version des Figma-Make-Exports für die ASEA Verkaufsanhänger Website. Die Seiten, Animationen, UI-Komponenten, Admin-Ansichten, Übersetzungen und der interaktive 3D-Konfigurator wurden übernommen und für GitHub/Vercel vorbereitet.
+Dieses Projekt ist die React/Vite-Version des Figma-Make-Exports für die ASEA Verkaufsanhänger Website. Die Seiten, Animationen, UI-Komponenten, Admin-Ansichten und Übersetzungen wurden übernommen und für GitHub/Vercel vorbereitet. Der Bereich `/konfigurator` bleibt als vorbereitete Seite für einen späteren Neuaufbau bestehen.
 
 ## Schnellstart ohne Server
 
@@ -209,7 +209,7 @@ asea-verkaufsanhaenger-website/
       lib/                  Supabase-Verbindung und Datenbankzugriffe
       components/
         pages/              Website-Seiten
-        configurator/       3D-Konfigurator mit Three.js
+        pages/              Website-Seiten inklusive Konfigurator-Statusseite
         admin/              Admin-Bereiche für Modelle und Referenzen
         ui/                 Wiederverwendbare UI-Basiskomponenten
         figma/              Bild-Hilfskomponente aus dem Export

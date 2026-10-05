@@ -11,8 +11,6 @@ import { GoogleMapsEmbed } from '../GoogleMapsEmbed';
 import { validateContactRequest } from '../../lib/contactRequestValidation';
 import { sendContactRequestEmails } from '../../lib/emailService';
 
-const CONFIGURATOR_REQUEST_SUBJECT = 'Anfrage Konfigurator';
-
 function getContactErrorDetails(error: unknown) {
   if (error && typeof error === 'object') {
     const maybeStatus = error as { status?: unknown; text?: unknown; message?: unknown; code?: unknown };
@@ -68,8 +66,7 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
       return;
     }
 
-    const source = formData.subject.trim() === CONFIGURATOR_REQUEST_SUBJECT ? 'configurator' : 'contact';
-    const validation = validateContactRequest(formData, source);
+    const validation = validateContactRequest(formData, 'contact');
 
     if (validation.ok === false) {
       setFormError(validation.error);

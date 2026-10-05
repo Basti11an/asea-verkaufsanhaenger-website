@@ -67,7 +67,7 @@ Stand: 26.08.2026
 - Browsercheck `/admin` ohne Login: zeigt Login, kein Dashboard.
 - Manipulationstest `localStorage.isAdmin = true`: zeigt weiterhin Login, kein Dashboard, keine Referenzverwaltung.
 - Direkte Supabase-RLS-Live-Tests koennen erst nach Ausfuehren der SQL-Dateien im Supabase SQL Editor erfolgen.
-- `TrailerConfigurator.tsx` und `TrailerScene.tsx` wurden nicht veraendert.
+- Der bisherige 3D-Konfigurator wurde entfernt; `/konfigurator` zeigt derzeit nur eine vorbereitete Statusseite.
 
 ## G. Offene Betreiberaufgaben
 

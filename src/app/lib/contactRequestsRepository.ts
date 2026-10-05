@@ -1,7 +1,7 @@
 import { isSupabaseConfigured, supabase } from './supabase';
 
 export type ContactRequestStatus = 'new' | 'open' | 'answered';
-export type ContactRequestSource = 'contact' | 'configurator';
+export type ContactRequestSource = 'contact';
 
 export interface ContactRequestInput {
   name: string;
@@ -9,7 +9,7 @@ export interface ContactRequestInput {
   phone: string;
   subject: string;
   message: string;
-  source: ContactRequestSource;
+  source: string;
 }
 
 export interface ContactRequest {
@@ -19,7 +19,7 @@ export interface ContactRequest {
   phone: string;
   subject: string;
   message: string;
-  source: ContactRequestSource;
+  source: string;
   status: ContactRequestStatus;
   isRead: boolean;
   createdAt: string;
@@ -33,7 +33,7 @@ type ContactRequestRow = {
   customer_phone: string;
   subject: string;
   message: string;
-  source: ContactRequestSource;
+  source: string;
   status: ContactRequestStatus;
   is_read: boolean;
   created_at: string;

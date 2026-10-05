@@ -2,11 +2,11 @@
 
 Stand: 17. September 2026. Deutsche Hauptfassung des bestehenden Projekts. Die Website-Texte sind unverändert übernommen; Überschriften und redaktionelle Hinweise in dieser Sammlung dienen nur der Orientierung.
 
-Geprüft wurden 15 öffentliche Seiten beziehungsweise Ansichten: Startseite, Modellübersicht, drei Modelldetails, Ausstattung, Über uns, Kontakt, alle Bewertungen, Konfigurator-Vorschaltseiten, persönliche Bewertungsseite, Abmeldeseite, Impressum, Datenschutz und 404. Zusätzlich geprüft: Header, mobile Navigation, Footer, Datenschutzbanner, Kartenfreigabe, gemeinsame Bewertungsformulare, Bild-Upload und Formularmeldungen.
+Geprüft wurden 15 öffentliche Seiten beziehungsweise Ansichten: Startseite, Modellübersicht, drei Modelldetails, Ausstattung, Über uns, Kontakt, alle Bewertungen, die Konfigurator-Statusseite, persönliche Bewertungsseite, Abmeldeseite, Impressum, Datenschutz und 404. Zusätzlich geprüft: Header, mobile Navigation, Footer, Datenschutzbanner, Kartenfreigabe, gemeinsame Bewertungsformulare, Bild-Upload und Formularmeldungen.
 
 Wiederverwendete längere Texte stehen einmal vollständig in dieser Sammlung; weitere Vorkommen sind angegeben. Persönliche Eingaben beliebiger Besucher sind keine festen Website-Texte. Die neun öffentlich abrufbaren Kundenbewertungen wurden als Momentaufnahme ausschließlich lesend ergänzt. Nicht freigegebene Bewertungen und interne Kundendaten sind nicht enthalten.
 
-Der eigentliche 3D-Konfigurator ist entsprechend dem Auftrag ausgenommen. Erfasst sind seine vorgelagerten Erklärungen und Handy-Hinweise außerhalb der geschützten 3D-Bereiche. Technische Fehlermeldungen externer Dienste, unsichtbare Bot-Felder, interne Admintexte und ungenutzte Übersetzungen sind nicht als öffentliche Seitentexte aufgenommen.
+Der frühere 3D-Konfigurator ist nicht mehr Bestandteil der Website. Die aktuelle Route zeigt nur die vorbereitete Statusseite. Technische Fehlermeldungen externer Dienste, unsichtbare Bot-Felder, interne Admintexte und ungenutzte Übersetzungen sind nicht als öffentliche Seitentexte aufgenommen.
 
 ## Globale Texte
 
