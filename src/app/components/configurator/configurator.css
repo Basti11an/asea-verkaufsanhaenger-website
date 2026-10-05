@@ -1,0 +1,499 @@
+.asea-configurator {
+  --bronze: #967448;
+  --ink: #30312e;
+  background: #f5f6f5;
+  color: var(--ink);
+  padding: 30px 28px 24px;
+  letter-spacing: 0;
+}
+.asea-desktop {
+  max-width: 1500px;
+  margin: auto;
+}
+.asea-configurator h1 {
+  font-size: 28px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+.asea-configurator h2 {
+  font-size: 16px;
+  font-weight: 650;
+}
+.asea-config-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 20px;
+}
+.asea-config-heading p {
+  font-size: 14px;
+  color: #6a6d68;
+  margin-top: 8px;
+}
+.asea-status {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: #73766e;
+}
+.asea-status span:first-child {
+  color: #86663d;
+  border-right: 1px solid #d4d6d0;
+  padding-right: 12px;
+}
+.asea-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 270px;
+  border: 1px solid #d9dcd6;
+  background: white;
+}
+.asea-workbench {
+  min-width: 0;
+}
+.asea-toolbar {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid #e4e6e0;
+}
+.asea-configurator button,
+.asea-dialog-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  min-height: 38px;
+  border-radius: 4px;
+}
+.asea-configurator button:focus-visible {
+  outline: 2px solid var(--bronze);
+  outline-offset: 3px;
+}
+.asea-configurator button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.asea-segments {
+  display: flex;
+  background: #f1f2ef;
+  padding: 3px;
+  gap: 3px;
+}
+.asea-segments button {
+  padding: 0 12px;
+}
+.asea-segments button[aria-pressed="true"] {
+  background: #30312e;
+  color: white;
+}
+.asea-tabs {
+  display: flex;
+  gap: 6px;
+}
+.asea-tabs button {
+  padding: 0 10px;
+  color: #76786f;
+}
+.asea-tabs button[aria-pressed="true"] {
+  color: #806139;
+  background: #f5f0e8;
+}
+.asea-planning {
+  padding: 20px 34px 26px;
+  background: #f8f9f7;
+  min-height: 350px;
+}
+.asea-plan-caption {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #74786e;
+  margin-bottom: 24px;
+}
+.asea-plan {
+  position: relative;
+  aspect-ratio: 2.25;
+  max-height: 330px;
+  width: 100%;
+  max-width: 850px;
+  margin: auto;
+  border: 8px solid #b5b9af;
+  background-color: #fafbf9;
+  background-image:
+    linear-gradient(#dfe3dc66 1px, transparent 1px),
+    linear-gradient(90deg, #dfe3dc66 1px, transparent 1px);
+  background-size: 24px 24px;
+  box-shadow: 0 0 0 1px #8d9486;
+  isolation: isolate;
+}
+.asea-plan-side {
+  aspect-ratio: 2.6;
+  border-top-width: 4px;
+}
+.asea-plan-front {
+  aspect-ratio: 1.7;
+  max-width: 570px;
+}
+.asea-gas,
+.asea-wheel {
+  position: absolute;
+  background: #dedfd7;
+  border: 1px solid #aeb2a5;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  text-align: center;
+}
+.asea-gas {
+  left: 0;
+  top: 0;
+  width: 22%;
+  height: 30%;
+}
+.asea-wheel {
+  left: 43%;
+  width: 20%;
+  height: 15%;
+}
+.asea-wheel-one {
+  top: 0;
+}
+.asea-wheel-two {
+  bottom: 0;
+}
+.asea-blocked {
+  position: absolute;
+  background: repeating-linear-gradient(
+    135deg,
+    #c54b4225 0,
+    #c54b4225 6px,
+    #c54b4210 6px,
+    #c54b4210 12px
+  );
+  border: 1px solid #bd504e80;
+  pointer-events: none;
+  z-index: 1;
+}
+.asea-configurator .asea-placed {
+  position: absolute;
+  width: 16%;
+  height: 22%;
+  min-height: 0;
+  overflow: hidden;
+  padding: 3px;
+  background: #e2e6dd;
+  border: 1px solid #88977d;
+  border-radius: 2px;
+  font-size: 10px;
+  line-height: 1.2;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  z-index: 2;
+  overflow-wrap: anywhere;
+  touch-action: none;
+}
+.asea-configurator .asea-placed.is-editing {
+  background: #faf2e4;
+  border: 2px solid var(--bronze);
+  cursor: grab;
+  z-index: 3;
+  box-shadow: 0 3px 10px #00000018;
+}
+.asea-placed:active {
+  cursor: grabbing;
+}
+.asea-placed small {
+  font-size: 9px;
+}
+.asea-watermark {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  pointer-events: none;
+  z-index: 4;
+  color: #383d32;
+  opacity: 0.055;
+}
+.asea-watermark span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-28deg);
+  font-weight: 800;
+  font-size: 13px;
+  user-select: none;
+}
+.asea-editor-area {
+  min-height: 87px;
+  background: #fff;
+  border-top: 1px solid #e4e6e0;
+  padding: 12px 18px;
+}
+.asea-editor {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+}
+.asea-editor strong {
+  margin-right: auto;
+  font-size: 13px;
+}
+.asea-editor label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.asea-editor input {
+  width: 64px;
+  border: 1px solid #c9cec2;
+  border-radius: 4px;
+  padding: 8px 5px;
+  text-align: center;
+}
+.asea-configurator .asea-primary {
+  background: var(--bronze);
+  color: white;
+  padding: 10px 12px;
+  font-weight: 550;
+}
+.asea-primary:hover {
+  filter: brightness(0.95);
+}
+.asea-editor > button:not(.asea-primary) {
+  padding: 8px;
+  color: #71766a;
+}
+.asea-error {
+  font-size: 12px;
+  color: #a53530;
+  margin-top: 8px;
+}
+.asea-equipment {
+  border-left: 1px solid #d9dcd6;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.asea-equipment h2 {
+  display: flex;
+  justify-content: space-between;
+}
+.asea-equipment h2 span {
+  font-size: 12px;
+  color: #8a8f80;
+}
+.asea-equipment-items {
+  flex: 1;
+  min-height: 180px;
+  max-height: 330px;
+  overflow: auto;
+}
+.asea-equipment-items button {
+  width: 100%;
+  justify-content: space-between;
+  text-align: left;
+  padding: 12px 4px;
+  border-bottom: 1px solid #e6e8e1;
+}
+.asea-equipment-items button span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.asea-equipment-items button[aria-pressed="true"] {
+  color: var(--bronze);
+}
+.asea-empty {
+  padding-top: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  color: #868b7d;
+  font-size: 13px;
+}
+.asea-reset {
+  color: #777d6e;
+  font-size: 11px !important;
+}
+.asea-catalog {
+  position: sticky;
+  bottom: 0;
+  background: #f5f6f5;
+  z-index: 6;
+  padding-top: 18px;
+  padding-bottom: 8px;
+  border-top: 1px solid #e2e4dc;
+  margin-top: 18px;
+}
+.asea-catalog h2 {
+  margin-bottom: 12px;
+}
+.asea-products {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 3px 2px 12px;
+  scrollbar-color: #a79a85 #e9ebe5;
+  scrollbar-width: thin;
+}
+.asea-configurator .asea-product {
+  flex: 0 0 138px;
+  height: 118px;
+  background: #fff;
+  border: 1px solid #d9ddd2;
+  display: grid;
+  grid-template-columns: 1fr 18px;
+  grid-template-rows: 42px 1fr;
+  padding: 10px;
+  text-align: left;
+}
+.asea-product > svg:first-child {
+  grid-column: 1 / 3;
+  color: #969b8c;
+}
+.asea-product span {
+  font-size: 12px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.asea-configurator .asea-product[aria-pressed="true"] {
+  border-color: var(--bronze);
+  box-shadow: inset 0 0 0 1px var(--bronze);
+  background: #fcf8f1;
+}
+.asea-product:hover {
+  border-color: var(--bronze);
+}
+.asea-three {
+  position: relative;
+  min-height: 350px;
+  background: #f1f3ee;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  color: #838a79;
+  text-align: center;
+  padding: 32px;
+}
+.asea-three p {
+  font-size: 15px;
+}
+.asea-summary {
+  max-width: 950px;
+  margin: auto;
+}
+.asea-summary h1 {
+  margin-bottom: 24px;
+}
+.asea-summary h2 {
+  margin: 24px 0 12px;
+}
+.asea-summary li {
+  padding: 10px 0;
+  border-bottom: 1px solid #dfe3d8;
+  font-size: 14px;
+}
+.asea-summary-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin: 24px 0;
+}
+.asea-summary > p {
+  font-size: 14px;
+  color: #767d6e;
+}
+.asea-small {
+  display: none;
+}
+.asea-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+}
+.asea-dialog-actions button {
+  padding: 8px 14px;
+  border: 1px solid #c7c7c0;
+}
+.asea-dialog-actions button:last-child {
+  background: #967448;
+  color: white;
+}
+.asea-catalog {
+  position: relative;
+  bottom: auto;
+}
+.asea-configurator .asea-product {
+  flex-basis: 158px;
+}
+@media (min-width: 768px) and (max-width: 1050px) {
+  .asea-configurator {
+    padding: 24px 16px;
+  }
+  .asea-workspace {
+    grid-template-columns: minmax(0, 1fr) 220px;
+  }
+  .asea-planning {
+    padding: 20px 18px;
+    min-height: 300px;
+  }
+  .asea-toolbar {
+    gap: 8px;
+    padding: 12px;
+  }
+  .asea-equipment {
+    padding: 14px;
+  }
+  .asea-configurator .asea-placed {
+    font-size: 9px;
+  }
+  .asea-config-heading h1 {
+    font-size: 24px;
+  }
+}
+@media (max-width: 767px) {
+  .asea-desktop {
+    display: none;
+  }
+  .asea-small {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    text-align: center;
+    max-width: 480px;
+    margin: 50px auto;
+    min-height: 320px;
+  }
+  .asea-small svg {
+    color: var(--bronze);
+  }
+  .asea-small h1 {
+    font-size: 28px;
+  }
+  .asea-small p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #717769;
+  }
+  .asea-configurator {
+    padding: 28px 24px;
+  }
+}
