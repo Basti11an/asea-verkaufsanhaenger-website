@@ -76,8 +76,8 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
 
   const navItems = [
     { id: 'home', label: t('nav_home') },
-    { id: 'about', label: t('nav_about') },
     { id: 'models', label: t('nav_models') },
+    { id: 'about', label: t('nav_about') },
     { id: 'contact', label: t('nav_contact') },
   ];
 

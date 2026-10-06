@@ -47,18 +47,18 @@ export function Footer({ onNavigate, onOpenPrivacySettings }: FooterProps) {
               </li>
               <li>
                 <button
-                  onClick={() => handleNavigate('about')}
-                  className="text-[#77756f] hover:text-[#b08a57] transition-all duration-300 hover:translate-x-1 inline-block"
-                >
-                  {t('nav_about')}
-                </button>
-              </li>
-              <li>
-                <button
                   onClick={() => handleNavigate('models')}
                   className="text-[#77756f] hover:text-[#b08a57] transition-all duration-300 hover:translate-x-1 inline-block"
                 >
                   {t('nav_models')}
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => handleNavigate('about')}
+                  className="text-[#77756f] hover:text-[#b08a57] transition-all duration-300 hover:translate-x-1 inline-block"
+                >
+                  {t('nav_about')}
                 </button>
               </li>
               <li>

@@ -28,14 +28,9 @@ function getInitials(name: string) {
 }
 
 const POLAROID_ROTATIONS = ['-2.8deg', '1.8deg', '-1.2deg', '2.6deg', '1.4deg', '-2.1deg', '2.2deg', '-1.6deg'];
-const PIN_ROTATIONS = ['0deg'];
 
 function getPolaroidRotation(index = 0) {
   return POLAROID_ROTATIONS[index % POLAROID_ROTATIONS.length];
-}
-
-function getPinRotation(index = 0) {
-  return PIN_ROTATIONS[index % PIN_ROTATIONS.length];
 }
 
 export function ReviewCard({
@@ -74,7 +69,6 @@ export function ReviewCard({
   if (variant === 'polaroid') {
     const style = {
       '--review-rotation': getPolaroidRotation(index),
-      '--pin-rotation': getPinRotation(index),
     } as CSSProperties;
 
     return (
@@ -82,10 +76,6 @@ export function ReviewCard({
         className={`polaroid-review-card relative h-full bg-white p-3 pb-4 shadow-[0_14px_34px_rgba(47,47,45,0.13)] ${className}`}
         style={style}
       >
-        <span className="polaroid-review-pin" aria-hidden="true">
-          <img className="polaroid-review-pin-image" src="/review-gold-pin.png" alt="" draggable={false} />
-        </span>
-
         {showImage && (
           <div className="relative aspect-[4/3] overflow-hidden border border-[#e5ded3] bg-[#f3efe8]">
             {selectedImageUrl ? (
