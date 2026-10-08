@@ -54,7 +54,6 @@ export function AboutPage() {
                 <p>{t('about_story_p1')}</p>
                 <p>{t('about_story_p2')}</p>
                 <p>{t('about_story_p3')}</p>
-                <p>{t('about_story_p4')}</p>
               </div>
             </motion.div>
 
@@ -69,7 +68,7 @@ export function AboutPage() {
                 <div className="absolute inset-0 bg-gradient-to-br from-[#b08a57]/20 to-transparent z-10" />
                 <ImageWithFallback
                   src="https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-85.jpg"
-                  alt="ASEA Werkstatt"
+                  alt={t('about_story_image_alt')}
                   className="w-full h-auto group-hover:scale-105 transition-transform duration-700"
                 />
               </div>
@@ -119,7 +118,7 @@ export function AboutPage() {
           </div>
 
           <div className="mt-14 overflow-hidden rounded-md bg-[#e8e1d6] md:mt-20">
-            <div className="aspect-[16/6] min-h-[210px] md:aspect-[24/7]">
+            <div className="aspect-[4/3] sm:aspect-[16/6] md:aspect-[24/7]">
               <ImageWithFallback
                 src="/about-team-group-placeholder.png"
                 alt={t('about_team_group_alt')}

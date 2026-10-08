@@ -21,6 +21,8 @@ export function ModelleTab() {
     const details = STATIC_DETAILS[model.id];
     return {
       ...model,
+      name: model.name || t(details.nameKey),
+      description: model.description || t(details.descriptionKey),
       shortDescription: model.shortDescription ?? t(details.shortDescriptionKey),
       images: model.images?.length ? model.images : details.images,
       features: model.features?.length ? model.features : details.featureKeys.map((key) => t(key)),
@@ -231,7 +233,7 @@ export function ModelleTab() {
                         onChange={(url) => updateImage(model.id, index, url)}
                         folder="models"
                         compact
-                        showPreview={false}
+                        showPreview
                         previewAlt={`${draft.name} Bild ${index + 1}`}
                       />
                     ))}

@@ -98,7 +98,7 @@ export function ReviewCard({
                   type="button"
                   onClick={showPreviousImage}
                   className="absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/86 text-[#2f2f2d] shadow-md transition hover:bg-white"
-                  aria-label="Vorheriges Bild anzeigen"
+                  aria-label={t('review_image_previous')}
                 >
                   <ChevronLeft size={18} />
                 </button>
@@ -106,7 +106,7 @@ export function ReviewCard({
                   type="button"
                   onClick={showNextImage}
                   className="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/86 text-[#2f2f2d] shadow-md transition hover:bg-white"
-                  aria-label="Nächstes Bild anzeigen"
+                  aria-label={t('review_image_next')}
                 >
                   <ChevronRight size={18} />
                 </button>
@@ -119,7 +119,7 @@ export function ReviewCard({
                       className={`h-2.5 w-2.5 rounded-full border border-white/90 shadow-sm transition ${
                         selectedImageIndex === imageIndex ? 'bg-[#b08a57]' : 'bg-white/80 hover:bg-white'
                       }`}
-                      aria-label={`Bild ${imageIndex + 1} anzeigen`}
+                      aria-label={t('review_image_select').replace('{number}', String(imageIndex + 1))}
                     />
                   ))}
                 </div>
@@ -177,7 +177,7 @@ export function ReviewCard({
                 type="button"
                 onClick={showPreviousImage}
                 className="absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/86 text-[#2f2f2d] shadow-md transition hover:bg-white"
-                aria-label="Vorheriges Bild anzeigen"
+                aria-label={t('review_image_previous')}
               >
                 <ChevronLeft size={18} />
               </button>
@@ -185,7 +185,7 @@ export function ReviewCard({
                 type="button"
                 onClick={showNextImage}
                 className="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/86 text-[#2f2f2d] shadow-md transition hover:bg-white"
-                aria-label="Nächstes Bild anzeigen"
+                aria-label={t('review_image_next')}
               >
                 <ChevronRight size={18} />
               </button>
@@ -198,7 +198,7 @@ export function ReviewCard({
                     className={`h-2.5 w-2.5 rounded-full border border-white/90 shadow-sm transition ${
                       selectedImageIndex === imageIndex ? 'bg-[#b08a57]' : 'bg-white/80 hover:bg-white'
                     }`}
-                    aria-label={`Bild ${imageIndex + 1} anzeigen`}
+                    aria-label={t('review_image_select').replace('{number}', String(imageIndex + 1))}
                   />
                 ))}
               </div>

@@ -1,10 +1,8 @@
 import { ArrowRight } from 'lucide-react';
 import { Button } from '../ui/button';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
-import { motion } from 'motion/react';
 import { useAdminData } from '../../context/AdminDataContext';
 import { useLanguage, type TranslationKey } from '../../context/LanguageContext';
-import { getRevealAnimate, getRevealInitial, useTouchFriendlyMotion } from '../../lib/useTouchFriendlyMotion';
 
 interface ModelsPageProps {
   onNavigate: (page: string, data?: any) => void;
@@ -142,7 +140,6 @@ export const STATIC_DETAILS: Record<number, StaticModelDetails> = {
 export function ModelsPage({ onNavigate }: ModelsPageProps) {
   const { models: adminModels } = useAdminData();
   const { t } = useLanguage();
-  const touchFriendlyMotion = useTouchFriendlyMotion();
 
   const models = adminModels
     .filter((m) => m.active && STATIC_DETAILS[m.id])
@@ -150,13 +147,14 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
       const details = STATIC_DETAILS[m.id];
       return {
         ...details,
-        name: t(details.nameKey),
-        description: t(details.descriptionKey),
+        name: m.name || t(details.nameKey),
+        description: m.description || t(details.descriptionKey),
         shortDescription: m.shortDescription ?? t(details.shortDescriptionKey),
         image: m.images?.[0] ?? m.imageUrl,
         images: m.images?.length ? m.images : details.images,
         features: m.features?.length ? m.features : details.featureKeys.map((key) => t(key)),
-        specs: m.specs?.length ? m.specs : details.specs.map((spec) => ({ label: t(spec.labelKey), value: spec.value })),
+        specs: (m.specs?.length ? m.specs : details.specs.map((spec) => ({ label: t(spec.labelKey), value: spec.value })))
+          .filter((spec) => spec.value.trim() && spec.value.trim() !== '…'),
         price: m.price ?? t(details.priceKey),
         baseEquipment: m.baseEquipment?.length ? m.baseEquipment : details.baseEquipmentKeys.map((key) => t(key)),
         construction: m.construction?.length ? m.construction : details.constructionKeys.map((key) => t(key)),
@@ -173,21 +171,17 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
             <p className="text-center text-[#77756f] py-16 md:py-20">{t('models_no_models')}</p>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-stretch">
-              {models.map((model, index) => (
-                <motion.div
+              {models.map((model) => (
+                <div
                   key={model.id}
-                  className="group glass rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 relative h-full flex flex-col"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, delay: index * 0.04 }}
-                  whileHover={touchFriendlyMotion ? undefined : { y: -3 }}
+                  className="group glass rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-200 relative h-full flex flex-col"
                 >
                   <div className="relative h-64 overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-t from-[#2f2f2d]/70 to-transparent z-10" />
                     <ImageWithFallback
                       src={model.image}
                       alt={model.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-400"
+                      className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-200"
                     />
                   </div>
 
@@ -207,7 +201,7 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
                   </div>
 
                   <div className="absolute inset-0 bg-gradient-to-br from-[#b08a57]/0 to-[#b08a57]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
-                </motion.div>
+                </div>
               ))}
             </div>
           )}
@@ -219,13 +213,7 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
       <section className="py-16 md:py-24 bg-[#1c1c1a] text-white relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-[#b08a57]" />
         <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24 relative z-10">
-          <motion.div
-            className="grid lg:grid-cols-[1fr_auto] gap-8 md:gap-12 items-center"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4 }}
-          >
+          <div className="grid lg:grid-cols-[1fr_auto] gap-8 md:gap-12 items-center">
             <div className="border-l-2 border-[#b08a57] pl-5 md:pl-7">
               <h2 className="text-2xl md:text-4xl lg:text-5xl mb-4 md:mb-5 font-bold">
                 {t('models_cta_title')}
@@ -243,7 +231,7 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
               {t('models_cta_button')}
               <ArrowRight className="ml-2" size={20} />
             </Button>
-          </motion.div>
+          </div>
         </div>
       </section>
     </div>

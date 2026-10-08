@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_IMAGE_UPLOAD_SIZE, validateImageFile } from './imageUploads';
+import { ImageValidationError, MAX_IMAGE_UPLOAD_SIZE, validateImageFile } from './imageUploads';
 
 function createFile(name: string, type: string, size = 1024) {
   return new File([new Uint8Array(size)], name, { type });
@@ -23,20 +23,26 @@ describe('image upload validation', () => {
   });
 
   it('rejects unsupported file types', () => {
-    expect(() => validateImageFile(createFile('document.pdf', 'application/pdf'))).toThrow(
-      'Bitte wählen Sie ein Bild im Format JPG, PNG, WebP oder GIF aus.',
-    );
+    try {
+      validateImageFile(createFile('document.pdf', 'application/pdf'));
+      throw new Error('Expected unsupported file type to be rejected.');
+    } catch (error) {
+      expect(error).toBeInstanceOf(ImageValidationError);
+      expect((error as ImageValidationError).translationKey).toBe('image_upload_invalid_type');
+    }
   });
 
   it('rejects unsupported MIME types even when the file extension looks like an image', () => {
-    expect(() => validateImageFile(createFile('renamed.jpg', 'application/pdf'))).toThrow(
-      'Bitte wählen Sie ein Bild im Format JPG, PNG, WebP oder GIF aus.',
-    );
+    expect(() => validateImageFile(createFile('renamed.jpg', 'application/pdf'))).toThrow(ImageValidationError);
   });
 
   it('rejects files larger than 5 MB', () => {
-    expect(() => validateImageFile(createFile('large.jpg', 'image/jpeg', MAX_IMAGE_UPLOAD_SIZE + 1))).toThrow(
-      'Das Bild ist zu groß. Bitte wählen Sie ein Bild mit maximal 5 MB aus.',
-    );
+    try {
+      validateImageFile(createFile('large.jpg', 'image/jpeg', MAX_IMAGE_UPLOAD_SIZE + 1));
+      throw new Error('Expected oversized image to be rejected.');
+    } catch (error) {
+      expect(error).toBeInstanceOf(ImageValidationError);
+      expect((error as ImageValidationError).translationKey).toBe('image_upload_too_large');
+    }
   });
 });

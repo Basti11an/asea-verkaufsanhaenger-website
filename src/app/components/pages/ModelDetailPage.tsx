@@ -2,12 +2,10 @@ import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '../ui/button';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
-import { motion } from 'motion/react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAdminData } from '../../context/AdminDataContext';
 import { ReferenceCard } from '../references/ReferenceCard';
 import { getApprovedReferencesForModel } from '../../lib/referenceUtils';
-import { getRevealAnimate, getRevealInitial, useTouchFriendlyMotion } from '../../lib/useTouchFriendlyMotion';
 
 interface Model {
   id: string;
@@ -34,7 +32,6 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const { t } = useLanguage();
   const { references } = useAdminData();
-  const touchFriendlyMotion = useTouchFriendlyMotion();
 
   const images = model.images || [model.image, model.image, model.image, model.image];
   const modelReferences = getApprovedReferencesForModel(references, model.referenceModelName ?? model.name, 2);
@@ -57,11 +54,7 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
       <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24 py-12">
         <div className="grid lg:grid-cols-2 gap-12 mb-16">
           {/* Left Column - Images */}
-          <motion.div
-            initial={getRevealInitial(touchFriendlyMotion, -30)}
-            animate={getRevealAnimate(touchFriendlyMotion)}
-            transition={{ duration: 0.6 }}
-          >
+          <div>
             <div className="glass rounded-3xl overflow-hidden shadow-2xl border border-[#b08a57]/20 mb-6">
               <div className="relative aspect-[4/3] bg-[#f8f7f3]">
                 <ImageWithFallback
@@ -74,16 +67,14 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
 
             <div className="grid grid-cols-4 gap-2 sm:gap-4">
               {images.map((img, index) => (
-                <motion.button
+                <button
                   key={index}
                   onClick={() => setSelectedImageIndex(index)}
                   className={`glass rounded-xl overflow-hidden border-2 transition-all duration-300 ${
                     selectedImageIndex === index
-                      ? 'border-[#b08a57] shadow-lg scale-105'
+                      ? 'border-[#b08a57] shadow-md'
                       : 'border-transparent hover:border-[#b08a57]/50'
                   }`}
-                  whileHover={touchFriendlyMotion ? undefined : { scale: 1.03 }}
-                  whileTap={{ scale: 0.95 }}
                 >
                   <div className="aspect-[4/3] bg-[#f8f7f3]">
                     <ImageWithFallback
@@ -92,17 +83,13 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                </motion.button>
+                </button>
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* Right Column - Product Info */}
-          <motion.div
-            initial={getRevealInitial(touchFriendlyMotion, 30)}
-            animate={getRevealAnimate(touchFriendlyMotion)}
-            transition={{ duration: 0.6 }}
-          >
+          <div>
             <div className="mb-8">
               <h1 className="text-4xl lg:text-5xl text-[#2f2f2d] mb-3 font-bold">{model.name}</h1>
               <p className="text-xl text-[#77756f] mb-6">{model.shortDescription}</p>
@@ -128,6 +115,20 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
               </div>
             </div>
 
+            {model.features.length > 0 && (
+              <div className="glass rounded-2xl p-6 mb-6 border border-[#b08a57]/20">
+                <h3 className="text-xl text-[#2f2f2d] font-bold mb-4">{t('detail_features_title')}</h3>
+                <ul className="space-y-3">
+                  {model.features.map((feature, index) => (
+                    <li key={`${feature}-${index}`} className="flex items-start gap-3 text-[#77756f]">
+                      <span className="mt-2 h-1.5 w-1.5 rounded-full bg-[#b08a57] flex-shrink-0" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <Button
@@ -148,80 +149,56 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
               )}
             </div>
 
-          </motion.div>
+          </div>
         </div>
 
         {/* Description Section */}
-        <motion.div
-          className="mb-12"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
+        <div className="mb-12">
           <div className="glass rounded-3xl p-8 md:p-12 border border-[#b08a57]/20">
             <h2 className="text-3xl text-[#2f2f2d] font-bold mb-6">{t('detail_description_title')}</h2>
             <p className="text-[#77756f] leading-relaxed text-lg">{model.description}</p>
           </div>
-        </motion.div>
+        </div>
 
         {/* Base Equipment & Construction */}
         <div className="grid lg:grid-cols-2 gap-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
+          <div>
             <div className="glass rounded-3xl p-8 border border-[#b08a57]/20 h-full">
               <h3 className="text-2xl text-[#2f2f2d] font-bold mb-6">{t('detail_base_equip_title')}</h3>
               <div className="space-y-3">
                 {model.baseEquipment.map((item, index) => (
-                  <motion.div
+                  <div
                     key={index}
                     className="flex items-start gap-3"
-                    initial={getRevealInitial(touchFriendlyMotion, -20)}
-                    animate={getRevealAnimate(touchFriendlyMotion)}
-                    transition={{ duration: 0.3, delay: 0.4 + index * 0.05 }}
                   >
                     <span className="mt-2 h-1.5 w-1.5 rounded-full bg-[#b08a57] flex-shrink-0" />
                     <span className="text-[#77756f]">{item}</span>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
+          <div>
             <div className="glass rounded-3xl p-8 border border-[#b08a57]/20 h-full">
               <h3 className="text-2xl text-[#2f2f2d] font-bold mb-6">{t('detail_construction_title')}</h3>
               <div className="space-y-3">
                 {model.construction.map((item, index) => (
-                  <motion.div
+                  <div
                     key={index}
                     className="flex items-start gap-3"
-                    initial={getRevealInitial(touchFriendlyMotion, -20)}
-                    animate={getRevealAnimate(touchFriendlyMotion)}
-                    transition={{ duration: 0.3, delay: 0.5 + index * 0.05 }}
                   >
                     <span className="mt-2 h-1.5 w-1.5 rounded-full bg-[#b08a57] flex-shrink-0" />
                     <span className="text-[#77756f]">{item}</span>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {modelReferences.length > 0 && (
-          <motion.section
-            className="mt-12 md:mt-16"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-          >
+          <section className="mt-12 md:mt-16">
             <h2 className="text-2xl md:text-3xl text-[#2f2f2d] font-bold mb-5 md:mb-6">
               {t('detail_model_refs_title')}
             </h2>
@@ -230,16 +207,11 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
                 <ReferenceCard key={reference.id} reference={reference} compact />
               ))}
             </div>
-          </motion.section>
+          </section>
         )}
 
         {/* Bottom CTA */}
-        <motion.div
-          className="mt-16 bg-[#c8a96e] p-8 md:p-12 rounded-3xl shadow-2xl relative overflow-hidden border border-[#9a7445]/25"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-        >
+        <div className="mt-16 bg-[#c8a96e] p-8 md:p-12 rounded-3xl shadow-2xl relative overflow-hidden border border-[#9a7445]/25">
           <div className="absolute inset-0 bg-gradient-to-br from-[#d8bf8c] via-[#c8a96e] to-[#b08a57]" />
           <div className="relative z-10 text-center">
             <h3 className="text-3xl md:text-4xl text-[#1c1c1a] mb-4 font-bold">{t('detail_cta_title')}</h3>
@@ -267,7 +239,7 @@ export function ModelDetailPage({ model, onNavigate }: ModelDetailPageProps) {
               )}
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

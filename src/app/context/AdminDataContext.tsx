@@ -74,27 +74,24 @@ export interface AdminReference {
 const INITIAL_MODELS: AdminModel[] = [
   {
     id: 1,
-    name: 'Verkaufsanhänger',
-    description:
-      'Unsere Verkaufsanhänger sind Ihr praktischer Begleiter bei Ihren Verkaufstouren. Besonders wenig Eigengewicht für maximalen Warentransport.',
+    name: '',
+    description: '',
     imageUrl:
       'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-85.jpg',
     active: true,
   },
   {
     id: 2,
-    name: 'Kühlanhänger',
-    description:
-      'Mit unseren Kühlanhänger bringen Sie jede Ware bestens zum gewünschten Lieferort. Egal ob Getränke oder Lebensmittel, Ihre Lieferung bleibt frisch.',
+    name: '',
+    description: '',
     imageUrl:
       'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-2-1.jpg',
     active: true,
   },
   {
     id: 3,
-    name: 'Messe- und Präsentationsanhänger',
-    description:
-      'Optimal für jedes Event ausgerüstet, mit eigener Elektrik für Outdoor-Events. Höchste Qualität zum fairen Preis-Leistungs-Verhältnis.',
+    name: '',
+    description: '',
     imageUrl:
       'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-4-2.jpg',
     active: true,

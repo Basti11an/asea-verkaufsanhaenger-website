@@ -108,9 +108,8 @@ export function ReferenceSubmitPanel({
       setState('success');
       setMessage(t('reference_submit_success'));
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : t('reference_submit_error');
       setState('error');
-      setMessage(errorMessage);
+      setMessage(t('reference_submit_error'));
     }
   };
 

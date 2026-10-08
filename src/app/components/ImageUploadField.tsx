@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useLanguage } from '../context/LanguageContext';
 import {
   ACCEPTED_IMAGE_MIME_TYPES,
+  ImageValidationError,
   uploadImageFile,
   validateImageFile,
   type ImageUploadFolder,
@@ -179,7 +180,9 @@ export function ImageUploadField({
     try {
       validateImageFile(file);
     } catch (validationError) {
-      const message = validationError instanceof Error ? validationError.message : t('image_upload_error');
+      const message = validationError instanceof ImageValidationError
+        ? t(validationError.translationKey)
+        : t('image_upload_error');
       setError(message);
       setUploading(false);
       toast.error(message);
@@ -197,7 +200,7 @@ export function ImageUploadField({
       toast.success(t('image_upload_success'));
     } catch (uploadError) {
       if (!isMountedRef.current) return;
-      const message = uploadError instanceof Error ? uploadError.message : t('image_upload_error');
+      const message = t('image_upload_error');
       clearLocalPreview();
       setError(message);
       console.warn('Image upload failed:', {

@@ -69,7 +69,7 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
     const validation = validateContactRequest(formData, 'contact');
 
     if (validation.ok === false) {
-      setFormError(validation.error);
+      setFormError(t(validation.error));
       return;
     }
 
@@ -438,13 +438,17 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
             <h2 className="text-2xl md:text-3xl lg:text-4xl mb-4 md:mb-6 font-bold">{t('contact_cta_title')}</h2>
             <p className="text-base md:text-xl text-white/85 mb-6 md:mb-8 leading-relaxed">{t('contact_cta_desc')}</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-white text-[#b08a57] hover:bg-white/90 hover:shadow-xl hover:scale-105 transition-all duration-300 font-semibold">
-                <Phone className="mr-2" size={20} />
-                +43 664 410 5 007
+              <Button asChild size="lg" className="bg-white text-[#b08a57] hover:bg-white/90 hover:shadow-xl hover:scale-105 transition-all duration-300 font-semibold">
+                <a href="tel:+436644105007">
+                  <Phone className="mr-2" size={20} />
+                  +43 664 410 5 007
+                </a>
               </Button>
-              <Button size="lg" className="border-2 border-white text-white hover:bg-white/20 hover:scale-105 transition-all duration-300 font-semibold">
-                <Mail className="mr-2" size={20} />
-                {t('contact_cta_email')}
+              <Button asChild size="lg" className="border-2 border-white text-white hover:bg-white/20 hover:scale-105 transition-all duration-300 font-semibold">
+                <a href="mailto:office@verkaufsanhaenger-asea.at">
+                  <Mail className="mr-2" size={20} />
+                  {t('contact_cta_email')}
+                </a>
               </Button>
             </div>
           </div>

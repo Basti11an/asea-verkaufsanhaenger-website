@@ -1,4 +1,4 @@
-import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, MessageCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, MessageCircle } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { AseaWordmark } from './AseaWordmark';
 
@@ -124,29 +124,6 @@ export function Footer({ onNavigate, onOpenPrivacySettings }: FooterProps) {
                 <span className="text-white">{t('footer_hours_closed')}</span>
               </li>
             </ul>
-            <div className="flex gap-3 mt-6">
-              <a
-                href="#"
-                className="w-8 h-8 rounded-full bg-[#2f2f2d] flex items-center justify-center text-[#77756f] hover:bg-[#b08a57] hover:text-white transition-all duration-300 hover:scale-110"
-                aria-label="Facebook"
-              >
-                <Facebook size={16} />
-              </a>
-              <a
-                href="#"
-                className="w-8 h-8 rounded-full bg-[#2f2f2d] flex items-center justify-center text-[#77756f] hover:bg-[#b08a57] hover:text-white transition-all duration-300 hover:scale-110"
-                aria-label="Instagram"
-              >
-                <Instagram size={16} />
-              </a>
-              <a
-                href="#"
-                className="w-8 h-8 rounded-full bg-[#2f2f2d] flex items-center justify-center text-[#77756f] hover:bg-[#b08a57] hover:text-white transition-all duration-300 hover:scale-110"
-                aria-label="LinkedIn"
-              >
-                <Linkedin size={16} />
-              </a>
-            </div>
           </div>
         </div>
 

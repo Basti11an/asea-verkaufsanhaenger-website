@@ -7,6 +7,13 @@ export const MAX_IMAGE_UPLOAD_SIZE = 5 * 1024 * 1024;
 export const ACCEPTED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 export const ACCEPTED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
 
+export class ImageValidationError extends Error {
+  constructor(public readonly translationKey: 'image_upload_invalid_type' | 'image_upload_too_large') {
+    super(translationKey);
+    this.name = 'ImageValidationError';
+  }
+}
+
 const EXTENSION_BY_MIME_TYPE: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
@@ -41,17 +48,17 @@ export function validateImageFile(file: File) {
   const hasUnknownMimeType = !file.type;
 
   if (!hasAcceptedMimeType && !(hasUnknownMimeType && hasAcceptedExtension)) {
-    throw new Error('Bitte wählen Sie ein Bild im Format JPG, PNG, WebP oder GIF aus.');
+    throw new ImageValidationError('image_upload_invalid_type');
   }
 
   if (file.size > MAX_IMAGE_UPLOAD_SIZE) {
-    throw new Error('Das Bild ist zu groß. Bitte wählen Sie ein Bild mit maximal 5 MB aus.');
+    throw new ImageValidationError('image_upload_too_large');
   }
 }
 
 export async function uploadImageFile(file: File, folder: ImageUploadFolder) {
   if (!isSupabaseConfigured || !supabase) {
-    throw new Error('Bild-Upload ist erst möglich, wenn Supabase korrekt verbunden ist.');
+    throw new Error('image_upload_error');
   }
 
   validateImageFile(file);
@@ -66,15 +73,13 @@ export async function uploadImageFile(file: File, folder: ImageUploadFolder) {
     });
 
   if (error) {
-    throw new Error(
-      `Bild konnte nicht hochgeladen werden. Bitte prüfen Sie den Supabase Storage-Bucket "${ASEA_UPLOADS_BUCKET}".`,
-    );
+    throw new Error('image_upload_error');
   }
 
   const { data } = supabase.storage.from(ASEA_UPLOADS_BUCKET).getPublicUrl(path);
 
   if (!data.publicUrl) {
-    throw new Error('Bild wurde hochgeladen, aber es konnte keine öffentliche Bildadresse erzeugt werden.');
+    throw new Error('image_upload_error');
   }
 
   return data.publicUrl;

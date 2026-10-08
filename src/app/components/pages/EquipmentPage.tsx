@@ -23,21 +23,6 @@ export function EquipmentPage({ onNavigate }: EquipmentPageProps) {
             <p className="mt-6 text-base leading-relaxed text-[#77756f] md:text-lg">
               {t('equip_hero_desc')}
             </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-14 md:py-20">
-        <div className="container mx-auto px-6 md:px-8 lg:px-12 xl:px-24">
-          <div className="mx-auto max-w-4xl rounded-xl border border-[#dfd9cf] bg-white p-6 shadow-sm md:p-10">
-            <p className="text-lg leading-relaxed text-[#2f2f2d] md:text-xl">
-              {t('equip_intro')}
-            </p>
-            <div className="mt-6 border-l-2 border-[#b08a57]/55 pl-5">
-              <p className="text-base leading-relaxed text-[#77756f]">
-                {t('equip_note')}
-              </p>
-            </div>
             <Button
               type="button"
               onClick={() => onNavigate('contact')}
