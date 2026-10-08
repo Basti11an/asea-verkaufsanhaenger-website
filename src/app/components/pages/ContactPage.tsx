@@ -419,6 +419,7 @@ export function ContactPage({ prefillData, onNavigate }: { prefillData?: any; on
                 ['contact_faq5_q', 'contact_faq5_a'],
                 ['contact_faq6_q', 'contact_faq6_a'],
                 ['contact_faq7_q', 'contact_faq7_a'],
+                ['contact_faq8_q', 'contact_faq8_a'],
               ] as const).map(([qKey, aKey]) => (
                 <div key={qKey} className="bg-[#f8f7f3] p-6 rounded-xl shadow-sm">
                   <h3 className="text-xl text-[#2f2f2d] mb-2">{t(qKey)}</h3>

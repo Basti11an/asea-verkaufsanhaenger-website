@@ -26,6 +26,8 @@ export function HomePage({ onNavigate }: HomePageProps) {
     { titleKey: 'home_feature2_title' as const, descKey: 'home_feature2_desc' as const },
     { titleKey: 'home_feature3_title' as const, descKey: 'home_feature3_desc' as const },
     { titleKey: 'home_feature4_title' as const, descKey: 'home_feature4_desc' as const },
+    { titleKey: 'home_feature5_title' as const, descKey: 'home_feature5_desc' as const },
+    { titleKey: 'home_feature6_title' as const, descKey: 'home_feature6_desc' as const },
   ];
 
   return (
@@ -261,7 +263,9 @@ export function HomePage({ onNavigate }: HomePageProps) {
             transition={{ duration: 0.8 }}
           >
             <h2 className="text-2xl md:text-3xl lg:text-5xl text-[#2f2f2d] mb-3 md:mb-4">{t('home_features_title')}</h2>
-            <p className="text-base md:text-xl text-[#77756f] max-w-2xl mx-auto">{t('home_features_subtitle')}</p>
+            {t('home_features_subtitle') && (
+              <p className="text-base md:text-xl text-[#77756f] max-w-2xl mx-auto">{t('home_features_subtitle')}</p>
+            )}
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-9">

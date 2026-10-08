@@ -36,6 +36,13 @@ export interface AdminModel {
   description: string;
   imageUrl: string;
   active: boolean;
+  shortDescription?: string;
+  images?: string[];
+  features?: string[];
+  specs?: { label: string; value: string }[];
+  price?: string;
+  baseEquipment?: string[];
+  construction?: string[];
 }
 
 export interface AdminEquipment {

@@ -16,12 +16,6 @@ export function AboutPage() {
       descKey: 'about_team_member1_desc' as const,
     },
     {
-      image: '/about-team-florian-placeholder.png',
-      nameKey: 'about_team_member2_name' as const,
-      roleKey: 'about_team_member2_role' as const,
-      descKey: 'about_team_member2_desc' as const,
-    },
-    {
       image: '/about-team-lukas-placeholder.png',
       nameKey: 'about_team_member3_name' as const,
       roleKey: 'about_team_member3_role' as const,

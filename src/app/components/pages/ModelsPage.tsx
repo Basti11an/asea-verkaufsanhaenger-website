@@ -10,7 +10,7 @@ interface ModelsPageProps {
   onNavigate: (page: string, data?: any) => void;
 }
 
-interface StaticModelDetails {
+export interface StaticModelDetails {
   id: string;
   category: string;
   referenceModelName: string;
@@ -26,7 +26,7 @@ interface StaticModelDetails {
 }
 
 // Static detail data keyed by AdminModel.id
-const STATIC_DETAILS: Record<number, StaticModelDetails> = {
+export const STATIC_DETAILS: Record<number, StaticModelDetails> = {
   1: {
     id: '1',
     category: 'sales',
@@ -152,13 +152,14 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
         ...details,
         name: t(details.nameKey),
         description: t(details.descriptionKey),
-        shortDescription: t(details.shortDescriptionKey),
-        image: m.imageUrl,
-        features: details.featureKeys.map((key) => t(key)),
-        specs: details.specs.map((spec) => ({ label: t(spec.labelKey), value: spec.value })),
-        price: t(details.priceKey),
-        baseEquipment: details.baseEquipmentKeys.map((key) => t(key)),
-        construction: details.constructionKeys.map((key) => t(key)),
+        shortDescription: m.shortDescription ?? t(details.shortDescriptionKey),
+        image: m.images?.[0] ?? m.imageUrl,
+        images: m.images?.length ? m.images : details.images,
+        features: m.features?.length ? m.features : details.featureKeys.map((key) => t(key)),
+        specs: m.specs?.length ? m.specs : details.specs.map((spec) => ({ label: t(spec.labelKey), value: spec.value })),
+        price: m.price ?? t(details.priceKey),
+        baseEquipment: m.baseEquipment?.length ? m.baseEquipment : details.baseEquipmentKeys.map((key) => t(key)),
+        construction: m.construction?.length ? m.construction : details.constructionKeys.map((key) => t(key)),
       };
     });
 
@@ -176,17 +177,17 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
                 <motion.div
                   key={model.id}
                   className="group glass rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 relative h-full flex flex-col"
-                  initial={{ opacity: 0, y: 50 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  whileHover={touchFriendlyMotion ? undefined : { y: -8 }}
+                  transition={{ duration: 0.35, delay: index * 0.04 }}
+                  whileHover={touchFriendlyMotion ? undefined : { y: -3 }}
                 >
                   <div className="relative h-64 overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-t from-[#2f2f2d]/70 to-transparent z-10" />
                     <ImageWithFallback
                       src={model.image}
                       alt={model.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-400"
                     />
                   </div>
 
@@ -197,15 +198,15 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
                     <div className="flex gap-2 mt-auto">
                       <Button
                         onClick={() => onNavigate('model-detail', { model })}
-                        className="flex-1 gradient-secondary text-white hover:shadow-xl transition-all duration-300 group/btn"
+                        className="flex-1 gradient-secondary text-white hover:shadow-lg transition-all duration-200 group/btn"
                       >
                         {t('models_view_details')}
-                        <ArrowRight className="ml-2 group-hover/btn:translate-x-1 transition-transform" size={16} />
+                        <ArrowRight className="ml-2 group-hover/btn:translate-x-0.5 transition-transform" size={16} />
                       </Button>
                     </div>
                   </div>
 
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#b08a57]/0 to-[#b08a57]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#b08a57]/0 to-[#b08a57]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
                 </motion.div>
               ))}
             </div>
@@ -223,7 +224,7 @@ export function ModelsPage({ onNavigate }: ModelsPageProps) {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.4 }}
           >
             <div className="border-l-2 border-[#b08a57] pl-5 md:pl-7">
               <h2 className="text-2xl md:text-4xl lg:text-5xl mb-4 md:mb-5 font-bold">

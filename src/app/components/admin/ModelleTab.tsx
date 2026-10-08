@@ -7,17 +7,32 @@ import { Switch } from '../ui/switch';
 import { Save, ImageIcon, Eye, EyeOff } from 'lucide-react';
 import { useAdminData, AdminModel } from '../../context/AdminDataContext';
 import { ImageUploadField } from '../ImageUploadField';
+import { useLanguage } from '../../context/LanguageContext';
+import { STATIC_DETAILS } from '../pages/ModelsPage';
 
 export function ModelleTab() {
   const { models, setModels } = useAdminData();
+  const { t } = useLanguage();
 
   // Local per-card draft state — changes only propagate to context (and public site) on save
   const [drafts, setDrafts] = useState<Record<number, Partial<AdminModel>>>({});
 
-  const getDraft = (model: AdminModel): AdminModel => ({
-    ...model,
-    ...(drafts[model.id] ?? {}),
-  });
+  const getDraft = (model: AdminModel): AdminModel => {
+    const details = STATIC_DETAILS[model.id];
+    return {
+      ...model,
+      shortDescription: model.shortDescription ?? t(details.shortDescriptionKey),
+      images: model.images?.length ? model.images : details.images,
+      features: model.features?.length ? model.features : details.featureKeys.map((key) => t(key)),
+      specs: model.specs?.length
+        ? model.specs
+        : details.specs.map((spec) => ({ label: t(spec.labelKey), value: spec.value })),
+      price: model.price ?? t(details.priceKey),
+      baseEquipment: model.baseEquipment?.length ? model.baseEquipment : details.baseEquipmentKeys.map((key) => t(key)),
+      construction: model.construction?.length ? model.construction : details.constructionKeys.map((key) => t(key)),
+      ...(drafts[model.id] ?? {}),
+    };
+  };
 
   const handleChange = (id: number, field: keyof AdminModel, value: any) => {
     setDrafts((prev) => ({
@@ -36,6 +51,24 @@ export function ModelleTab() {
   };
 
   const hasDraft = (id: number) => !!drafts[id] && Object.keys(drafts[id]).length > 0;
+
+  const updateImage = (id: number, index: number, url: string) => {
+    const model = models.find((item) => item.id === id);
+    if (!model) return;
+    const draft = getDraft(model);
+    const images = [...(draft.images ?? [])];
+    images[index] = url;
+    handleChange(id, 'images', images);
+    if (index === 0) handleChange(id, 'imageUrl', url);
+  };
+
+  const parseLines = (value: string) => value.split('\n').map((line) => line.trim()).filter(Boolean);
+  const parseSpecs = (value: string) => parseLines(value).map((line) => {
+    const separator = line.indexOf(':');
+    return separator === -1
+      ? { label: line, value: '' }
+      : { label: line.slice(0, separator).trim(), value: line.slice(separator + 1).trim() };
+  });
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
@@ -58,9 +91,9 @@ export function ModelleTab() {
             >
               {/* Image Preview */}
               <div className="relative h-44 bg-gray-100 overflow-hidden">
-                {draft.imageUrl ? (
+                {(draft.images?.[0] ?? draft.imageUrl) ? (
                   <img
-                    src={draft.imageUrl}
+                    src={draft.images?.[0] ?? draft.imageUrl}
                     alt={draft.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -120,15 +153,89 @@ export function ModelleTab() {
                 </div>
 
                 <div>
-                  <ImageUploadField
-                    label="Bild vom Gerät hochladen"
-                    value={draft.imageUrl}
-                    onChange={(url) => handleChange(model.id, 'imageUrl', url)}
-                    folder="models"
-                    compact
-                    showPreview={false}
-                    previewAlt={draft.name}
+                  <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                    Kurzbeschreibung
+                  </label>
+                  <Textarea
+                    value={draft.shortDescription ?? ''}
+                    onChange={(e) => handleChange(model.id, 'shortDescription', e.target.value)}
+                    className="text-sm border-gray-200 focus:border-[#b08a57] min-h-[70px] resize-none"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                    Preis / Preistext
+                  </label>
+                  <Input
+                    value={draft.price ?? ''}
+                    onChange={(e) => handleChange(model.id, 'price', e.target.value)}
+                    className="h-8 text-sm border-gray-200 focus:border-[#b08a57]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                    Ausstattung (eine Zeile pro Punkt)
+                  </label>
+                  <Textarea
+                    value={(draft.features ?? []).join('\n')}
+                    onChange={(e) => handleChange(model.id, 'features', parseLines(e.target.value))}
+                    className="text-sm border-gray-200 focus:border-[#b08a57] min-h-[80px] resize-y"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                    Technische Daten (Format: Bezeichnung: Wert)
+                  </label>
+                  <Textarea
+                    value={(draft.specs ?? []).map((spec) => `${spec.label}: ${spec.value}`).join('\n')}
+                    onChange={(e) => handleChange(model.id, 'specs', parseSpecs(e.target.value))}
+                    className="text-sm border-gray-200 focus:border-[#b08a57] min-h-[100px] resize-y"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                    Grundausstattung (eine Zeile pro Punkt)
+                  </label>
+                  <Textarea
+                    value={(draft.baseEquipment ?? []).join('\n')}
+                    onChange={(e) => handleChange(model.id, 'baseEquipment', parseLines(e.target.value))}
+                    className="text-sm border-gray-200 focus:border-[#b08a57] min-h-[70px] resize-y"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                    Konstruktion (eine Zeile pro Punkt)
+                  </label>
+                  <Textarea
+                    value={(draft.construction ?? []).join('\n')}
+                    onChange={(e) => handleChange(model.id, 'construction', parseLines(e.target.value))}
+                    className="text-sm border-gray-200 focus:border-[#b08a57] min-h-[70px] resize-y"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                    Modellfotos
+                  </label>
+                  <div className="space-y-2">
+                    {Array.from({ length: 4 }, (_, index) => (
+                      <ImageUploadField
+                        key={index}
+                        label={`Bild ${index + 1}`}
+                        value={draft.images?.[index] ?? ''}
+                        onChange={(url) => updateImage(model.id, index, url)}
+                        folder="models"
+                        compact
+                        showPreview={false}
+                        previewAlt={`${draft.name} Bild ${index + 1}`}
+                      />
+                    ))}
+                  </div>
                 </div>
 
                 <Button
