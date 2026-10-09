@@ -5,8 +5,9 @@ import {
   AnimationAction,
   AnimationMixer,
   BoxGeometry,
-  Color,
+  CanvasTexture,
   DirectionalLight,
+  Fog,
   Group,
   HemisphereLight,
   LoopOnce,
@@ -39,11 +40,41 @@ type ConfiguratorSceneProps = {
 type SceneRuntime = {
   cameraController: CameraController;
   controls: OrbitControls;
+  layoutGroup: Group;
   mixer: AnimationMixer | null;
   flapAction: AnimationAction | null;
   flapOpened: boolean;
   model: Group | null;
 };
+
+function createStudioBackgroundTexture() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1024;
+  canvas.height = 768;
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error("Unable to create the configurator studio background");
+  }
+
+  const gradient = context.createRadialGradient(
+    canvas.width * 0.5,
+    canvas.height * 0.38,
+    0,
+    canvas.width * 0.5,
+    canvas.height * 0.45,
+    canvas.width * 0.72,
+  );
+  gradient.addColorStop(0, "#fffdf8");
+  gradient.addColorStop(0.45, "#f7f3ec");
+  gradient.addColorStop(1, "#ded8cf");
+  context.fillStyle = gradient;
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  const texture = new CanvasTexture(canvas);
+  texture.colorSpace = SRGBColorSpace;
+  return texture;
+}
 
 export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -79,6 +110,7 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
     const runtime = runtimeRef.current;
     if (!runtime) return;
 
+    runtime.layoutGroup.scale.x = view === "top" || view === "rear" ? 1 : -1;
     if (runtime.model) {
       applyConfiguratorViewVisibility(runtime.model, view);
     }
@@ -92,7 +124,9 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
     let disposed = false;
     let frameId = 0;
     const scene = new Scene();
-    scene.background = new Color("#aeb4af");
+    const studioBackgroundTexture = createStudioBackgroundTexture();
+    scene.background = studioBackgroundTexture;
+    scene.fog = new Fog(0xded8cf, 9, 24);
 
     const camera = new PerspectiveCamera(cameraPresets.three.fov, 1, 0.05, 100);
     camera.position.set(...cameraPresets.three.position);
@@ -101,7 +135,7 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
     const renderer = new WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     renderer.outputColorSpace = SRGBColorSpace;
     renderer.toneMapping = AgXToneMapping;
-    renderer.toneMappingExposure = 1;
+    renderer.toneMappingExposure = 0.9;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = PCFShadowMap;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -124,28 +158,37 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
     const runtime: SceneRuntime = {
       cameraController,
       controls,
+      layoutGroup: new Group(),
       mixer: null,
       flapAction: null,
       flapOpened: false,
       model: null,
     };
+    runtime.layoutGroup.scale.x = -1;
     runtimeRef.current = runtime;
+    scene.add(runtime.layoutGroup);
 
-    scene.add(new AmbientLight(0xffffff, 1.2));
-    const hemisphere = new HemisphereLight(0xffffff, 0xa6a093, 2.3);
+    scene.add(new AmbientLight(0xfffbf4, 0.65));
+    const hemisphere = new HemisphereLight(0xfffbf4, 0xc8bcae, 1);
     scene.add(hemisphere);
-    const keyLight = new DirectionalLight(0xffffff, 4.2);
-    keyLight.position.set(4.5, 8, 5.5);
+    const keyLight = new DirectionalLight(0xfff6e9, 1.9);
+    keyLight.position.set(-3.5, 8, -3.5);
     keyLight.castShadow = true;
-    keyLight.shadow.mapSize.set(2048, 2048);
+    keyLight.shadow.mapSize.set(1024, 1024);
+    keyLight.shadow.bias = -0.0004;
+    keyLight.shadow.normalBias = 0.015;
+    keyLight.shadow.radius = 3;
     scene.add(keyLight);
-    const fillLight = new DirectionalLight(0xffe5c2, 1.35);
-    fillLight.position.set(-5, 3, -4);
+    const fillLight = new DirectionalLight(0xeef3f0, 0.9);
+    fillLight.position.set(4.5, 4.5, -1.5);
     scene.add(fillLight);
+    const rimLight = new DirectionalLight(0xfff2dc, 0.35);
+    rimLight.position.set(0, 5, 5.5);
+    scene.add(rimLight);
 
     const ground = new Mesh(
       new PlaneGeometry(30, 30),
-      new MeshStandardMaterial({ color: 0x777e79, roughness: 0.96, metalness: 0 }),
+      new MeshStandardMaterial({ color: 0xf1ebe2, roughness: 0.96, metalness: 0 }),
     );
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -0.4;
@@ -175,7 +218,7 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
       mesh.position.set(x, band.heightCm / 100 - thickness / 2, z);
       mesh.castShadow = false;
       mesh.receiveShadow = true;
-      scene.add(mesh);
+      runtime.layoutGroup.add(mesh);
       return mesh;
     });
 
@@ -251,7 +294,7 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
           selectedModel.scale.setScalar(trailerConfiguration.scale);
           selectedModel.position.set(...configurationToWorld(item.positionCm));
           selectedModel.rotation.y = ((item.rotationDeg ?? 0) * Math.PI) / 180;
-          scene.add(selectedModel);
+          runtime.layoutGroup.add(selectedModel);
         }));
 
         if (startedRef.current) {
@@ -279,6 +322,7 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
       controls.dispose();
       renderer.dispose();
       renderer.domElement.remove();
+      studioBackgroundTexture.dispose();
       ground.geometry.dispose();
       (ground.material as MeshStandardMaterial).dispose();
       worktopMeshes.forEach((mesh) => mesh.geometry.dispose());
