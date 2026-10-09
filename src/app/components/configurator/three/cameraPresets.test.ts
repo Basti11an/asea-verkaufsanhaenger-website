@@ -7,6 +7,11 @@ describe("configurator camera presets", () => {
     expect(cameraPresets.front.position[2]).toBeLessThan(0);
   });
 
+  it("starts the 3D view from the sales-hatch side", () => {
+    expect(cameraPresets.three.position[2]).toBeLessThan(0);
+    expect(cameraPresets.interior.position[2]).toBeLessThan(0);
+  });
+
   it("looks from the closed-wall side in the rear work-row view", () => {
     expect(cameraPresets.rear.position[0]).toBe(-0.2);
     expect(cameraPresets.rear.position[2]).toBeGreaterThan(0);
