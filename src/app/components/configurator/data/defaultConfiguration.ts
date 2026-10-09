@@ -20,10 +20,11 @@ export const trailerConfiguration = {
     standardWorkSurfaceHeight: 85,
   },
   worktopBandsCm: [
-    { id: "closed-wall-worktop", longitudinalStart: 0, longitudinalEnd: 360, depthStart: 0, depthEnd: 60, heightCm: 85, thicknessCm: 4 },
-    { id: "sales-hatch-worktop-left", longitudinalStart: 0, longitudinalEnd: 125, depthStart: 140, depthEnd: 200, heightCm: 85, thicknessCm: 4 },
-    { id: "sales-hatch-worktop-right", longitudinalStart: 235, longitudinalEnd: 360, depthStart: 140, depthEnd: 200, heightCm: 85, thicknessCm: 4 },
+    { id: "closed-wall-worktop-middle", longitudinalStart: 130, longitudinalEnd: 195, depthStart: 0, depthEnd: 60, heightCm: 85, thicknessCm: 4 },
+    { id: "closed-wall-worktop-right", longitudinalStart: 295, longitudinalEnd: 360, depthStart: 0, depthEnd: 60, heightCm: 85, thicknessCm: 4 },
     { id: "gas-griddle-rear-worktop", longitudinalStart: 125, longitudinalEnd: 235, depthStart: 140, depthEnd: 167, heightCm: 85, thicknessCm: 4 },
+    { id: "sales-hatch-worktop-gap-left", longitudinalStart: 120, longitudinalEnd: 125, depthStart: 140, depthEnd: 200, heightCm: 85, thicknessCm: 4 },
+    { id: "sales-hatch-worktop-gap-right", longitudinalStart: 235, longitudinalEnd: 240, depthStart: 140, depthEnd: 200, heightCm: 85, thicknessCm: 4 },
   ],
   planReference: {
     status: "available" as const,

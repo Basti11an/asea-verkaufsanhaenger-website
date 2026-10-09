@@ -46,7 +46,13 @@ describe("default configurator configuration", () => {
       depthStart: 167,
       depthEnd: 200,
     });
-    expect(trailerConfiguration.worktopBandsCm).toHaveLength(4);
+    expect(trailerConfiguration.worktopBandsCm).toHaveLength(5);
+    expect(trailerConfiguration.worktopBandsCm).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "closed-wall-worktop-middle", longitudinalStart: 130, longitudinalEnd: 195 }),
+      expect.objectContaining({ id: "closed-wall-worktop-right", longitudinalStart: 295, longitudinalEnd: 360 }),
+      expect.objectContaining({ id: "sales-hatch-worktop-gap-left", longitudinalStart: 120, longitudinalEnd: 125 }),
+      expect.objectContaining({ id: "sales-hatch-worktop-gap-right", longitudinalStart: 235, longitudinalEnd: 240 }),
+    ]));
   });
 
   it("confirms positioned equipment and keeps each model in the central data source", () => {
