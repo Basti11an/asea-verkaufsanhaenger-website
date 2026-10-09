@@ -91,7 +91,7 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
     let disposed = false;
     let frameId = 0;
     const scene = new Scene();
-    scene.background = new Color("#eceeea");
+    scene.background = new Color("#aeb4af");
 
     const camera = new PerspectiveCamera(cameraPresets.three.fov, 1, 0.05, 100);
     camera.position.set(...cameraPresets.three.position);
@@ -100,7 +100,7 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
     const renderer = new WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     renderer.outputColorSpace = SRGBColorSpace;
     renderer.toneMapping = AgXToneMapping;
-    renderer.toneMappingExposure = 1.05;
+    renderer.toneMappingExposure = 1;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = PCFShadowMap;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -144,7 +144,7 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
 
     const ground = new Mesh(
       new PlaneGeometry(30, 30),
-      new MeshStandardMaterial({ color: 0xdfe2dc, roughness: 0.96, metalness: 0 }),
+      new MeshStandardMaterial({ color: 0x777e79, roughness: 0.96, metalness: 0 }),
     );
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -0.4;

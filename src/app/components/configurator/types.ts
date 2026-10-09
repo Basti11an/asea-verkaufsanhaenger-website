@@ -10,6 +10,13 @@ export type PositionCm = {
   depth: number;
 };
 
+export type FootprintCm = {
+  longitudinalStart: number;
+  longitudinalEnd: number;
+  depthStart: number;
+  depthEnd: number;
+};
+
 export type DimensionsCm = {
   width: number;
   height: number;
@@ -50,13 +57,15 @@ export type StandardEquipmentDefinition = {
   sceneNodeName: string | null;
   dimensionsCm: DimensionsCm | null;
   measuredGlbBoundsCm: DimensionsCm | null;
+  planFootprintCm: FootprintCm | null;
+  unresolvedPlanValues: readonly string[];
   material: string | null;
   positionCm: PositionCm | null;
   rotationDeg: number | null;
   side: string | null;
   fixed: boolean | null;
   removable: boolean | null;
-  placementStatus: "confirmed" | "awaiting-plan";
+  placementStatus: "confirmed" | "awaiting-plan-value" | "blocked-model-mismatch" | "missing-model";
 };
 
 export type CameraPresetDefinition = {

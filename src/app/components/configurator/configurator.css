@@ -8,7 +8,7 @@
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
-  background: #eceeea;
+  background: #aeb4af;
   color: var(--ink);
   letter-spacing: 0;
 }
@@ -135,7 +135,7 @@
   justify-content: center;
   gap: 10px;
   color: #5f645c;
-  background: #eceeead9;
+  background: #aeb4afe6;
   font-size: 13px;
 }
 
