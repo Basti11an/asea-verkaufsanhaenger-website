@@ -14,14 +14,14 @@ export const cameraPresets: Record<ConfiguratorView | "interior", CameraPresetDe
     fov: 24,
   },
   front: {
-    position: [-0.2, 2, -7],
-    target: [-0.2, 1.15, 0],
+    position: [0, 2, -6],
+    target: [0, 1.1, 0],
     up: [0, 1, 0],
     fov: 32,
   },
   rear: {
-    position: [-0.2, 2, 7],
-    target: [-0.2, 1.15, 0],
+    position: [0, 2, 6],
+    target: [0, 1.1, -0.2],
     up: [0, 1, 0],
     fov: 32,
   },

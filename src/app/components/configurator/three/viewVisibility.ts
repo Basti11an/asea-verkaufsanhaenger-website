@@ -13,11 +13,11 @@ export function applyConfiguratorViewVisibility(
   rowGroups?: ConfiguratorRowGroups,
 ) {
   const outerShell = model.getObjectByName(trailerConfiguration.sceneNodes.outerShell);
-  if (outerShell) outerShell.visible = view !== "top" && view !== "rear";
+  if (outerShell) outerShell.visible = view !== "top";
 
   trailerConfiguration.sceneNodes.roof.forEach((name) => {
     const object = model.getObjectByName(name);
-    if (object) object.visible = view !== "top" && view !== "rear";
+    if (object) object.visible = view !== "top";
   });
 
   if (rowGroups) {

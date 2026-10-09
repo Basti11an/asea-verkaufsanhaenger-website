@@ -30,14 +30,14 @@ describe("configurator view visibility", () => {
     expect(outerShell.visible).toBe(true);
   });
 
-  it("hides the trailer shell in the rear view and restores it", () => {
+  it("keeps the trailer shell visible in the rear view", () => {
     const model = new Group();
     const outerShell = new Group();
     outerShell.name = trailerConfiguration.sceneNodes.outerShell;
     model.add(outerShell);
 
     applyConfiguratorViewVisibility(model, "rear");
-    expect(outerShell.visible).toBe(false);
+    expect(outerShell.visible).toBe(true);
 
     applyConfiguratorViewVisibility(model, "three");
     expect(outerShell.visible).toBe(true);

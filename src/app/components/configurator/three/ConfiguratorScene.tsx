@@ -14,12 +14,14 @@ import {
   Mesh,
   MeshStandardMaterial,
   PCFShadowMap,
+  Plane,
   PerspectiveCamera,
   PlaneGeometry,
   Scene,
   SRGBColorSpace,
   Timer,
   WebGLRenderer,
+  Vector3,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { standardEquipment, trailerConfiguration } from "../data/defaultConfiguration";
@@ -47,7 +49,37 @@ type SceneRuntime = {
   flapAction: AnimationAction | null;
   flapOpened: boolean;
   model: Group | null;
+  rearCutaway: RearCutaway | null;
 };
+
+type RearCutaway = {
+  setEnabled: (enabled: boolean) => void;
+  dispose: () => void;
+};
+
+const rearCutPlane = new Plane(new Vector3(0, 0, -1), 0.85);
+
+function createRearCutaway(model: Group): RearCutaway | null {
+  const shell = model.getObjectByName(trailerConfiguration.sceneNodes.outerShell);
+  if (!(shell instanceof Mesh)) return null;
+
+  const sourceMaterials = Array.isArray(shell.material) ? shell.material : [shell.material];
+  const cutawayMaterials = sourceMaterials.map((material) => material.clone());
+  shell.material = Array.isArray(shell.material) ? cutawayMaterials : cutawayMaterials[0];
+
+  function setEnabled(enabled: boolean) {
+    cutawayMaterials.forEach((material) => {
+      material.clippingPlanes = enabled ? [rearCutPlane] : [];
+      material.clipShadows = enabled;
+      material.needsUpdate = true;
+    });
+  }
+
+  return {
+    setEnabled,
+    dispose: () => cutawayMaterials.forEach((material) => material.dispose()),
+  };
+}
 
 function createStudioBackgroundTexture() {
   const canvas = document.createElement("canvas");
@@ -117,6 +149,7 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
       frontRow: runtime.frontRow,
       backRow: runtime.backRow,
     });
+    runtime.rearCutaway?.setEnabled(view === "rear");
     runtime.cameraController.moveTo(cameraPresets[view], 850);
   }, [view]);
 
@@ -141,6 +174,7 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
     renderer.toneMappingExposure = 0.9;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = PCFShadowMap;
+    renderer.localClippingEnabled = true;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.domElement.setAttribute("aria-label", sceneLabel);
     container.appendChild(renderer.domElement);
@@ -168,6 +202,7 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
       flapAction: null,
       flapOpened: false,
       model: null,
+      rearCutaway: null,
     };
     runtime.layoutGroup.scale.x = -1;
     runtime.frontRow.name = "frontRow";
@@ -279,10 +314,12 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
         });
         scene.add(trailer.scene);
         runtime.model = trailer.scene;
+        runtime.rearCutaway = createRearCutaway(trailer.scene);
         applyConfiguratorViewVisibility(trailer.scene, viewRef.current, {
           frontRow: runtime.frontRow,
           backRow: runtime.backRow,
         });
+        runtime.rearCutaway?.setEnabled(viewRef.current === "rear");
 
         const flapClip = trailer.animations.find(
           (clip) => clip.name === trailerConfiguration.animation.sellingFlapClip,
@@ -340,6 +377,7 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
       (ground.material as MeshStandardMaterial).dispose();
       worktopMeshes.forEach((mesh) => mesh.geometry.dispose());
       worktopMaterial.dispose();
+      runtime.rearCutaway?.dispose();
       runtimeRef.current = null;
     };
   }, []);
