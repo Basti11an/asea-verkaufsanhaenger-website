@@ -1,23 +1,6 @@
 # ASEA Verkaufsanhänger Website
 
-Dieses Projekt ist die React/Vite-Version des Figma-Make-Exports für die ASEA Verkaufsanhänger Website. Die Seiten, Animationen, UI-Komponenten, Admin-Ansichten und Übersetzungen wurden übernommen und für GitHub/Vercel vorbereitet. Der Bereich `/konfigurator` bleibt als vorbereitete Seite für einen späteren Neuaufbau bestehen.
-
-## Schnellstart ohne Server
-
-Die lokal gebaute Website kann direkt im Browser geöffnet werden:
-
-1. `START_WEBSITE.html` doppelklicken.
-2. Die Website startet direkt im Browser.
-3. Es wird kein laufender Entwicklungsserver benötigt.
-
-Nach Codeänderungen muss die statische Version neu gebaut werden:
-
-```bash
-npm install
-npm run build
-```
-
-Danach funktioniert `START_WEBSITE.html` wieder mit dem neuesten Stand.
+Dieses Projekt ist die React/Vite-Version des Figma-Make-Exports für die ASEA Verkaufsanhänger Website. Die Seiten, Animationen, UI-Komponenten, Admin-Ansichten und Übersetzungen wurden übernommen und für GitHub/Vercel vorbereitet. Unter `/konfigurator` befindet sich die technische und visuelle Grundversion des neuen ASEA-Innenraum-Konfigurators.
 
 ## Entwicklung
 
@@ -26,7 +9,7 @@ npm install
 npm run dev
 ```
 
-Der Dev-Server ist nur für die Entwicklung gedacht. Für die lokale Datei-Version wird `npm run build` verwendet.
+Mit `npm run build` wird die Produktionsversion im Ordner `dist` erstellt.
 
 ## Supabase Einrichten
 
@@ -191,12 +174,10 @@ Vercel Web Analytics ist im React-Projekt eingebunden. In Vercel muss Web Analyt
 
 ```text
 asea-verkaufsanhaenger-website/
-  START_WEBSITE.html        Direkt startbare lokale Website ohne Server
   index.html                Vite/React-Einstieg
   package.json              Abhängigkeiten und Build-Skripte
   package-lock.json         Exakte npm-Versionen für Vercel
   docs/                     Technische Dokumentation, z. B. Kunden-Follow-up-System
-  scripts/                  Build-Hilfen für die lokale Startdatei
   supabase/                 SQL-Dateien für Datenbank und Policies
   api/                      Vercel Server Functions und Cron-Endpunkte
   vercel.json               Vercel-Konfiguration

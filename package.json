@@ -6,8 +6,7 @@
   "description": "React/Vite website for ASEA Verkaufsanhaenger, rebuilt from the Figma Make export.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/build-single-file.cjs",
-    "build:vite": "vite build",
+    "build": "vite build",
     "test": "vitest run",
     "preview": "vite preview",
     "start": "vite"
@@ -29,6 +28,7 @@
     "react-dom": "18.3.1",
     "sonner": "2.0.3",
     "tailwind-merge": "3.2.0",
+    "three": "0.186.1",
     "tw-animate-css": "1.3.8"
   },
   "devDependencies": {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { Analytics as VercelAnalytics, type BeforeSendEvent } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { AdminDataProvider } from './context/AdminDataContext';
@@ -19,12 +19,17 @@ import { ReviewsPage } from './components/pages/ReviewsPage';
 import { ReviewOptOutPage } from './components/pages/ReviewOptOutPage';
 import { MessagesPage } from './components/pages/MessagesPage';
 import { AdminLogin } from './components/AdminLogin';
-import { ConfiguratorPage } from './components/pages/ConfiguratorPage';
 import { NotFoundPage } from './components/pages/NotFoundPage';
 import { PrivacyConsentBanner } from './components/PrivacyConsentBanner';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
 import { hasStatisticsConsent } from './lib/privacyConsent';
 import { getAdminAccess, type AdminAccessStatus } from './lib/adminAuth';
+
+const ConfiguratorPage = lazy(() =>
+  import('./components/pages/ConfiguratorPage').then((module) => ({
+    default: module.ConfiguratorPage,
+  })),
+);
 
 const PAGE_PATHS: Record<string, string> = {
   home: '/',
@@ -557,7 +562,11 @@ function AppInner() {
       case 'about':
         return <AboutPage />;
       case 'configurator':
-        return <ConfiguratorPage />;
+        return (
+          <Suspense fallback={<div className="h-dvh bg-[#eceeea]" />}>
+            <ConfiguratorPage />
+          </Suspense>
+        );
       case 'models':
         return <ModelsPage onNavigate={handleNavigate} />;
       case 'model-detail':
@@ -600,11 +609,12 @@ function AppInner() {
   };
 
   const isAdminMode = currentPage === 'messages' && adminAccessStatus === 'admin';
-  const showNormalHeader = currentPage !== 'messages';
-  const showFooter = currentPage !== 'messages';
+  const isConfiguratorMode = currentPage === 'configurator';
+  const showNormalHeader = currentPage !== 'messages' && !isConfiguratorMode;
+  const showFooter = currentPage !== 'messages' && !isConfiguratorMode;
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
+    <div className={isConfiguratorMode ? 'flex h-dvh min-h-0 flex-col overflow-hidden bg-[#eceeea]' : 'flex min-h-screen flex-col bg-gray-50'}>
       {showNormalHeader && (
         <Header currentPage={currentPage} onNavigate={handleNavigate} />
       )}
@@ -616,7 +626,7 @@ function AppInner() {
           onLogout={handleAdminLogout}
         />
       )}
-      <main className="flex-1">
+      <main className={isConfiguratorMode ? 'min-h-0 flex-1 overflow-hidden' : 'flex-1'}>
         {renderPage()}
       </main>
       {showFooter && <Footer onNavigate={handleNavigate} onOpenPrivacySettings={() => setPrivacySettingsOpen(true)} />}

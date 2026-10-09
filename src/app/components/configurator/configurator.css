@@ -1,499 +1,489 @@
 .asea-configurator {
-  --bronze: #967448;
-  --ink: #30312e;
-  background: #f5f6f5;
+  --bronze: #9b7545;
+  --bronze-dark: #765630;
+  --ink: #262824;
+  --muted: #6f746c;
+  --line: #d8dcd4;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: #eceeea;
   color: var(--ink);
-  padding: 30px 28px 24px;
   letter-spacing: 0;
 }
-.asea-desktop {
-  max-width: 1500px;
-  margin: auto;
+
+.asea-configurator *,
+.asea-configurator *::before,
+.asea-configurator *::after {
+  box-sizing: border-box;
 }
-.asea-configurator h1 {
-  font-size: 28px;
-  font-weight: 650;
-  line-height: 1.25;
-}
-.asea-configurator h2 {
-  font-size: 16px;
-  font-weight: 650;
-}
-.asea-config-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  gap: 20px;
-}
-.asea-config-heading p {
-  font-size: 14px;
-  color: #6a6d68;
-  margin-top: 8px;
-}
-.asea-status {
-  display: flex;
-  gap: 12px;
-  font-size: 12px;
-  color: #73766e;
-}
-.asea-status span:first-child {
-  color: #86663d;
-  border-right: 1px solid #d4d6d0;
-  padding-right: 12px;
-}
-.asea-workspace {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 270px;
-  border: 1px solid #d9dcd6;
-  background: white;
-}
-.asea-workbench {
-  min-width: 0;
-}
-.asea-toolbar {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 14px 18px;
-  border-bottom: 1px solid #e4e6e0;
-}
-.asea-configurator button,
-.asea-dialog-actions button {
+
+.asea-configurator button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  font-size: 13px;
-  min-height: 38px;
+  gap: 7px;
+  min-height: 36px;
   border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  letter-spacing: 0;
 }
+
 .asea-configurator button:focus-visible {
   outline: 2px solid var(--bronze);
-  outline-offset: 3px;
+  outline-offset: 2px;
 }
-.asea-configurator button:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-.asea-segments {
-  display: flex;
-  background: #f1f2ef;
-  padding: 3px;
-  gap: 3px;
-}
-.asea-segments button {
-  padding: 0 12px;
-}
-.asea-segments button[aria-pressed="true"] {
-  background: #30312e;
-  color: white;
-}
-.asea-tabs {
-  display: flex;
-  gap: 6px;
-}
-.asea-tabs button {
-  padding: 0 10px;
-  color: #76786f;
-}
-.asea-tabs button[aria-pressed="true"] {
-  color: #806139;
-  background: #f5f0e8;
-}
-.asea-planning {
-  padding: 20px 34px 26px;
-  background: #f8f9f7;
-  min-height: 350px;
-}
-.asea-plan-caption {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: #74786e;
-  margin-bottom: 24px;
-}
-.asea-plan {
-  position: relative;
-  aspect-ratio: 2.25;
-  max-height: 330px;
+
+.asea-config-desktop {
+  display: grid;
+  grid-template-rows: 56px minmax(0, 1fr) 108px;
   width: 100%;
-  max-width: 850px;
-  margin: auto;
-  border: 8px solid #b5b9af;
-  background-color: #fafbf9;
-  background-image:
-    linear-gradient(#dfe3dc66 1px, transparent 1px),
-    linear-gradient(90deg, #dfe3dc66 1px, transparent 1px);
-  background-size: 24px 24px;
-  box-shadow: 0 0 0 1px #8d9486;
-  isolation: isolate;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
-.asea-plan-side {
-  aspect-ratio: 2.6;
-  border-top-width: 4px;
+
+.asea-config-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-width: 0;
+  padding: 8px 18px;
+  border-bottom: 1px solid #cfd3cb;
+  background: #fbfbf8;
+  z-index: 20;
 }
-.asea-plan-front {
-  aspect-ratio: 1.7;
-  max-width: 570px;
+
+.asea-config-brand {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 11px;
+  font-size: 13px;
+  font-weight: 650;
+  white-space: nowrap;
 }
-.asea-gas,
-.asea-wheel {
+
+.asea-config-brand img {
+  width: 54px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.asea-view-switcher {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  background: #e9ebe6;
+  border: 1px solid #d7dbd3;
+  border-radius: 6px;
+}
+
+.asea-view-switcher button {
+  min-width: 76px;
+  padding: 0 10px;
+  color: #5f645c;
+}
+
+.asea-view-switcher button[aria-pressed="true"] {
+  color: #fff;
+  background: #30332e;
+  box-shadow: 0 1px 4px #1e211d20;
+}
+
+.asea-view-switcher button:disabled {
+  cursor: default;
+  opacity: 0.58;
+}
+
+.asea-config-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 258px;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.asea-config-stage,
+.asea-scene-shell,
+.asea-scene {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.asea-scene canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+.asea-scene-status {
   position: absolute;
-  background: #dedfd7;
-  border: 1px solid #aeb2a5;
-  font-size: 10px;
+  inset: 0;
+  z-index: 5;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
-  text-align: center;
+  gap: 10px;
+  color: #5f645c;
+  background: #eceeead9;
+  font-size: 13px;
 }
-.asea-gas {
-  left: 0;
-  top: 0;
-  width: 22%;
-  height: 30%;
+
+.asea-scene-status.is-error {
+  color: #923f38;
 }
-.asea-wheel {
-  left: 43%;
-  width: 20%;
-  height: 15%;
+
+.asea-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #b8bdb4;
+  border-top-color: var(--bronze);
+  border-radius: 50%;
+  animation: asea-spin 0.8s linear infinite;
 }
-.asea-wheel-one {
-  top: 0;
+
+@keyframes asea-spin {
+  to { transform: rotate(360deg); }
 }
-.asea-wheel-two {
-  bottom: 0;
-}
-.asea-blocked {
+
+.asea-interaction-hint {
   position: absolute;
-  background: repeating-linear-gradient(
-    135deg,
-    #c54b4225 0,
-    #c54b4225 6px,
-    #c54b4210 6px,
-    #c54b4210 12px
-  );
-  border: 1px solid #bd504e80;
+  left: 50%;
+  bottom: 12px;
+  z-index: 8;
+  transform: translateX(-50%);
+  padding: 7px 10px;
+  border: 1px solid #ffffffa8;
+  border-radius: 4px;
+  color: #4d524b;
+  background: #f7f8f4d9;
+  box-shadow: 0 2px 10px #2b2f2917;
+  font-size: 11px;
+  white-space: nowrap;
   pointer-events: none;
-  z-index: 1;
 }
-.asea-configurator .asea-placed {
+
+.asea-start-layer {
   position: absolute;
-  width: 16%;
-  height: 22%;
-  min-height: 0;
-  overflow: hidden;
-  padding: 3px;
-  background: #e2e6dd;
-  border: 1px solid #88977d;
-  border-radius: 2px;
-  font-size: 10px;
+  inset: 0;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #30332e1f;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 280ms ease, visibility 280ms ease;
+}
+
+.asea-start-layer.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.asea-start-panel {
+  width: min(370px, 100%);
+  padding: 23px 24px;
+  border: 1px solid #dadcd5;
+  border-radius: 6px;
+  background: #fbfbf8f2;
+  box-shadow: 0 18px 50px #20241e2b;
+  text-align: center;
+  backdrop-filter: blur(7px);
+}
+
+.asea-start-panel h1 {
+  margin: 0;
+  font-size: 23px;
   line-height: 1.2;
+  font-weight: 660;
+}
+
+.asea-start-panel p {
+  margin: 10px 0 18px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.asea-start-panel button,
+.asea-finish-button {
+  min-height: 40px;
+  padding: 0 16px;
+  color: #fff;
+  background: var(--bronze);
+  font-weight: 620;
+}
+
+.asea-start-panel button:hover,
+.asea-finish-button:hover {
+  background: var(--bronze-dark);
+}
+
+.asea-equipment-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  z-index: 2;
+  min-height: 0;
+  padding: 18px 16px 14px;
+  border-left: 1px solid var(--line);
+  background: #f9f9f6;
+  overflow: hidden;
+}
+
+.asea-sidebar-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid #dfe2db;
+  color: var(--bronze-dark);
+}
+
+.asea-sidebar-heading h2,
+.asea-product-bar h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 680;
+}
+
+.asea-standard-list {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 7px 0;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.asea-standard-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 8px 2px;
+  border-bottom: 1px solid #e4e6e0;
+  color: #454942;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.asea-standard-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 23px;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  color: #fff;
+  background: #708064;
+}
+
+.asea-sidebar-finish {
+  padding-top: 10px;
+  border-top: 1px solid #dfe2db;
+}
+
+.asea-inline-notice {
+  min-height: 32px;
+  margin: 0 0 7px;
+  color: #6e736b;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.asea-finish-button {
+  width: 100%;
+}
+
+.asea-product-bar {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+  padding: 10px 14px 11px;
+  border-top: 1px solid #cfd3cb;
+  background: #f6f7f3;
+  z-index: 18;
+}
+
+.asea-product-strip {
+  display: flex;
+  gap: 7px;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 1px 7px;
+  scrollbar-width: thin;
+  scrollbar-color: #9c917f #e3e6df;
+}
+
+.asea-configurator .asea-product-card {
+  position: relative;
+  flex: 0 0 126px;
+  height: 75px;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 12px 10px;
+  border: 1px solid #d7dbd2;
+  border-top: 3px solid #9d7a4f;
+  border-radius: 4px;
+  background: #fff;
+  color: #555a52;
+  text-align: left;
+}
+
+.asea-configurator .asea-product-card span {
+  min-width: 0;
+  color: #343832;
+  font-size: 11px;
+  line-height: 1.25;
   overflow-wrap: anywhere;
-  touch-action: none;
 }
-.asea-configurator .asea-placed.is-editing {
-  background: #faf2e4;
-  border: 2px solid var(--bronze);
-  cursor: grab;
-  z-index: 3;
-  box-shadow: 0 3px 10px #00000018;
+
+.asea-configurator .asea-product-card:hover {
+  border-color: var(--bronze);
+  background: #fdfbf7;
 }
-.asea-placed:active {
-  cursor: grabbing;
-}
-.asea-placed small {
-  font-size: 9px;
-}
+
+.asea-product-card.is-cooling { border-top-color: #5f8792; }
+.asea-product-card.is-hygiene { border-top-color: #6b8a75; }
+.asea-product-card.is-furniture { border-top-color: #777b72; }
+
 .asea-watermark {
   position: absolute;
   inset: 0;
-  overflow: hidden;
+  z-index: 4;
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   grid-template-rows: repeat(6, 1fr);
+  overflow: hidden;
+  color: #333831;
+  opacity: 0.035;
   pointer-events: none;
-  z-index: 4;
-  color: #383d32;
-  opacity: 0.055;
 }
+
 .asea-watermark span {
   display: flex;
   align-items: center;
   justify-content: center;
   transform: rotate(-28deg);
+  font-size: 12px;
   font-weight: 800;
-  font-size: 13px;
   user-select: none;
 }
-.asea-editor-area {
-  min-height: 87px;
-  background: #fff;
-  border-top: 1px solid #e4e6e0;
-  padding: 12px 18px;
-}
-.asea-editor {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  font-size: 12px;
-}
-.asea-editor strong {
-  margin-right: auto;
-  font-size: 13px;
-}
-.asea-editor label {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-.asea-editor input {
-  width: 64px;
-  border: 1px solid #c9cec2;
-  border-radius: 4px;
-  padding: 8px 5px;
-  text-align: center;
-}
-.asea-configurator .asea-primary {
-  background: var(--bronze);
-  color: white;
-  padding: 10px 12px;
-  font-weight: 550;
-}
-.asea-primary:hover {
-  filter: brightness(0.95);
-}
-.asea-editor > button:not(.asea-primary) {
-  padding: 8px;
-  color: #71766a;
-}
-.asea-error {
-  font-size: 12px;
-  color: #a53530;
-  margin-top: 8px;
-}
-.asea-equipment {
-  border-left: 1px solid #d9dcd6;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.asea-equipment h2 {
-  display: flex;
-  justify-content: space-between;
-}
-.asea-equipment h2 span {
-  font-size: 12px;
-  color: #8a8f80;
-}
-.asea-equipment-items {
-  flex: 1;
-  min-height: 180px;
-  max-height: 330px;
-  overflow: auto;
-}
-.asea-equipment-items button {
-  width: 100%;
-  justify-content: space-between;
-  text-align: left;
-  padding: 12px 4px;
-  border-bottom: 1px solid #e6e8e1;
-}
-.asea-equipment-items button span {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-.asea-equipment-items button[aria-pressed="true"] {
-  color: var(--bronze);
-}
-.asea-empty {
-  padding-top: 50px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 12px;
-  color: #868b7d;
-  font-size: 13px;
-}
-.asea-reset {
-  color: #777d6e;
-  font-size: 11px !important;
-}
-.asea-catalog {
-  position: sticky;
-  bottom: 0;
-  background: #f5f6f5;
-  z-index: 6;
-  padding-top: 18px;
-  padding-bottom: 8px;
-  border-top: 1px solid #e2e4dc;
-  margin-top: 18px;
-}
-.asea-catalog h2 {
-  margin-bottom: 12px;
-}
-.asea-products {
-  display: flex;
-  overflow-x: auto;
-  gap: 10px;
-  padding: 3px 2px 12px;
-  scrollbar-color: #a79a85 #e9ebe5;
-  scrollbar-width: thin;
-}
-.asea-configurator .asea-product {
-  flex: 0 0 138px;
-  height: 118px;
-  background: #fff;
-  border: 1px solid #d9ddd2;
-  display: grid;
-  grid-template-columns: 1fr 18px;
-  grid-template-rows: 42px 1fr;
-  padding: 10px;
-  text-align: left;
-}
-.asea-product > svg:first-child {
-  grid-column: 1 / 3;
-  color: #969b8c;
-}
-.asea-product span {
-  font-size: 12px;
-  line-height: 1.35;
-  overflow-wrap: anywhere;
-}
-.asea-configurator .asea-product[aria-pressed="true"] {
-  border-color: var(--bronze);
-  box-shadow: inset 0 0 0 1px var(--bronze);
-  background: #fcf8f1;
-}
-.asea-product:hover {
-  border-color: var(--bronze);
-}
-.asea-three {
-  position: relative;
-  min-height: 350px;
-  background: #f1f3ee;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  color: #838a79;
-  text-align: center;
-  padding: 32px;
-}
-.asea-three p {
-  font-size: 15px;
-}
-.asea-summary {
-  max-width: 950px;
-  margin: auto;
-}
-.asea-summary h1 {
-  margin-bottom: 24px;
-}
-.asea-summary h2 {
-  margin: 24px 0 12px;
-}
-.asea-summary li {
-  padding: 10px 0;
-  border-bottom: 1px solid #dfe3d8;
-  font-size: 14px;
-}
-.asea-summary-actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 15px;
-  margin: 24px 0;
-}
-.asea-summary > p {
-  font-size: 14px;
-  color: #767d6e;
-}
-.asea-small {
+
+.asea-small-screen {
   display: none;
 }
-.asea-dialog-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 16px;
-}
-.asea-dialog-actions button {
-  padding: 8px 14px;
-  border: 1px solid #c7c7c0;
-}
-.asea-dialog-actions button:last-child {
-  background: #967448;
-  color: white;
-}
-.asea-catalog {
-  position: relative;
-  bottom: auto;
-}
-.asea-configurator .asea-product {
-  flex-basis: 158px;
-}
-@media (min-width: 768px) and (max-width: 1050px) {
-  .asea-configurator {
-    padding: 24px 16px;
-  }
-  .asea-workspace {
+
+@media (min-width: 768px) and (max-width: 1080px) {
+  .asea-config-workspace {
     grid-template-columns: minmax(0, 1fr) 220px;
   }
-  .asea-planning {
-    padding: 20px 18px;
-    min-height: 300px;
+
+  .asea-config-topbar {
+    padding-inline: 12px;
   }
-  .asea-toolbar {
-    gap: 8px;
-    padding: 12px;
+
+  .asea-view-switcher button {
+    min-width: 42px;
+    padding-inline: 9px;
   }
-  .asea-equipment {
-    padding: 14px;
-  }
-  .asea-configurator .asea-placed {
-    font-size: 9px;
-  }
-  .asea-config-heading h1 {
-    font-size: 24px;
-  }
-}
-@media (max-width: 767px) {
-  .asea-desktop {
+
+  .asea-view-switcher button span {
     display: none;
   }
-  .asea-small {
+
+  .asea-product-bar {
+    grid-template-columns: 78px minmax(0, 1fr);
+    padding-inline: 10px;
+  }
+
+  .asea-configurator .asea-product-card {
+    flex-basis: 116px;
+  }
+}
+
+@media (max-height: 680px) and (min-width: 768px) {
+  .asea-config-desktop {
+    grid-template-rows: 50px minmax(0, 1fr) 91px;
+  }
+
+  .asea-configurator .asea-product-card {
+    height: 60px;
+    padding: 8px;
+  }
+
+  .asea-product-bar {
+    padding-block: 7px;
+  }
+
+  .asea-equipment-sidebar {
+    padding-block: 12px 10px;
+  }
+
+  .asea-standard-list li {
+    min-height: 36px;
+  }
+}
+
+@media (max-width: 767px), (max-width: 950px) and (max-height: 500px) {
+  .asea-config-desktop {
+    display: none;
+  }
+
+  .asea-small-screen {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 28px 24px;
+    color: #666b63;
     text-align: center;
-    max-width: 480px;
-    margin: 50px auto;
-    min-height: 320px;
   }
-  .asea-small svg {
+
+  .asea-small-screen svg {
     color: var(--bronze);
   }
-  .asea-small h1 {
-    font-size: 28px;
+
+  .asea-small-screen h1 {
+    margin: 18px 0 8px;
+    color: var(--ink);
+    font-size: 27px;
+    font-weight: 660;
   }
-  .asea-small p {
-    font-size: 15px;
-    line-height: 1.7;
-    color: #717769;
+
+  .asea-small-screen p {
+    max-width: 430px;
+    margin: 5px 0;
+    font-size: 14px;
+    line-height: 1.55;
   }
-  .asea-configurator {
-    padding: 28px 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .asea-start-layer,
+  .asea-spinner {
+    transition: none;
+    animation: none;
   }
 }
