@@ -68,6 +68,7 @@ describe("default configurator configuration", () => {
     ]);
     const hygieneArea = confirmed.find((item) => item.id === "standard-hygiene-area");
     expect(hygieneArea?.positionCm).toEqual({ longitudinal: 195, height: 0, depth: 0 });
+    expect(hygieneArea?.rotationDeg).toBe(180);
     expect(hygieneArea?.planFootprintCm).toEqual({
       longitudinalStart: 195,
       longitudinalEnd: 295,
@@ -78,7 +79,7 @@ describe("default configurator configuration", () => {
     expect(extractorHood?.positionCm).toEqual({ longitudinal: 71, height: 142, depth: 0 });
     const doubleFryer = confirmed.find((item) => item.id === "standard-double-fryer");
     expect(doubleFryer?.positionCm).toEqual({ longitudinal: 130, height: 85, depth: 60 });
-    expect(doubleFryer?.rotationDeg).toBe(180);
+    expect(doubleFryer?.rotationDeg).toBe(0);
   });
 
   it("uses the supplied visible gas-griddle variant", () => {
@@ -86,7 +87,7 @@ describe("default configurator configuration", () => {
     expect(gasGriddle?.sceneNodeName).toBe("Gasbraeter_gross_3fl");
     expect(gasGriddle?.measuredGlbBoundsCm).toEqual({ width: 66.05, height: 27.9, depth: 62.5 });
     expect(gasGriddle?.positionCm).toEqual({ longitudinal: 213, height: 57.1, depth: 200 });
-    expect(gasGriddle?.rotationDeg).toBe(180);
+    expect(gasGriddle?.rotationDeg).toBe(0);
     expect(gasGriddle?.placementStatus).toBe("confirmed");
   });
 

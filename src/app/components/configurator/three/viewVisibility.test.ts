@@ -29,4 +29,39 @@ describe("configurator view visibility", () => {
 
     expect(outerShell.visible).toBe(true);
   });
+
+  it("hides the trailer shell in the rear view and restores it", () => {
+    const model = new Group();
+    const outerShell = new Group();
+    outerShell.name = trailerConfiguration.sceneNodes.outerShell;
+    model.add(outerShell);
+
+    applyConfiguratorViewVisibility(model, "rear");
+    expect(outerShell.visible).toBe(false);
+
+    applyConfiguratorViewVisibility(model, "three");
+    expect(outerShell.visible).toBe(true);
+  });
+
+  it("shows only the back row in the front view and restores both rows", () => {
+    const model = new Group();
+    const rows = { frontRow: new Group(), backRow: new Group() };
+
+    applyConfiguratorViewVisibility(model, "front", rows);
+    expect(rows.frontRow.visible).toBe(false);
+    expect(rows.backRow.visible).toBe(true);
+
+    applyConfiguratorViewVisibility(model, "three", rows);
+    expect(rows.frontRow.visible).toBe(true);
+    expect(rows.backRow.visible).toBe(true);
+  });
+
+  it("shows only the front row in the rear view", () => {
+    const rows = { frontRow: new Group(), backRow: new Group() };
+
+    applyConfiguratorViewVisibility(new Group(), "rear", rows);
+
+    expect(rows.frontRow.visible).toBe(true);
+    expect(rows.backRow.visible).toBe(false);
+  });
 });

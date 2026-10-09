@@ -41,6 +41,8 @@ type SceneRuntime = {
   cameraController: CameraController;
   controls: OrbitControls;
   layoutGroup: Group;
+  frontRow: Group;
+  backRow: Group;
   mixer: AnimationMixer | null;
   flapAction: AnimationAction | null;
   flapOpened: boolean;
@@ -111,9 +113,10 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
     if (!runtime) return;
 
     runtime.layoutGroup.scale.x = view === "top" || view === "rear" ? 1 : -1;
-    if (runtime.model) {
-      applyConfiguratorViewVisibility(runtime.model, view);
-    }
+    applyConfiguratorViewVisibility(runtime.model ?? new Group(), view, {
+      frontRow: runtime.frontRow,
+      backRow: runtime.backRow,
+    });
     runtime.cameraController.moveTo(cameraPresets[view], 850);
   }, [view]);
 
@@ -159,12 +162,17 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
       cameraController,
       controls,
       layoutGroup: new Group(),
+      frontRow: new Group(),
+      backRow: new Group(),
       mixer: null,
       flapAction: null,
       flapOpened: false,
       model: null,
     };
     runtime.layoutGroup.scale.x = -1;
+    runtime.frontRow.name = "frontRow";
+    runtime.backRow.name = "backRow";
+    runtime.layoutGroup.add(runtime.frontRow, runtime.backRow);
     runtimeRef.current = runtime;
     scene.add(runtime.layoutGroup);
 
@@ -218,7 +226,8 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
       mesh.position.set(x, band.heightCm / 100 - thickness / 2, z);
       mesh.castShadow = false;
       mesh.receiveShadow = true;
-      runtime.layoutGroup.add(mesh);
+      const row = band.id.startsWith("closed-wall") ? runtime.backRow : runtime.frontRow;
+      row.add(mesh);
       return mesh;
     });
 
@@ -270,7 +279,10 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
         });
         scene.add(trailer.scene);
         runtime.model = trailer.scene;
-        applyConfiguratorViewVisibility(trailer.scene, viewRef.current);
+        applyConfiguratorViewVisibility(trailer.scene, viewRef.current, {
+          frontRow: runtime.frontRow,
+          backRow: runtime.backRow,
+        });
 
         const flapClip = trailer.animations.find(
           (clip) => clip.name === trailerConfiguration.animation.sellingFlapClip,
@@ -294,7 +306,8 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
           selectedModel.scale.setScalar(trailerConfiguration.scale);
           selectedModel.position.set(...configurationToWorld(item.positionCm));
           selectedModel.rotation.y = ((item.rotationDeg ?? 0) * Math.PI) / 180;
-          runtime.layoutGroup.add(selectedModel);
+          const row = item.side === "closed-wall" ? runtime.backRow : runtime.frontRow;
+          row.add(selectedModel);
         }));
 
         if (startedRef.current) {
