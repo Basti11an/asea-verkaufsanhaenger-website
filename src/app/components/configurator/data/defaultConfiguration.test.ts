@@ -40,6 +40,13 @@ describe("default configurator configuration", () => {
       { id: "gas-griddle", longitudinalStart: 125, longitudinalEnd: 235, units: 2 },
       { id: "countertop", longitudinalStart: 235, longitudinalEnd: 360 },
     ]);
+    expect(trailerConfiguration.planLayoutCm.gasGriddleNiche).toEqual({
+      longitudinalStart: 125,
+      longitudinalEnd: 235,
+      depthStart: 200,
+      depthEnd: 233,
+    });
+    expect(trailerConfiguration.worktopBandsCm).toHaveLength(3);
   });
 
   it("confirms positioned equipment and keeps each model in the central data source", () => {
@@ -72,7 +79,7 @@ describe("default configurator configuration", () => {
     const gasGriddle = standardEquipment.find((item) => item.id === "standard-gas-griddle");
     expect(gasGriddle?.sceneNodeName).toBe("Gasbraeter_gross_3fl");
     expect(gasGriddle?.measuredGlbBoundsCm).toEqual({ width: 66.05, height: 27.9, depth: 62.5 });
-    expect(gasGriddle?.positionCm).toEqual({ longitudinal: 213, height: 85, depth: 200 });
+    expect(gasGriddle?.positionCm).toEqual({ longitudinal: 213, height: 85, depth: 233 });
     expect(gasGriddle?.rotationDeg).toBe(180);
     expect(gasGriddle?.placementStatus).toBe("confirmed");
   });

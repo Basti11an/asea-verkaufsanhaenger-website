@@ -4,6 +4,7 @@ import {
   AmbientLight,
   AnimationAction,
   AnimationMixer,
+  BoxGeometry,
   Color,
   DirectionalLight,
   Group,
@@ -151,6 +152,33 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
     ground.receiveShadow = true;
     scene.add(ground);
 
+    const worktopMaterial = new MeshStandardMaterial({
+      color: 0xb9bfba,
+      roughness: 0.32,
+      metalness: 0.7,
+    });
+    const worktopMeshes = trailerConfiguration.worktopBandsCm.map((band) => {
+      const thickness = band.thicknessCm / 100;
+      const mesh = new Mesh(
+        new BoxGeometry(
+          (band.longitudinalEnd - band.longitudinalStart) / 100,
+          thickness,
+          (band.depthEnd - band.depthStart) / 100,
+        ),
+        worktopMaterial,
+      );
+      const [x, , z] = configurationToWorld({
+        longitudinal: (band.longitudinalStart + band.longitudinalEnd) / 2,
+        height: band.heightCm - band.thicknessCm / 2,
+        depth: (band.depthStart + band.depthEnd) / 2,
+      });
+      mesh.position.set(x, band.heightCm / 100 - thickness / 2, z);
+      mesh.castShadow = false;
+      mesh.receiveShadow = true;
+      scene.add(mesh);
+      return mesh;
+    });
+
     const resize = () => {
       const width = Math.max(container.clientWidth, 1);
       const height = Math.max(container.clientHeight, 1);
@@ -253,6 +281,8 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
       renderer.domElement.remove();
       ground.geometry.dispose();
       (ground.material as MeshStandardMaterial).dispose();
+      worktopMeshes.forEach((mesh) => mesh.geometry.dispose());
+      worktopMaterial.dispose();
       runtimeRef.current = null;
     };
   }, []);

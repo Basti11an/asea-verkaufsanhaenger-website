@@ -19,6 +19,11 @@ export const trailerConfiguration = {
     // Independently encoded by the gas cabinet and hygiene-table GLBs.
     standardWorkSurfaceHeight: 85,
   },
+  worktopBandsCm: [
+    { id: "closed-wall-worktop", longitudinalStart: 0, longitudinalEnd: 360, depthStart: 0, depthEnd: 60, heightCm: 85, thicknessCm: 4 },
+    { id: "sales-hatch-worktop", longitudinalStart: 0, longitudinalEnd: 360, depthStart: 140, depthEnd: 200, heightCm: 85, thicknessCm: 4 },
+    { id: "gas-griddle-niche-worktop", longitudinalStart: 125, longitudinalEnd: 235, depthStart: 200, depthEnd: 233, heightCm: 85, thicknessCm: 4 },
+  ],
   planReference: {
     status: "available" as const,
     interiorLengthCm: 360,
@@ -51,6 +56,12 @@ export const trailerConfiguration = {
         { id: "gas-griddle", longitudinalStart: 125, longitudinalEnd: 235, units: 2 },
         { id: "countertop", longitudinalStart: 235, longitudinalEnd: 360 },
       ],
+    },
+    gasGriddleNiche: {
+      longitudinalStart: 125,
+      longitudinalEnd: 235,
+      depthStart: 200,
+      depthEnd: 233,
     },
   },
   coordinateSystem: {
@@ -143,10 +154,10 @@ export const standardEquipment: readonly StandardEquipmentDefinition[] = [
     sceneNodeName: "Gasbraeter_gross_3fl",
     dimensionsCm: { width: 66.05, height: 27.9, depth: 62.5 },
     measuredGlbBoundsCm: { width: 66.05, height: 27.9, depth: 62.5 },
-    planFootprintCm: { longitudinalStart: 147, longitudinalEnd: 213, depthStart: 145, depthEnd: 205 },
+    planFootprintCm: { longitudinalStart: 147, longitudinalEnd: 213, depthStart: 178, depthEnd: 238 },
     unresolvedPlanValues: ["plan-drawing-width-differs"],
     material: null,
-    positionCm: { longitudinal: 213, height: 85, depth: 200 },
+    positionCm: { longitudinal: 213, height: 85, depth: 233 },
     rotationDeg: 180,
     side: "sales-hatch",
     fixed: true,

@@ -11,4 +11,8 @@ describe("configurator camera presets", () => {
     expect(cameraPresets.rear.position[0]).toBe(-0.2);
     expect(cameraPresets.rear.position[2]).toBeGreaterThan(0);
   });
+
+  it("shows the closed wall at the top of the plan view", () => {
+    expect(cameraPresets.top.up).toEqual([0, 0, 1]);
+  });
 });

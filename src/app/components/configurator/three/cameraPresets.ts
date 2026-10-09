@@ -9,8 +9,8 @@ export const cameraPresets: Record<ConfiguratorView | "interior", CameraPresetDe
   },
   top: {
     position: [0, 11, 0],
-    target: [0, 0, 0],
-    up: [0, 0, -1],
+    target: [0, 0, -0.15],
+    up: [0, 0, 1],
     fov: 24,
   },
   front: {
