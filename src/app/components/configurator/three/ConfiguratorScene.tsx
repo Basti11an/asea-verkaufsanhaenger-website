@@ -4,7 +4,6 @@ import {
   AmbientLight,
   AnimationAction,
   AnimationMixer,
-  BoxGeometry,
   CanvasTexture,
   DirectionalLight,
   Fog,
@@ -24,14 +23,13 @@ import {
   Vector3,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { standardEquipment, trailerConfiguration } from "../data/defaultConfiguration";
+import { trailerConfiguration } from "../data/defaultConfiguration";
 import type { ConfiguratorView } from "../types";
-import { configurationToWorld } from "../utils/coordinates";
 import { WatermarkOverlay } from "../WatermarkOverlay";
 import { useConfiguratorCopy } from "../copy";
 import { CameraController } from "./CameraController";
 import { cameraPresets } from "./cameraPresets";
-import { loadConfiguratorModel, selectModelVariant } from "./ModelLoader";
+import { loadConfiguratorModel } from "./ModelLoader";
 import { applyConfiguratorViewVisibility } from "./viewVisibility";
 
 type ConfiguratorSceneProps = {
@@ -42,9 +40,6 @@ type ConfiguratorSceneProps = {
 type SceneRuntime = {
   cameraController: CameraController;
   controls: OrbitControls;
-  layoutGroup: Group;
-  frontRow: Group;
-  backRow: Group;
   mixer: AnimationMixer | null;
   flapAction: AnimationAction | null;
   flapOpened: boolean;
@@ -144,11 +139,7 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
     const runtime = runtimeRef.current;
     if (!runtime) return;
 
-    runtime.layoutGroup.scale.x = view === "top" || view === "rear" ? 1 : -1;
-    applyConfiguratorViewVisibility(runtime.model ?? new Group(), view, {
-      frontRow: runtime.frontRow,
-      backRow: runtime.backRow,
-    });
+    if (runtime.model) applyConfiguratorViewVisibility(runtime.model, view);
     runtime.rearCutaway?.setEnabled(view === "rear");
     runtime.cameraController.moveTo(cameraPresets[view], 850);
   }, [view]);
@@ -195,21 +186,13 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
     const runtime: SceneRuntime = {
       cameraController,
       controls,
-      layoutGroup: new Group(),
-      frontRow: new Group(),
-      backRow: new Group(),
       mixer: null,
       flapAction: null,
       flapOpened: false,
       model: null,
       rearCutaway: null,
     };
-    runtime.layoutGroup.scale.x = -1;
-    runtime.frontRow.name = "frontRow";
-    runtime.backRow.name = "backRow";
-    runtime.layoutGroup.add(runtime.frontRow, runtime.backRow);
     runtimeRef.current = runtime;
-    scene.add(runtime.layoutGroup);
 
     scene.add(new AmbientLight(0xfffbf4, 0.65));
     const hemisphere = new HemisphereLight(0xfffbf4, 0xc8bcae, 1);
@@ -237,34 +220,6 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
     ground.position.y = -0.4;
     ground.receiveShadow = true;
     scene.add(ground);
-
-    const worktopMaterial = new MeshStandardMaterial({
-      color: 0xb9bfba,
-      roughness: 0.32,
-      metalness: 0.7,
-    });
-    const worktopMeshes = trailerConfiguration.worktopBandsCm.map((band) => {
-      const thickness = band.thicknessCm / 100;
-      const mesh = new Mesh(
-        new BoxGeometry(
-          (band.longitudinalEnd - band.longitudinalStart) / 100,
-          thickness,
-          (band.depthEnd - band.depthStart) / 100,
-        ),
-        worktopMaterial,
-      );
-      const [x, , z] = configurationToWorld({
-        longitudinal: (band.longitudinalStart + band.longitudinalEnd) / 2,
-        height: band.heightCm - band.thicknessCm / 2,
-        depth: (band.depthStart + band.depthEnd) / 2,
-      });
-      mesh.position.set(x, band.heightCm / 100 - thickness / 2, z);
-      mesh.castShadow = false;
-      mesh.receiveShadow = true;
-      const row = band.id.startsWith("closed-wall") ? runtime.backRow : runtime.frontRow;
-      row.add(mesh);
-      return mesh;
-    });
 
     const resize = () => {
       const width = Math.max(container.clientWidth, 1);
@@ -315,10 +270,7 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
         scene.add(trailer.scene);
         runtime.model = trailer.scene;
         runtime.rearCutaway = createRearCutaway(trailer.scene);
-        applyConfiguratorViewVisibility(trailer.scene, viewRef.current, {
-          frontRow: runtime.frontRow,
-          backRow: runtime.backRow,
-        });
+        applyConfiguratorViewVisibility(trailer.scene, viewRef.current);
         runtime.rearCutaway?.setEnabled(viewRef.current === "rear");
 
         const flapClip = trailer.animations.find(
@@ -331,21 +283,6 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
           runtime.flapAction.clampWhenFinished = true;
           runtime.flapAction.paused = true;
         }
-
-        const confirmedEquipment = standardEquipment.filter(
-          (item) => item.placementStatus === "confirmed" && item.positionCm && item.modelPath,
-        );
-        await Promise.all(confirmedEquipment.map(async (item) => {
-          if (!item.positionCm || !item.modelPath) return;
-          const equipment = await loadConfiguratorModel(item.modelPath);
-          if (disposed) return;
-          const selectedModel = selectModelVariant(equipment.scene, item.sceneNodeName);
-          selectedModel.scale.setScalar(trailerConfiguration.scale);
-          selectedModel.position.set(...configurationToWorld(item.positionCm));
-          selectedModel.rotation.y = ((item.rotationDeg ?? 0) * Math.PI) / 180;
-          const row = item.side === "closed-wall" ? runtime.backRow : runtime.frontRow;
-          row.add(selectedModel);
-        }));
 
         if (startedRef.current) {
           if (runtime.flapAction) {
@@ -375,8 +312,6 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
       studioBackgroundTexture.dispose();
       ground.geometry.dispose();
       (ground.material as MeshStandardMaterial).dispose();
-      worktopMeshes.forEach((mesh) => mesh.geometry.dispose());
-      worktopMaterial.dispose();
       runtime.rearCutaway?.dispose();
       runtimeRef.current = null;
     };
