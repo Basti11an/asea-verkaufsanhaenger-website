@@ -1,23 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  AgXToneMapping,
-  AmbientLight,
   AnimationAction,
   AnimationMixer,
-  CanvasTexture,
-  DirectionalLight,
-  Fog,
   Group,
-  HemisphereLight,
   LoopOnce,
   Mesh,
-  MeshStandardMaterial,
-  PCFShadowMap,
   Plane,
   PerspectiveCamera,
-  PlaneGeometry,
   Scene,
-  SRGBColorSpace,
   Timer,
   WebGLRenderer,
   Vector3,
@@ -30,6 +20,7 @@ import { useConfiguratorCopy } from "../copy";
 import { CameraController } from "./CameraController";
 import { cameraPresets } from "./cameraPresets";
 import { loadConfiguratorModel } from "./ModelLoader";
+import { installStudioEnvironment } from "./StudioEnvironment";
 import { applyConfiguratorViewVisibility } from "./viewVisibility";
 
 type ConfiguratorSceneProps = {
@@ -74,35 +65,6 @@ function createRearCutaway(model: Group): RearCutaway | null {
     setEnabled,
     dispose: () => cutawayMaterials.forEach((material) => material.dispose()),
   };
-}
-
-function createStudioBackgroundTexture() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 1024;
-  canvas.height = 768;
-  const context = canvas.getContext("2d");
-
-  if (!context) {
-    throw new Error("Unable to create the configurator studio background");
-  }
-
-  const gradient = context.createRadialGradient(
-    canvas.width * 0.5,
-    canvas.height * 0.38,
-    0,
-    canvas.width * 0.5,
-    canvas.height * 0.45,
-    canvas.width * 0.72,
-  );
-  gradient.addColorStop(0, "#fffdf8");
-  gradient.addColorStop(0.45, "#f7f3ec");
-  gradient.addColorStop(1, "#ded8cf");
-  context.fillStyle = gradient;
-  context.fillRect(0, 0, canvas.width, canvas.height);
-
-  const texture = new CanvasTexture(canvas);
-  texture.colorSpace = SRGBColorSpace;
-  return texture;
 }
 
 export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
@@ -151,24 +113,17 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
     let disposed = false;
     let frameId = 0;
     const scene = new Scene();
-    const studioBackgroundTexture = createStudioBackgroundTexture();
-    scene.background = studioBackgroundTexture;
-    scene.fog = new Fog(0xded8cf, 9, 24);
 
     const camera = new PerspectiveCamera(cameraPresets.three.fov, 1, 0.05, 100);
     camera.position.set(...cameraPresets.three.position);
     camera.up.set(...cameraPresets.three.up);
 
     const renderer = new WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-    renderer.outputColorSpace = SRGBColorSpace;
-    renderer.toneMapping = AgXToneMapping;
-    renderer.toneMappingExposure = 0.9;
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = PCFShadowMap;
     renderer.localClippingEnabled = true;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.domElement.setAttribute("aria-label", sceneLabel);
     container.appendChild(renderer.domElement);
+    const studioEnvironment = installStudioEnvironment(scene, renderer);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.set(...cameraPresets.three.target);
@@ -193,33 +148,6 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
       rearCutaway: null,
     };
     runtimeRef.current = runtime;
-
-    scene.add(new AmbientLight(0xfffbf4, 0.65));
-    const hemisphere = new HemisphereLight(0xfffbf4, 0xc8bcae, 1);
-    scene.add(hemisphere);
-    const keyLight = new DirectionalLight(0xfff6e9, 1.9);
-    keyLight.position.set(-3.5, 8, -3.5);
-    keyLight.castShadow = true;
-    keyLight.shadow.mapSize.set(1024, 1024);
-    keyLight.shadow.bias = -0.0004;
-    keyLight.shadow.normalBias = 0.015;
-    keyLight.shadow.radius = 3;
-    scene.add(keyLight);
-    const fillLight = new DirectionalLight(0xeef3f0, 0.9);
-    fillLight.position.set(4.5, 4.5, -1.5);
-    scene.add(fillLight);
-    const rimLight = new DirectionalLight(0xfff2dc, 0.35);
-    rimLight.position.set(0, 5, 5.5);
-    scene.add(rimLight);
-
-    const ground = new Mesh(
-      new PlaneGeometry(30, 30),
-      new MeshStandardMaterial({ color: 0xf1ebe2, roughness: 0.96, metalness: 0 }),
-    );
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -0.4;
-    ground.receiveShadow = true;
-    scene.add(ground);
 
     const resize = () => {
       const width = Math.max(container.clientWidth, 1);
@@ -307,11 +235,9 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
       cancelAnimationFrame(frameId);
       resizeObserver.disconnect();
       controls.dispose();
+      studioEnvironment.dispose();
       renderer.dispose();
       renderer.domElement.remove();
-      studioBackgroundTexture.dispose();
-      ground.geometry.dispose();
-      (ground.material as MeshStandardMaterial).dispose();
       runtime.rearCutaway?.dispose();
       runtimeRef.current = null;
     };
