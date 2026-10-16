@@ -54,6 +54,17 @@ const copy = {
     "Please open it on a tablet, laptop or desktop computer.",
     "Otvorte ho na tablete, notebooku alebo stolnom počítači.",
   ],
+  resetTitle: ["Konfigurator", "Configurator", "Konfigurátor"],
+  resetDescription: [
+    "Der Konfigurator befindet sich derzeit in Arbeit.",
+    "The configurator is currently being rebuilt.",
+    "Konfigurátor sa momentálne nanovo pripravuje.",
+  ],
+  resetHint: [
+    "Die 3D-Modelle werden vollständig neu ausgerichtet und anschließend wieder integriert.",
+    "The 3D models are being realigned from scratch and will then be integrated again.",
+    "3D modely sa nanovo správne nastavia a následne sa opäť integrujú.",
+  ],
 } as const;
 
 export function useConfiguratorCopy() {
