@@ -16,9 +16,9 @@ const copy = {
   rear: ["Hinten", "Rear", "Zozadu"],
   startTitle: ["Ihr ASEA-Innenraum", "Your ASEA interior", "Váš interiér ASEA"],
   startDescription: [
-    "Stellen Sie die Innenausstattung Ihres Verkaufsanhängers nach Ihren Vorstellungen zusammen. Wählen Sie Produkte aus, platzieren Sie diese im Innenraum und prüfen Sie Ihre Konfiguration aus verschiedenen Perspektiven.",
-    "Configure your sales trailer interior to suit your needs. Select products, place them inside and review your configuration from different perspectives.",
-    "Zostavte si interiér predajného prívesu podľa svojich predstáv. Vyberte produkty, umiestnite ich v interiéri a skontrolujte konfiguráciu z rôznych pohľadov.",
+    "Prüfen Sie die ASEA-Standardausstattung im maßgenauen Innenraum aus verschiedenen Perspektiven.",
+    "Review the standard ASEA equipment in the dimensionally accurate interior from different perspectives.",
+    "Prezrite si štandardnú výbavu ASEA v rozmerovo presnom interiéri z rôznych pohľadov.",
   ],
   startButton: ["Konfiguration starten", "Start configuration", "Spustiť konfiguráciu"],
   finish: ["Konfiguration abschließen", "Complete configuration", "Dokončiť konfiguráciu"],

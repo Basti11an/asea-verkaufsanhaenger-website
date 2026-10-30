@@ -18,7 +18,7 @@ describe("configurator coordinates", () => {
   });
 
   it("maps Blender raw units into the documented configuration axes", () => {
-    expect(glbRawToConfiguration([18, 2.5, -10])).toEqual({
+    expect(glbRawToConfiguration([18, 2.5, 10])).toEqual({
       longitudinal: 180,
       height: 25,
       depth: 100,

@@ -14,7 +14,7 @@ export function configurationToWorld(position: PositionCm): [number, number, num
   return [
     originX + centimetersToMeters(position.longitudinal),
     originY + centimetersToMeters(position.height),
-    originZ - centimetersToMeters(position.depth),
+    originZ + centimetersToMeters(position.depth),
   ];
 }
 
@@ -24,6 +24,6 @@ export function glbRawToConfiguration(raw: readonly [number, number, number]): P
   return {
     longitudinal: raw[0] * centimetersPerRawUnit,
     height: raw[1] * centimetersPerRawUnit,
-    depth: -raw[2] * centimetersPerRawUnit,
+    depth: raw[2] * centimetersPerRawUnit,
   };
 }

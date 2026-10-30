@@ -20,3 +20,14 @@ Kategorie.
 - `Arbeitsplatten.blend` enthaelt derzeit Objekte, aber keine Mesh-Vertices und
   muss vor einem GLB-Export mit echter Geometrie versehen werden.
 - Ein neuer Anhaenger wurde noch nicht geliefert. `trailer/` bleibt deshalb leer.
+
+## GLB-Export
+
+Der wiederverwendbare Exporter liegt unter `scripts/export_blend_to_glb.py`.
+Optional koennen nach dem Ausgabepfad Objektpraefixe angegeben werden, damit
+aus Blender-Dateien mit mehreren Varianten nur das benoetigte Modell exportiert
+wird.
+
+```text
+blender -b <quelle.blend> --python scripts/export_blend_to_glb.py -- <ziel.glb> [Objektpraefix]
+```

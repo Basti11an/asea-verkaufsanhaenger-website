@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { relative, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -33,6 +33,15 @@ const expectedSourceModels = [
   "3d-source/interieur/moebel/Haengeschrank.blend",
 ];
 
+const expectedWebModels = [
+  "public/configurator-models/interieur/hygiene/Hygienebereich.glb",
+  "public/configurator-models/interieur/kochen/Doppelfriteuse.glb",
+  "public/configurator-models/interieur/kochen/Gasbraeter.glb",
+  "public/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb",
+  "public/configurator-models/interieur/moebel/Arbeitstisch_1200.glb",
+  "public/configurator-models/interieur/moebel/Gasschrank.glb",
+];
+
 describe("configurator model structure", () => {
   it("contains the complete, categorized Blender source set", () => {
     const sourceModels = collectFiles(resolve("3d-source"), /\.blend$/i)
@@ -42,8 +51,15 @@ describe("configurator model structure", () => {
     expect(sourceModels).toEqual([...expectedSourceModels].sort());
   });
 
-  it("keeps browser exports empty and rejects Blender backup files", () => {
-    expect(collectFiles(resolve("public/configurator-models"), /\.(?:blend|glb)$/i)).toEqual([]);
+  it("contains only the required browser exports and rejects Blender backup files", () => {
+    const webModels = collectFiles(resolve("public/configurator-models"), /\.(?:blend|glb)$/i)
+      .map((file) => relative(resolve("."), file).replaceAll("\\", "/"))
+      .sort();
+
+    expect(webModels).toEqual([...expectedWebModels].sort());
+    webModels.forEach((file) => {
+      expect(statSync(resolve(file)).size, `${file} is unexpectedly small`).toBeGreaterThan(1024);
+    });
     expect(collectFiles(resolve("."), /\.blend(?:1|2|@)$/i)).toEqual([]);
   });
 

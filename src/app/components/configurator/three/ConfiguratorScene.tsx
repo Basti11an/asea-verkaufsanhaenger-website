@@ -1,19 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  AnimationAction,
-  AnimationMixer,
+  Box3,
+  BoxGeometry,
+  CylinderGeometry,
   Group,
-  LoopOnce,
   Mesh,
-  Plane,
+  MeshStandardMaterial,
   PerspectiveCamera,
   Scene,
   Timer,
-  WebGLRenderer,
   Vector3,
+  WebGLRenderer,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { trailerConfiguration } from "../data/defaultConfiguration";
 import type { ConfiguratorView } from "../types";
 import { WatermarkOverlay } from "../WatermarkOverlay";
 import { useConfiguratorCopy } from "../copy";
@@ -21,7 +20,6 @@ import { CameraController } from "./CameraController";
 import { cameraPresets } from "./cameraPresets";
 import { loadConfiguratorModel } from "./ModelLoader";
 import { installStudioEnvironment } from "./StudioEnvironment";
-import { applyConfiguratorViewVisibility } from "./viewVisibility";
 
 type ConfiguratorSceneProps = {
   view: ConfiguratorView;
@@ -31,40 +29,113 @@ type ConfiguratorSceneProps = {
 type SceneRuntime = {
   cameraController: CameraController;
   controls: OrbitControls;
-  mixer: AnimationMixer | null;
-  flapAction: AnimationAction | null;
-  flapOpened: boolean;
-  model: Group | null;
-  rearCutaway: RearCutaway | null;
 };
 
-type RearCutaway = {
-  setEnabled: (enabled: boolean) => void;
-  dispose: () => void;
+type Placement = {
+  minX?: number;
+  centerX?: number;
+  minY: number;
+  minZ?: number;
+  maxZ?: number;
+  width?: number;
 };
 
-const rearCutPlane = new Plane(new Vector3(0, 0, -1), 0.85);
+const MODEL_SCALE = 0.1;
 
-function createRearCutaway(model: Group): RearCutaway | null {
-  const shell = model.getObjectByName(trailerConfiguration.sceneNodes.outerShell);
-  if (!(shell instanceof Mesh)) return null;
+function addBox(
+  parent: Group,
+  size: readonly [number, number, number],
+  position: readonly [number, number, number],
+  material: MeshStandardMaterial,
+) {
+  const mesh = new Mesh(new BoxGeometry(...size), material);
+  mesh.position.set(...position);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  parent.add(mesh);
+}
 
-  const sourceMaterials = Array.isArray(shell.material) ? shell.material : [shell.material];
-  const cutawayMaterials = sourceMaterials.map((material) => material.clone());
-  shell.material = Array.isArray(shell.material) ? cutawayMaterials : cutawayMaterials[0];
+function addCountertop(parent: Group, startX: number, endX: number, centerZ: number, depth = 0.6) {
+  const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.36, metalness: 0.7 });
+  const width = endX - startX;
+  addBox(parent, [width, 0.04, depth], [(startX + endX) / 2, 0.83, centerZ], steel);
 
-  function setEnabled(enabled: boolean) {
-    cutawayMaterials.forEach((material) => {
-      material.clippingPlanes = enabled ? [rearCutPlane] : [];
-      material.clipShadows = enabled;
-      material.needsUpdate = true;
+  const legMaterial = new MeshStandardMaterial({ color: 0x8a8d88, roughness: 0.3, metalness: 0.75 });
+  [startX + 0.045, endX - 0.045].forEach((x) => {
+    [centerZ - depth / 2 + 0.045, centerZ + depth / 2 - 0.045].forEach((z) => {
+      const leg = new Mesh(new CylinderGeometry(0.018, 0.018, 0.81, 12), legMaterial);
+      leg.position.set(x, 0.405, z);
+      leg.castShadow = true;
+      parent.add(leg);
     });
-  }
+  });
+}
 
-  return {
-    setEnabled,
-    dispose: () => cutawayMaterials.forEach((material) => material.dispose()),
-  };
+function createInteriorShell() {
+  const shell = new Group();
+  shell.name = "ASEA_InteriorShell";
+
+  const wall = new MeshStandardMaterial({ color: 0xe7e7e3, roughness: 0.74, metalness: 0.05 });
+  const floor = new MeshStandardMaterial({ color: 0x777a73, roughness: 0.82, metalness: 0 });
+  const trim = new MeshStandardMaterial({ color: 0x30322f, roughness: 0.58, metalness: 0.3 });
+
+  addBox(shell, [3.6, 0.05, 2], [0, -0.025, 0], floor);
+  addBox(shell, [3.6, 2.3, 0.04], [0, 1.15, -1.02], wall);
+  addBox(shell, [0.04, 2.3, 2], [-1.82, 1.15, 0], wall);
+
+  // Rear wall with the 80 cm entrance from the plan left open.
+  addBox(shell, [0.04, 2.3, 0.6], [1.82, 1.15, 0.7], wall);
+  addBox(shell, [0.04, 2.3, 0.6], [1.82, 1.15, -0.7], wall);
+  addBox(shell, [0.04, 0.3, 0.8], [1.82, 2.15, 0], wall);
+
+  // The low sales-side wall shows the room boundary without hiding the equipment.
+  addBox(shell, [3.6, 0.76, 0.04], [0, 0.38, 1.02], wall);
+  addBox(shell, [3.62, 0.035, 0.055], [0, 0.79, 1.025], trim);
+
+  addCountertop(shell, -0.5, 0.15, -0.7);
+  addCountertop(shell, 1.15, 1.8, -0.7);
+  addCountertop(shell, -0.55, -0.4185, 0.7);
+  addCountertop(shell, 0.4185, 0.55, 0.7);
+
+  return shell;
+}
+
+function prepareModel(model: Group, rotationY: number, placement: Placement) {
+  model.rotation.y = rotationY;
+  model.scale.setScalar(MODEL_SCALE);
+  model.updateMatrixWorld(true);
+
+  let bounds = new Box3().setFromObject(model);
+  const size = bounds.getSize(new Vector3());
+  if (placement.width) model.scale.multiplyScalar(placement.width / size.x);
+  model.updateMatrixWorld(true);
+  bounds = new Box3().setFromObject(model);
+
+  const center = bounds.getCenter(new Vector3());
+  const offset = new Vector3(0, placement.minY - bounds.min.y, 0);
+  if (placement.minX !== undefined) offset.x = placement.minX - bounds.min.x;
+  if (placement.centerX !== undefined) offset.x = placement.centerX - center.x;
+  if (placement.minZ !== undefined) offset.z = placement.minZ - bounds.min.z;
+  if (placement.maxZ !== undefined) offset.z = placement.maxZ - bounds.max.z;
+  model.position.add(offset);
+
+  model.traverse((object) => {
+    if (object instanceof Mesh) {
+      object.castShadow = true;
+      object.receiveShadow = true;
+    }
+  });
+
+  return model;
+}
+
+function disposeGroup(group: Group) {
+  group.traverse((object) => {
+    if (!(object instanceof Mesh)) return;
+    object.geometry.dispose();
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    materials.forEach((material) => material.dispose());
+  });
 }
 
 export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
@@ -83,27 +154,12 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
 
   useEffect(() => {
     startedRef.current = started;
-    const runtime = runtimeRef.current;
-    if (!runtime || !started) return;
-
-    if (runtime.flapAction && !runtime.flapOpened) {
-      runtime.flapOpened = true;
-      runtime.flapAction.reset();
-      runtime.flapAction.paused = false;
-      runtime.flapAction.play();
-    }
-
-    runtime.cameraController.moveTo(cameraPresets.interior, 1250);
+    if (started) runtimeRef.current?.cameraController.moveTo(cameraPresets.interior, 900);
   }, [started]);
 
   useEffect(() => {
     viewRef.current = view;
-    const runtime = runtimeRef.current;
-    if (!runtime) return;
-
-    if (runtime.model) applyConfiguratorViewVisibility(runtime.model, view);
-    runtime.rearCutaway?.setEnabled(view === "rear");
-    runtime.cameraController.moveTo(cameraPresets[view], 850);
+    runtimeRef.current?.cameraController.moveTo(cameraPresets[view], 700);
   }, [view]);
 
   useEffect(() => {
@@ -112,14 +168,13 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
 
     let disposed = false;
     let frameId = 0;
+    let interiorShell: Group | null = null;
     const scene = new Scene();
-
     const camera = new PerspectiveCamera(cameraPresets.three.fov, 1, 0.05, 100);
     camera.position.set(...cameraPresets.three.position);
     camera.up.set(...cameraPresets.three.up);
 
     const renderer = new WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-    renderer.localClippingEnabled = true;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.domElement.setAttribute("aria-label", sceneLabel);
     container.appendChild(renderer.domElement);
@@ -131,23 +186,13 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
     controls.dampingFactor = 0.075;
     controls.enablePan = false;
     controls.enabled = false;
-    controls.enableRotate = true;
-    controls.minDistance = 2.15;
-    controls.maxDistance = 13;
-    controls.maxPolarAngle = Math.PI * 0.48;
+    controls.minDistance = 1.4;
+    controls.maxDistance = 9;
+    controls.maxPolarAngle = Math.PI * 0.49;
     controls.update();
 
     const cameraController = new CameraController(camera, controls);
-    const runtime: SceneRuntime = {
-      cameraController,
-      controls,
-      mixer: null,
-      flapAction: null,
-      flapOpened: false,
-      model: null,
-      rearCutaway: null,
-    };
-    runtimeRef.current = runtime;
+    runtimeRef.current = { cameraController, controls };
 
     const resize = () => {
       const width = Math.max(container.clientWidth, 1);
@@ -165,16 +210,6 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
       timer.update();
       const delta = Math.min(timer.getDelta(), 0.05);
       cameraController.update(delta);
-
-      if (runtime.mixer && runtime.flapAction && !runtime.flapAction.paused) {
-        runtime.mixer.update(delta);
-        if (runtime.flapAction.time >= trailerConfiguration.animation.sellingFlapOpenTimeSeconds) {
-          runtime.flapAction.time = trailerConfiguration.animation.sellingFlapOpenTimeSeconds;
-          runtime.flapAction.paused = true;
-          runtime.mixer.update(0);
-        }
-      }
-
       controls.enabled = startedRef.current && viewRef.current === "three" && !cameraController.isAnimating;
       if (controls.enabled) controls.update();
       renderer.render(scene, camera);
@@ -182,45 +217,32 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
     };
     render();
 
-    async function loadSceneModels() {
+    async function loadStandardConfiguration() {
       try {
-        const trailer = await loadConfiguratorModel(trailerConfiguration.modelPath);
+        interiorShell = createInteriorShell();
+        scene.add(interiorShell);
+
+        const [gasCabinet, fryer, hygiene, gasGriddles, worktableLeft, worktableRight, hood] =
+          await Promise.all([
+            loadConfiguratorModel("/configurator-models/interieur/moebel/Gasschrank.glb"),
+            loadConfiguratorModel("/configurator-models/interieur/kochen/Doppelfriteuse.glb"),
+            loadConfiguratorModel("/configurator-models/interieur/hygiene/Hygienebereich.glb"),
+            loadConfiguratorModel("/configurator-models/interieur/kochen/Gasbraeter.glb"),
+            loadConfiguratorModel("/configurator-models/interieur/moebel/Arbeitstisch_1200.glb"),
+            loadConfiguratorModel("/configurator-models/interieur/moebel/Arbeitstisch_1200.glb"),
+            loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb"),
+          ]);
         if (disposed) return;
 
-        trailer.scene.scale.setScalar(trailerConfiguration.scale);
-        trailer.scene.position.set(...trailerConfiguration.modelPosition);
-        trailer.scene.traverse((object) => {
-          if (object instanceof Mesh) {
-            object.castShadow = true;
-            object.receiveShadow = true;
-          }
-        });
-        scene.add(trailer.scene);
-        runtime.model = trailer.scene;
-        runtime.rearCutaway = createRearCutaway(trailer.scene);
-        applyConfiguratorViewVisibility(trailer.scene, viewRef.current);
-        runtime.rearCutaway?.setEnabled(viewRef.current === "rear");
-
-        const flapClip = trailer.animations.find(
-          (clip) => clip.name === trailerConfiguration.animation.sellingFlapClip,
+        scene.add(
+          prepareModel(gasCabinet.scene, -Math.PI / 2, { minX: -1.8, minY: 0, minZ: -1 }),
+          prepareModel(fryer.scene, -Math.PI / 2, { minX: -1.09, minY: 0.85, minZ: -1, width: 0.59 }),
+          prepareModel(hygiene.scene, -Math.PI / 2, { minX: 0.15, minY: 0, minZ: -1, width: 1 }),
+          prepareModel(gasGriddles.scene, Math.PI / 2, { centerX: 0, minY: 0.571, maxZ: 1 }),
+          prepareModel(worktableLeft.scene, Math.PI / 2, { minX: -1.8, minY: 0, maxZ: 1, width: 1.25 }),
+          prepareModel(worktableRight.scene, Math.PI / 2, { minX: 0.55, minY: 0, maxZ: 1, width: 1.25 }),
+          prepareModel(hood.scene, -Math.PI / 2, { minX: -1.09, minY: 1.36, minZ: -1, width: 0.6 }),
         );
-        if (flapClip) {
-          runtime.mixer = new AnimationMixer(trailer.scene);
-          runtime.flapAction = runtime.mixer.clipAction(flapClip);
-          runtime.flapAction.setLoop(LoopOnce, 1);
-          runtime.flapAction.clampWhenFinished = true;
-          runtime.flapAction.paused = true;
-        }
-
-        if (startedRef.current) {
-          if (runtime.flapAction) {
-            runtime.flapOpened = true;
-            runtime.flapAction.reset();
-            runtime.flapAction.paused = false;
-            runtime.flapAction.play();
-          }
-          cameraController.moveTo(cameraPresets.interior, 1250);
-        }
 
         setStatus("ready");
       } catch (error) {
@@ -228,7 +250,7 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
         if (!disposed) setStatus("error");
       }
     }
-    void loadSceneModels();
+    void loadStandardConfiguration();
 
     return () => {
       disposed = true;
@@ -236,9 +258,9 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
       resizeObserver.disconnect();
       controls.dispose();
       studioEnvironment.dispose();
+      if (interiorShell) disposeGroup(interiorShell);
       renderer.dispose();
       renderer.domElement.remove();
-      runtime.rearCutaway?.dispose();
       runtimeRef.current = null;
     };
   }, []);
