@@ -34,6 +34,7 @@ const expectedSourceModels = [
 ];
 
 const expectedWebModels = [
+  "public/configurator-models/interieur/arbeitsflaechen/Arbeitsplatten_Staender.glb",
   "public/configurator-models/interieur/hygiene/Hygienebereich.glb",
   "public/configurator-models/interieur/kochen/Doppelfriteuse.glb",
   "public/configurator-models/interieur/kochen/Gasbraeter.glb",

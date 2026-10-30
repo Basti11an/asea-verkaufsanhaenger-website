@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   Box3,
   BoxGeometry,
-  CylinderGeometry,
   Group,
   Mesh,
   MeshStandardMaterial,
@@ -37,6 +36,7 @@ type Placement = {
   minY: number;
   minZ?: number;
   maxZ?: number;
+  centerZ?: number;
   width?: number;
 };
 
@@ -47,6 +47,12 @@ const GAS_CABINET_EXTERNAL_CONNECTIONS = [
   "Gasschrank_710x600x850_Gasleitung_aussen",
   "Gasschrank_710x600x850_Pruefanschluss",
   "Gasschrank_710x600x850_Schottverschraubung",
+] as const;
+const WORKTABLE_TOP_NODES = [
+  "Arbeitstisch_1200x600x850_Antidroehnplatte",
+  "Arbeitstisch_1200x600x850_Arbeitsplatte",
+  "Arbeitstisch_1200x600x850_Verstaerkung_1",
+  "Arbeitstisch_1200x600x850_Verstaerkung_2",
 ] as const;
 
 function addBox(
@@ -66,16 +72,6 @@ function addCountertop(parent: Group, startX: number, endX: number, centerZ: num
   const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.36, metalness: 0.7 });
   const width = endX - startX;
   addBox(parent, [width, 0.04, depth], [(startX + endX) / 2, 0.83, centerZ], steel);
-
-  const legMaterial = new MeshStandardMaterial({ color: 0x8a8d88, roughness: 0.3, metalness: 0.75 });
-  [startX + 0.045, endX - 0.045].forEach((x) => {
-    [centerZ - depth / 2 + 0.045, centerZ + depth / 2 - 0.045].forEach((z) => {
-      const leg = new Mesh(new CylinderGeometry(0.018, 0.018, 0.81, 12), legMaterial);
-      leg.position.set(x, 0.405, z);
-      leg.castShadow = true;
-      parent.add(leg);
-    });
-  });
 }
 
 function createInteriorShell() {
@@ -101,8 +97,8 @@ function createInteriorShell() {
 
   addCountertop(shell, -0.5, 0.15, -0.7);
   addCountertop(shell, 1.15, 1.8, -0.7);
-  addCountertop(shell, -0.55, -0.4185, 0.7);
-  addCountertop(shell, 0.4185, 0.55, 0.7);
+  addCountertop(shell, -1.8, -0.4185, 0.7);
+  addCountertop(shell, 0.4185, 1.8, 0.7);
 
   return shell;
 }
@@ -124,6 +120,7 @@ function prepareModel(model: Group, rotationY: number, placement: Placement) {
   if (placement.centerX !== undefined) offset.x = placement.centerX - center.x;
   if (placement.minZ !== undefined) offset.z = placement.minZ - bounds.min.z;
   if (placement.maxZ !== undefined) offset.z = placement.maxZ - bounds.max.z;
+  if (placement.centerZ !== undefined) offset.z = placement.centerZ - center.z;
   model.position.add(offset);
 
   model.traverse((object) => {
@@ -229,7 +226,7 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
         interiorShell = createInteriorShell();
         scene.add(interiorShell);
 
-        const [gasCabinet, fryer, hygiene, gasGriddles, worktableLeft, worktableRight, hood] =
+        const [gasCabinet, fryer, hygiene, gasGriddles, worktableLeft, worktableRight, hood, countertopStand] =
           await Promise.all([
             loadConfiguratorModel("/configurator-models/interieur/moebel/Gasschrank.glb"),
             loadConfiguratorModel("/configurator-models/interieur/kochen/Doppelfriteuse.glb"),
@@ -238,11 +235,15 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
             loadConfiguratorModel("/configurator-models/interieur/moebel/Arbeitstisch_1200.glb"),
             loadConfiguratorModel("/configurator-models/interieur/moebel/Arbeitstisch_1200.glb"),
             loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb"),
+            loadConfiguratorModel("/configurator-models/interieur/arbeitsflaechen/Arbeitsplatten_Staender.glb"),
           ]);
         if (disposed) return;
 
         GAS_CABINET_EXTERNAL_CONNECTIONS.forEach((nodeName) => {
           gasCabinet.scene.getObjectByName(nodeName)?.removeFromParent();
+        });
+        [worktableLeft.scene, worktableRight.scene].forEach((worktable) => {
+          WORKTABLE_TOP_NODES.forEach((nodeName) => worktable.getObjectByName(nodeName)?.removeFromParent());
         });
 
         scene.add(
@@ -250,9 +251,12 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
           prepareModel(fryer.scene, -Math.PI / 2, { minX: -1.09, minY: 0.4328, minZ: -1, width: 0.59 }),
           prepareModel(hygiene.scene, -Math.PI / 2, { minX: 0.15, minY: 0, minZ: -1, width: 1 }),
           prepareModel(gasGriddles.scene, Math.PI / 2, { centerX: 0, minY: 0.571, maxZ: 1 }),
-          prepareModel(worktableLeft.scene, Math.PI / 2, { minX: -1.8, minY: 0, maxZ: 1, width: 1.25 }),
-          prepareModel(worktableRight.scene, Math.PI / 2, { minX: 0.55, minY: 0, maxZ: 1, width: 1.25 }),
+          prepareModel(worktableLeft.scene, Math.PI / 2, { minX: -1.8, minY: 0, maxZ: 1, width: 1.2 }),
+          prepareModel(worktableRight.scene, Math.PI / 2, { minX: 0.6, minY: 0, maxZ: 1, width: 1.2 }),
           prepareModel(hood.scene, -Math.PI / 2, { minX: -1.09, minY: 1.36, minZ: -1, width: 0.6 }),
+          ...[-0.455, 0.105, 1.195, 1.755].map((centerX) =>
+            prepareModel(countertopStand.scene.clone(), 0, { centerX, minY: 0, centerZ: -0.445 }),
+          ),
         );
 
         setStatus("ready");
