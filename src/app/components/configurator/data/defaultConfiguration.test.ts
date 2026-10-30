@@ -33,4 +33,11 @@ describe("default configurator configuration", () => {
 
     expect((fryer?.positionCm?.height ?? 0) + scaledHeight).toBeCloseTo(85, 1);
   });
+
+  it("aligns the gas griddles with the seller-side countertop edge", () => {
+    const gasGriddles = standardEquipment.find((item) => item.id === "standard-gas-griddles");
+
+    expect(gasGriddles?.positionCm?.depth).toBe(140);
+    expect(gasGriddles?.planFootprintCm).toMatchObject({ depthStart: 140, depthEnd: 200 });
+  });
 });

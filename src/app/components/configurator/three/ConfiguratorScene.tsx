@@ -48,11 +48,15 @@ const GAS_CABINET_EXTERNAL_CONNECTIONS = [
   "Gasschrank_710x600x850_Pruefanschluss",
   "Gasschrank_710x600x850_Schottverschraubung",
 ] as const;
-const WORKTABLE_TOP_NODES = [
-  "Arbeitstisch_1200x600x850_Antidroehnplatte",
-  "Arbeitstisch_1200x600x850_Arbeitsplatte",
-  "Arbeitstisch_1200x600x850_Verstaerkung_1",
-  "Arbeitstisch_1200x600x850_Verstaerkung_2",
+const COUNTERTOP_STAND_POSITIONS = [
+  [-0.455, -0.445],
+  [0.105, -0.445],
+  [1.195, -0.445],
+  [1.755, -0.445],
+  [-1.755, 0.445],
+  [-0.4635, 0.445],
+  [0.4635, 0.445],
+  [1.755, 0.445],
 ] as const;
 
 function addBox(
@@ -226,14 +230,11 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
         interiorShell = createInteriorShell();
         scene.add(interiorShell);
 
-        const [gasCabinet, fryer, hygiene, gasGriddles, worktableLeft, worktableRight, hood, countertopStand] =
-          await Promise.all([
+        const [gasCabinet, fryer, hygiene, gasGriddles, hood, countertopStand] = await Promise.all([
             loadConfiguratorModel("/configurator-models/interieur/moebel/Gasschrank.glb"),
             loadConfiguratorModel("/configurator-models/interieur/kochen/Doppelfriteuse.glb"),
             loadConfiguratorModel("/configurator-models/interieur/hygiene/Hygienebereich.glb"),
             loadConfiguratorModel("/configurator-models/interieur/kochen/Gasbraeter.glb"),
-            loadConfiguratorModel("/configurator-models/interieur/moebel/Arbeitstisch_1200.glb"),
-            loadConfiguratorModel("/configurator-models/interieur/moebel/Arbeitstisch_1200.glb"),
             loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb"),
             loadConfiguratorModel("/configurator-models/interieur/arbeitsflaechen/Arbeitsplatten_Staender.glb"),
           ]);
@@ -242,20 +243,15 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
         GAS_CABINET_EXTERNAL_CONNECTIONS.forEach((nodeName) => {
           gasCabinet.scene.getObjectByName(nodeName)?.removeFromParent();
         });
-        [worktableLeft.scene, worktableRight.scene].forEach((worktable) => {
-          WORKTABLE_TOP_NODES.forEach((nodeName) => worktable.getObjectByName(nodeName)?.removeFromParent());
-        });
 
         scene.add(
           prepareModel(gasCabinet.scene, Math.PI / 2, { minX: -1.8, minY: 0, minZ: -1 }),
           prepareModel(fryer.scene, -Math.PI / 2, { minX: -1.09, minY: 0.4328, minZ: -1, width: 0.59 }),
           prepareModel(hygiene.scene, -Math.PI / 2, { minX: 0.15, minY: 0, minZ: -1, width: 1 }),
-          prepareModel(gasGriddles.scene, Math.PI / 2, { centerX: 0, minY: 0.571, maxZ: 1 }),
-          prepareModel(worktableLeft.scene, Math.PI / 2, { minX: -1.8, minY: 0, maxZ: 1, width: 1.2 }),
-          prepareModel(worktableRight.scene, Math.PI / 2, { minX: 0.6, minY: 0, maxZ: 1, width: 1.2 }),
+          prepareModel(gasGriddles.scene, Math.PI / 2, { centerX: 0, minY: 0.571, minZ: 0.4 }),
           prepareModel(hood.scene, -Math.PI / 2, { minX: -1.09, minY: 1.36, minZ: -1, width: 0.6 }),
-          ...[-0.455, 0.105, 1.195, 1.755].map((centerX) =>
-            prepareModel(countertopStand.scene.clone(), 0, { centerX, minY: 0, centerZ: -0.445 }),
+          ...COUNTERTOP_STAND_POSITIONS.map(([centerX, centerZ]) =>
+            prepareModel(countertopStand.scene.clone(), 0, { centerX, minY: 0, centerZ }),
           ),
         );
 
