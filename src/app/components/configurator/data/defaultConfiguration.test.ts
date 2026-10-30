@@ -3,7 +3,7 @@ import { sidebarEquipmentIds, standardEquipment, trailerConfiguration } from "./
 
 describe("default configurator configuration", () => {
   it("contains the complete standard equipment from the plan", () => {
-    expect(sidebarEquipmentIds).toHaveLength(7);
+    expect(sidebarEquipmentIds).toHaveLength(8);
     expect(standardEquipment.map((item) => item.id)).toEqual(sidebarEquipmentIds);
     expect(standardEquipment.every((item) => item.placementStatus === "confirmed")).toBe(true);
   });
@@ -38,6 +38,7 @@ describe("default configurator configuration", () => {
     const gasGriddles = standardEquipment.find((item) => item.id === "standard-gas-griddles");
 
     expect(gasGriddles?.positionCm?.depth).toBe(140);
+    expect((gasGriddles?.positionCm?.height ?? 0) + (gasGriddles?.dimensionsCm?.height ?? 0)).toBe(85);
     expect(gasGriddles?.planFootprintCm).toMatchObject({ depthStart: 140, depthEnd: 200 });
   });
 });

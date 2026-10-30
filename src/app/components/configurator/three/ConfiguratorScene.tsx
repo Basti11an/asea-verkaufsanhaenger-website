@@ -41,6 +41,8 @@ type Placement = {
 };
 
 const MODEL_SCALE = 0.1;
+const GAS_GRIDDLE_HALF_WIDTH = 0.33025;
+const GAS_GRIDDLE_NICHE_HALF_WIDTH = GAS_GRIDDLE_HALF_WIDTH + 0.03;
 const GAS_CABINET_EXTERNAL_CONNECTIONS = [
   "Gasschrank_710x600x850_Absperrhahn",
   "Gasschrank_710x600x850_Absperrhahn_Hebel",
@@ -54,8 +56,8 @@ const COUNTERTOP_STAND_POSITIONS = [
   [1.195, -0.445],
   [1.755, -0.445],
   [-1.755, 0.445],
-  [-0.4635, 0.445],
-  [0.4635, 0.445],
+  [-(GAS_GRIDDLE_NICHE_HALF_WIDTH + 0.045), 0.445],
+  [GAS_GRIDDLE_NICHE_HALF_WIDTH + 0.045, 0.445],
   [1.755, 0.445],
 ] as const;
 
@@ -76,6 +78,15 @@ function addCountertop(parent: Group, startX: number, endX: number, centerZ: num
   const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.36, metalness: 0.7 });
   const width = endX - startX;
   addBox(parent, [width, 0.04, depth], [(startX + endX) / 2, 0.83, centerZ], steel);
+}
+
+function addGasGriddleNiche(parent: Group) {
+  const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.36, metalness: 0.7 });
+  const nicheWidth = GAS_GRIDDLE_NICHE_HALF_WIDTH * 2;
+
+  addBox(parent, [nicheWidth, 0.03, 0.6], [0, 0.585, 0.7], steel);
+  addBox(parent, [0.03, 0.33, 0.6], [-GAS_GRIDDLE_NICHE_HALF_WIDTH + 0.015, 0.685, 0.7], steel);
+  addBox(parent, [0.03, 0.33, 0.6], [GAS_GRIDDLE_NICHE_HALF_WIDTH - 0.015, 0.685, 0.7], steel);
 }
 
 function createInteriorShell() {
@@ -101,8 +112,9 @@ function createInteriorShell() {
 
   addCountertop(shell, -0.5, 0.15, -0.7);
   addCountertop(shell, 1.15, 1.8, -0.7);
-  addCountertop(shell, -1.8, -0.4185, 0.7);
-  addCountertop(shell, 0.4185, 1.8, 0.7);
+  addCountertop(shell, -1.8, -GAS_GRIDDLE_NICHE_HALF_WIDTH, 0.7);
+  addCountertop(shell, GAS_GRIDDLE_NICHE_HALF_WIDTH, 1.8, 0.7);
+  addGasGriddleNiche(shell);
 
   return shell;
 }
@@ -230,14 +242,15 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
         interiorShell = createInteriorShell();
         scene.add(interiorShell);
 
-        const [gasCabinet, fryer, hygiene, gasGriddles, hood, countertopStand] = await Promise.all([
-            loadConfiguratorModel("/configurator-models/interieur/moebel/Gasschrank.glb"),
-            loadConfiguratorModel("/configurator-models/interieur/kochen/Doppelfriteuse.glb"),
-            loadConfiguratorModel("/configurator-models/interieur/hygiene/Hygienebereich.glb"),
-            loadConfiguratorModel("/configurator-models/interieur/kochen/Gasbraeter.glb"),
-            loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb"),
-            loadConfiguratorModel("/configurator-models/interieur/arbeitsflaechen/Arbeitsplatten_Staender.glb"),
-          ]);
+        const [gasCabinet, fryer, hygiene, gasGriddles, hood, splashGuard, countertopStand] = await Promise.all([
+          loadConfiguratorModel("/configurator-models/interieur/moebel/Gasschrank.glb"),
+          loadConfiguratorModel("/configurator-models/interieur/kochen/Doppelfriteuse.glb"),
+          loadConfiguratorModel("/configurator-models/interieur/hygiene/Hygienebereich.glb"),
+          loadConfiguratorModel("/configurator-models/interieur/kochen/Gasbraeter.glb"),
+          loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb"),
+          loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Spritzschutz_700.glb"),
+          loadConfiguratorModel("/configurator-models/interieur/arbeitsflaechen/Arbeitsplatten_Staender.glb"),
+        ]);
         if (disposed) return;
 
         GAS_CABINET_EXTERNAL_CONNECTIONS.forEach((nodeName) => {
@@ -248,8 +261,9 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
           prepareModel(gasCabinet.scene, Math.PI / 2, { minX: -1.8, minY: 0, minZ: -1 }),
           prepareModel(fryer.scene, -Math.PI / 2, { minX: -1.09, minY: 0.4328, minZ: -1, width: 0.59 }),
           prepareModel(hygiene.scene, -Math.PI / 2, { minX: 0.15, minY: 0, minZ: -1, width: 1 }),
-          prepareModel(gasGriddles.scene, Math.PI / 2, { centerX: 0, minY: 0.571, minZ: 0.4 }),
+          prepareModel(gasGriddles.scene, Math.PI / 2, { centerX: 0, minY: 0.6, minZ: 0.4 }),
           prepareModel(hood.scene, -Math.PI / 2, { minX: -1.09, minY: 1.36, minZ: -1, width: 0.6 }),
+          prepareModel(splashGuard.scene, Math.PI / 2, { centerX: 0, minY: 0.85, maxZ: 1 }),
           ...COUNTERTOP_STAND_POSITIONS.map(([centerX, centerZ]) =>
             prepareModel(countertopStand.scene.clone(), 0, { centerX, minY: 0, centerZ }),
           ),
