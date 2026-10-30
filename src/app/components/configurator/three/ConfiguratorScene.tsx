@@ -235,8 +235,8 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
         if (disposed) return;
 
         scene.add(
-          prepareModel(gasCabinet.scene, -Math.PI / 2, { minX: -1.8, minY: 0, minZ: -1 }),
-          prepareModel(fryer.scene, -Math.PI / 2, { minX: -1.09, minY: 0.85, minZ: -1, width: 0.59 }),
+          prepareModel(gasCabinet.scene, Math.PI / 2, { minX: -1.8, minY: 0, minZ: -1 }),
+          prepareModel(fryer.scene, -Math.PI / 2, { minX: -1.09, minY: 0.4328, minZ: -1, width: 0.59 }),
           prepareModel(hygiene.scene, -Math.PI / 2, { minX: 0.15, minY: 0, minZ: -1, width: 1 }),
           prepareModel(gasGriddles.scene, Math.PI / 2, { centerX: 0, minY: 0.571, maxZ: 1 }),
           prepareModel(worktableLeft.scene, Math.PI / 2, { minX: -1.8, minY: 0, maxZ: 1, width: 1.25 }),

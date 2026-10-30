@@ -26,4 +26,11 @@ describe("default configurator configuration", () => {
       { id: "countertop", longitudinalStart: 295, longitudinalEnd: 360 },
     ]);
   });
+
+  it("places the double fryer top flush with the 85 cm work surface", () => {
+    const fryer = standardEquipment.find((item) => item.id === "standard-double-fryer");
+    const scaledHeight = 41.05 * (59 / 58.05);
+
+    expect((fryer?.positionCm?.height ?? 0) + scaledHeight).toBeCloseTo(85, 1);
+  });
 });

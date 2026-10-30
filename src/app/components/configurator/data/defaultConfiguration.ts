@@ -114,7 +114,7 @@ export const standardEquipment: readonly StandardEquipmentDefinition[] = [
     planFootprintCm: { longitudinalStart: 71, longitudinalEnd: 130, depthStart: 0, depthEnd: 60 },
     unresolvedPlanValues: [],
     material: "Edelstahl",
-    positionCm: { longitudinal: 71, height: 85, depth: 0 },
+    positionCm: { longitudinal: 71, height: 43.28, depth: 0 },
     rotationDeg: 90,
     side: "closed-wall",
     fixed: true,
