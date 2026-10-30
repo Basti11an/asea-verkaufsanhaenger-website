@@ -234,6 +234,10 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
           ]);
         if (disposed) return;
 
+        gasCabinet.scene
+          .getObjectByName("Gasschrank_710x600x850_Gasleitung_aussen")
+          ?.removeFromParent();
+
         scene.add(
           prepareModel(gasCabinet.scene, Math.PI / 2, { minX: -1.8, minY: 0, minZ: -1 }),
           prepareModel(fryer.scene, -Math.PI / 2, { minX: -1.09, minY: 0.4328, minZ: -1, width: 0.59 }),
