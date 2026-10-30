@@ -41,6 +41,13 @@ type Placement = {
 };
 
 const MODEL_SCALE = 0.1;
+const GAS_CABINET_EXTERNAL_CONNECTIONS = [
+  "Gasschrank_710x600x850_Absperrhahn",
+  "Gasschrank_710x600x850_Absperrhahn_Hebel",
+  "Gasschrank_710x600x850_Gasleitung_aussen",
+  "Gasschrank_710x600x850_Pruefanschluss",
+  "Gasschrank_710x600x850_Schottverschraubung",
+] as const;
 
 function addBox(
   parent: Group,
@@ -234,9 +241,9 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
           ]);
         if (disposed) return;
 
-        gasCabinet.scene
-          .getObjectByName("Gasschrank_710x600x850_Gasleitung_aussen")
-          ?.removeFromParent();
+        GAS_CABINET_EXTERNAL_CONNECTIONS.forEach((nodeName) => {
+          gasCabinet.scene.getObjectByName(nodeName)?.removeFromParent();
+        });
 
         scene.add(
           prepareModel(gasCabinet.scene, Math.PI / 2, { minX: -1.8, minY: 0, minZ: -1 }),
