@@ -78,4 +78,11 @@ describe("configurator model structure", () => {
       "public/configurator-models/interieur/moebel/.gitkeep",
     ].forEach((path) => expect(existsSync(resolve(path)), `${path} is missing`).toBe(true));
   });
+
+  it("keeps the configurator floor texture available", () => {
+    const texturePath = resolve("public/configurator-textures/floor/grey-oak-vinyl.png");
+
+    expect(existsSync(texturePath), "configurator floor texture is missing").toBe(true);
+    expect(statSync(texturePath).size).toBeGreaterThan(1024);
+  });
 });

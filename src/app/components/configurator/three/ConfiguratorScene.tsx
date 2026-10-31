@@ -6,11 +6,16 @@ import {
   Mesh,
   MeshStandardMaterial,
   PerspectiveCamera,
+  PlaneGeometry,
+  RepeatWrapping,
   Scene,
+  SRGBColorSpace,
   Timer,
+  TextureLoader,
   Vector3,
   WebGLRenderer,
 } from "three";
+import type { Texture } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import type { ConfiguratorView } from "../types";
 import { WatermarkOverlay } from "../WatermarkOverlay";
@@ -94,15 +99,22 @@ function addRearCounterPanels(parent: Group) {
   addBox(parent, [0.05, 0.81, 0.58], [1.175, 0.405, -0.7], steel);
 }
 
-function createInteriorShell() {
+function createInteriorShell(floorTexture: Texture) {
   const shell = new Group();
   shell.name = "ASEA_InteriorShell";
 
   const wall = new MeshStandardMaterial({ color: 0xe7e7e3, roughness: 0.74, metalness: 0.05 });
-  const floor = new MeshStandardMaterial({ color: 0x777a73, roughness: 0.82, metalness: 0 });
+  const floorBase = new MeshStandardMaterial({ color: 0x777a73, roughness: 0.82, metalness: 0 });
+  const floorSurface = new MeshStandardMaterial({ map: floorTexture, roughness: 0.88, metalness: 0 });
   const trim = new MeshStandardMaterial({ color: 0x30322f, roughness: 0.58, metalness: 0.3 });
 
-  addBox(shell, [3.6, 0.05, 2], [0, -0.025, 0], floor);
+  addBox(shell, [3.6, 0.05, 2], [0, -0.025, 0], floorBase);
+  const woodFloor = new Mesh(new PlaneGeometry(3.6, 2), floorSurface);
+  woodFloor.name = "ASEA_WoodFloor";
+  woodFloor.rotation.x = -Math.PI / 2;
+  woodFloor.position.y = 0.002;
+  woodFloor.receiveShadow = true;
+  shell.add(woodFloor);
   addBox(shell, [3.6, 2.3, 0.04], [0, 1.15, -1.02], wall);
   addBox(shell, [0.04, 2.3, 2], [-1.82, 1.15, 0], wall);
 
@@ -181,7 +193,10 @@ function disposeGroup(group: Group) {
     if (!(object instanceof Mesh)) return;
     object.geometry.dispose();
     const materials = Array.isArray(object.material) ? object.material : [object.material];
-    materials.forEach((material) => material.dispose());
+    materials.forEach((material) => {
+      if (material instanceof MeshStandardMaterial) material.map?.dispose();
+      material.dispose();
+    });
   });
 }
 
@@ -266,11 +281,9 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
 
     async function loadStandardConfiguration() {
       try {
-        interiorShell = createInteriorShell();
-        scene.add(interiorShell);
-
-        const [gasCabinet, fryer, hygiene, fridge, gasGriddles, hood, splashGuard, countertopStand] =
+        const [floorTexture, gasCabinet, fryer, hygiene, fridge, gasGriddles, hood, splashGuard, countertopStand] =
           await Promise.all([
+            new TextureLoader().loadAsync("/configurator-textures/floor/grey-oak-vinyl.png"),
             loadConfiguratorModel("/configurator-models/interieur/moebel/Gasschrank.glb"),
             loadConfiguratorModel("/configurator-models/interieur/kochen/Doppelfriteuse.glb"),
             loadConfiguratorModel("/configurator-models/interieur/hygiene/Hygienebereich.glb"),
@@ -280,7 +293,18 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
             loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Spritzschutz_700.glb"),
             loadConfiguratorModel("/configurator-models/interieur/arbeitsflaechen/Arbeitsplatten_Staender.glb"),
           ]);
-        if (disposed) return;
+        if (disposed) {
+          floorTexture.dispose();
+          return;
+        }
+
+        floorTexture.colorSpace = SRGBColorSpace;
+        floorTexture.wrapS = RepeatWrapping;
+        floorTexture.wrapT = RepeatWrapping;
+        floorTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        floorTexture.needsUpdate = true;
+        interiorShell = createInteriorShell(floorTexture);
+        scene.add(interiorShell);
 
         GAS_CABINET_EXTERNAL_CONNECTIONS.forEach((nodeName) => {
           gasCabinet.scene.getObjectByName(nodeName)?.removeFromParent();
