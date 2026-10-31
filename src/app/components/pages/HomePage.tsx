@@ -35,7 +35,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
       {/* Hero Section */}
       <section className="relative overflow-hidden" style={{ height: '480px' }}>
         <ImageWithFallback
-          src="https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/slider/cache/4014a61e3251bd6603ba5f355908e033/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-4-7.webp"
+          src="/images/asea-startseite-verkaufsanhaenger.jpg"
           alt={t('home_hero_alt')}
           className="absolute inset-0 w-full h-full object-cover"
           loading="eager"
