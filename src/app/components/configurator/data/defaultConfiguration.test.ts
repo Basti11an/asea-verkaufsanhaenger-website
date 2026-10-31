@@ -3,7 +3,7 @@ import { sidebarEquipmentIds, standardEquipment, trailerConfiguration } from "./
 
 describe("default configurator configuration", () => {
   it("contains the complete standard equipment from the plan", () => {
-    expect(sidebarEquipmentIds).toHaveLength(8);
+    expect(sidebarEquipmentIds).toHaveLength(9);
     expect(standardEquipment.map((item) => item.id)).toEqual(sidebarEquipmentIds);
     expect(standardEquipment.every((item) => item.placementStatus === "confirmed")).toBe(true);
   });
@@ -40,5 +40,12 @@ describe("default configurator configuration", () => {
     expect(gasGriddles?.positionCm?.depth).toBe(140);
     expect((gasGriddles?.positionCm?.height ?? 0) + (gasGriddles?.dimensionsCm?.height ?? 0)).toBe(85);
     expect(gasGriddles?.planFootprintCm).toMatchObject({ depthStart: 140, depthEnd: 200 });
+  });
+
+  it("fits the undercounter fridge below the rear work surface", () => {
+    const fridge = standardEquipment.find((item) => item.id === "standard-undercounter-fridge");
+
+    expect(fridge?.positionCm).toEqual({ longitudinal: 300, height: 0, depth: 0 });
+    expect(fridge?.dimensionsCm).toMatchObject({ width: 60, height: 81, depth: 60 });
   });
 });

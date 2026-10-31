@@ -38,6 +38,7 @@ const expectedWebModels = [
   "public/configurator-models/interieur/hygiene/Hygienebereich.glb",
   "public/configurator-models/interieur/kochen/Doppelfriteuse.glb",
   "public/configurator-models/interieur/kochen/Gasbraeter.glb",
+  "public/configurator-models/interieur/kuehlung/Kuehlschrank_Unterbau.glb",
   "public/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb",
   "public/configurator-models/interieur/lueftung-und-schutz/Spritzschutz_700.glb",
   "public/configurator-models/interieur/moebel/Arbeitstisch_1200.glb",

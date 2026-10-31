@@ -38,6 +38,7 @@ type Placement = {
   maxZ?: number;
   centerZ?: number;
   width?: number;
+  height?: number;
 };
 
 const MODEL_SCALE = 0.1;
@@ -50,11 +51,7 @@ const GAS_CABINET_EXTERNAL_CONNECTIONS = [
   "Gasschrank_710x600x850_Pruefanschluss",
   "Gasschrank_710x600x850_Schottverschraubung",
 ] as const;
-const COUNTERTOP_STAND_POSITIONS = [
-  [-0.455, -0.445],
-  [0.105, -0.445],
-  [1.195, -0.445],
-  [1.755, -0.445],
+const FRONT_COUNTERTOP_STAND_POSITIONS = [
   [-1.755, 0.445],
   [-(GAS_GRIDDLE_NICHE_HALF_WIDTH + 0.045), 0.445],
   [GAS_GRIDDLE_NICHE_HALF_WIDTH + 0.045, 0.445],
@@ -89,6 +86,14 @@ function addGasGriddleNiche(parent: Group) {
   addBox(parent, [0.03, 0.33, 0.6], [GAS_GRIDDLE_NICHE_HALF_WIDTH - 0.015, 0.685, 0.7], steel);
 }
 
+function addRearCounterPanels(parent: Group) {
+  const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.52, metalness: 0.55 });
+
+  addBox(parent, [0.03, 0.81, 0.58], [-0.485, 0.405, -0.7], steel);
+  addBox(parent, [0.03, 0.81, 0.58], [0.135, 0.405, -0.7], steel);
+  addBox(parent, [0.05, 0.81, 0.58], [1.175, 0.405, -0.7], steel);
+}
+
 function createInteriorShell() {
   const shell = new Group();
   shell.name = "ASEA_InteriorShell";
@@ -114,6 +119,7 @@ function createInteriorShell() {
   addCountertop(shell, 1.15, 1.8, -0.7);
   addCountertop(shell, -1.8, -GAS_GRIDDLE_NICHE_HALF_WIDTH, 0.7);
   addCountertop(shell, GAS_GRIDDLE_NICHE_HALF_WIDTH, 1.8, 0.7);
+  addRearCounterPanels(shell);
   addGasGriddleNiche(shell);
 
   return shell;
@@ -127,6 +133,9 @@ function prepareModel(model: Group, rotationY: number, placement: Placement) {
   let bounds = new Box3().setFromObject(model);
   const size = bounds.getSize(new Vector3());
   if (placement.width) model.scale.multiplyScalar(placement.width / size.x);
+  model.updateMatrixWorld(true);
+  bounds = new Box3().setFromObject(model);
+  if (placement.height) model.scale.y *= placement.height / bounds.getSize(new Vector3()).y;
   model.updateMatrixWorld(true);
   bounds = new Box3().setFromObject(model);
 
@@ -260,15 +269,17 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
         interiorShell = createInteriorShell();
         scene.add(interiorShell);
 
-        const [gasCabinet, fryer, hygiene, gasGriddles, hood, splashGuard, countertopStand] = await Promise.all([
-          loadConfiguratorModel("/configurator-models/interieur/moebel/Gasschrank.glb"),
-          loadConfiguratorModel("/configurator-models/interieur/kochen/Doppelfriteuse.glb"),
-          loadConfiguratorModel("/configurator-models/interieur/hygiene/Hygienebereich.glb"),
-          loadConfiguratorModel("/configurator-models/interieur/kochen/Gasbraeter.glb"),
-          loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb"),
-          loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Spritzschutz_700.glb"),
-          loadConfiguratorModel("/configurator-models/interieur/arbeitsflaechen/Arbeitsplatten_Staender.glb"),
-        ]);
+        const [gasCabinet, fryer, hygiene, fridge, gasGriddles, hood, splashGuard, countertopStand] =
+          await Promise.all([
+            loadConfiguratorModel("/configurator-models/interieur/moebel/Gasschrank.glb"),
+            loadConfiguratorModel("/configurator-models/interieur/kochen/Doppelfriteuse.glb"),
+            loadConfiguratorModel("/configurator-models/interieur/hygiene/Hygienebereich.glb"),
+            loadConfiguratorModel("/configurator-models/interieur/kuehlung/Kuehlschrank_Unterbau.glb"),
+            loadConfiguratorModel("/configurator-models/interieur/kochen/Gasbraeter.glb"),
+            loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb"),
+            loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Spritzschutz_700.glb"),
+            loadConfiguratorModel("/configurator-models/interieur/arbeitsflaechen/Arbeitsplatten_Staender.glb"),
+          ]);
         if (disposed) return;
 
         GAS_CABINET_EXTERNAL_CONNECTIONS.forEach((nodeName) => {
@@ -279,10 +290,11 @@ export function ConfiguratorScene({ view, started }: ConfiguratorSceneProps) {
           prepareModel(gasCabinet.scene, Math.PI / 2, { minX: -1.8, minY: 0, minZ: -1 }),
           prepareModel(fryer.scene, -Math.PI / 2, { minX: -1.09, minY: 0.4328, minZ: -1, width: 0.59 }),
           prepareModel(hygiene.scene, -Math.PI / 2, { minX: 0.15, minY: 0, minZ: -1, width: 1 }),
+          prepareModel(fridge.scene, -Math.PI / 2, { minX: 1.2, minY: 0, minZ: -1, width: 0.6, height: 0.81 }),
           prepareModel(gasGriddles.scene, Math.PI / 2, { centerX: 0, minY: 0.6, minZ: 0.4 }),
           prepareModel(hood.scene, -Math.PI / 2, { minX: -1.09, minY: 1.36, minZ: -1, width: 0.6 }),
           prepareModel(splashGuard.scene, Math.PI / 2, { centerX: 0, minY: 0.85, maxZ: 1 }),
-          ...COUNTERTOP_STAND_POSITIONS.map(([centerX, centerZ]) =>
+          ...FRONT_COUNTERTOP_STAND_POSITIONS.map(([centerX, centerZ]) =>
             prepareModel(countertopStand.scene.clone(), 0, { centerX, minY: 0, centerZ }),
           ),
         );
