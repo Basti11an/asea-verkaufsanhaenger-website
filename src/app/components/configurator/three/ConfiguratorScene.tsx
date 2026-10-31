@@ -75,13 +75,13 @@ function addBox(
 }
 
 function addCountertop(parent: Group, startX: number, endX: number, centerZ: number, depth = 0.6) {
-  const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.36, metalness: 0.7 });
+  const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.52, metalness: 0.55 });
   const width = endX - startX;
   addBox(parent, [width, 0.04, depth], [(startX + endX) / 2, 0.83, centerZ], steel);
 }
 
 function addGasGriddleNiche(parent: Group) {
-  const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.36, metalness: 0.7 });
+  const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.52, metalness: 0.55 });
   const nicheWidth = GAS_GRIDDLE_NICHE_HALF_WIDTH * 2;
 
   addBox(parent, [nicheWidth, 0.03, 0.6], [0, 0.585, 0.7], steel);
@@ -141,8 +141,26 @@ function prepareModel(model: Group, rotationY: number, placement: Placement) {
 
   model.traverse((object) => {
     if (object instanceof Mesh) {
-      object.castShadow = true;
-      object.receiveShadow = true;
+      const materials = Array.isArray(object.material) ? object.material : [object.material];
+      const hasTransparentMaterial = materials.some((material) => material.transparent);
+
+      materials.forEach((material) => {
+        if (!(material instanceof MeshStandardMaterial)) return;
+
+        if (material.transparent) {
+          material.depthWrite = false;
+          material.envMapIntensity = Math.min(material.envMapIntensity, 0.45);
+          return;
+        }
+
+        if (material.metalness >= 0.8) {
+          material.roughness = Math.max(material.roughness, 0.42);
+          material.envMapIntensity = Math.min(material.envMapIntensity, 0.65);
+        }
+      });
+
+      object.castShadow = !hasTransparentMaterial;
+      object.receiveShadow = !hasTransparentMaterial;
     }
   });
 
