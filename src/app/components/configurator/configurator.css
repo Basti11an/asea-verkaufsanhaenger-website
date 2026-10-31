@@ -266,6 +266,7 @@
   margin: 0;
   padding: 7px 0;
   list-style: none;
+  overflow-x: hidden;
   overflow-y: auto;
 }
 
@@ -278,6 +279,32 @@
   border-bottom: 1px solid #e4e6e0;
   color: #454942;
   font-size: 12px;
+  line-height: 1.35;
+}
+
+.asea-standard-list li.is-selected {
+  margin-inline: -6px;
+  padding-inline: 6px;
+  border-bottom-color: #ccb894;
+  background: #f2eadf;
+}
+
+.asea-configurator .asea-standard-item-button {
+  width: 100%;
+  min-height: 26px;
+  justify-content: flex-start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #454942;
+  text-align: left;
+}
+
+.asea-configurator .asea-standard-item-button:hover {
+  color: var(--bronze-dark);
+}
+
+.asea-configurator .asea-standard-item-button > span:last-child {
   line-height: 1.35;
 }
 
@@ -296,6 +323,114 @@
 .asea-sidebar-finish {
   padding-top: 10px;
   border-top: 1px solid #dfe2db;
+}
+
+.asea-placement-panel {
+  flex: 0 0 auto;
+  padding: 11px 10px 10px;
+  border-top: 1px solid #d9d4ca;
+  background: #f4f1ea;
+}
+
+.asea-placement-heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 8px;
+  color: var(--bronze-dark);
+  font-size: 12px;
+}
+
+.asea-placement-panel label {
+  display: block;
+  margin-bottom: 5px;
+  color: #50554e;
+  font-size: 11px;
+}
+
+.asea-placement-panel > input[type="range"] {
+  width: 100%;
+  height: 20px;
+  accent-color: var(--bronze);
+  cursor: pointer;
+}
+
+.asea-centimeter-control {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 34px;
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.asea-configurator .asea-centimeter-control > button {
+  width: 34px;
+  min-height: 34px;
+  padding: 0;
+  border: 1px solid #c9cdc4;
+  background: #fff;
+  color: #3e433c;
+}
+
+.asea-configurator .asea-centimeter-control > button:hover:not(:disabled) {
+  border-color: var(--bronze);
+  color: var(--bronze-dark);
+}
+
+.asea-configurator button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.asea-centimeter-control > div {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  height: 34px;
+  border: 1px solid #c9cdc4;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.asea-centimeter-control input {
+  min-width: 0;
+  width: 100%;
+  height: 32px;
+  padding: 0 4px 0 8px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 650;
+  text-align: right;
+}
+
+.asea-centimeter-control span {
+  padding-right: 8px;
+  color: #6b7068;
+  font-size: 11px;
+}
+
+.asea-placement-panel p {
+  margin: 7px 0 8px;
+  color: #6b7068;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.asea-configurator .asea-reset-position {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 1px solid #c9cdc4;
+  background: #fff;
+  color: #4b5049;
+  font-size: 11px;
+}
+
+.asea-configurator .asea-reset-position:hover:not(:disabled) {
+  border-color: var(--bronze);
+  color: var(--bronze-dark);
 }
 
 .asea-inline-notice {

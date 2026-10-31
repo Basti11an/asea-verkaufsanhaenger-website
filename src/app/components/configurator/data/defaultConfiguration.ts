@@ -84,6 +84,13 @@ export const trailerConfiguration = {
   },
 };
 
+export const gasGriddlePlacement = {
+  defaultCenterCm: 180,
+  minCenterCm: 39,
+  maxCenterCm: 321,
+  stepCm: 1,
+} as const;
+
 export const standardEquipment: readonly StandardEquipmentDefinition[] = [
   {
     id: "standard-gas-cabinet",
@@ -142,7 +149,11 @@ export const standardEquipment: readonly StandardEquipmentDefinition[] = [
   {
     id: "standard-gas-griddles",
     productId: "gas-griddle",
-    name: ["Gasbräter 1 und 2", "Gas griddles 1 and 2", "Plynové grily 1 a 2"],
+    name: [
+      "Gasbräter mit Spritzschutz",
+      "Gas griddles with splash guard",
+      "Plynové grily s ochranným sklom",
+    ],
     modelPath: "/configurator-models/interieur/kochen/Gasbraeter.glb",
     sceneNodeName: null,
     dimensionsCm: { width: 66.05, height: 25, depth: 60 },
@@ -256,7 +267,6 @@ export const sidebarEquipmentIds = [
   "standard-gas-griddles",
   "standard-undercounter-fridge",
   "standard-worktables",
-  "standard-splash-guard",
   "standard-hood",
   "standard-countertops",
 ] as const;

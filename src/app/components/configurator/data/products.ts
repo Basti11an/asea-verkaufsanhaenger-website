@@ -45,7 +45,11 @@ const productEntries: readonly ProductEntry[] = [
   },
   {
     id: "gas-griddle",
-    name: ["Gasbräter", "Gas griddle", "Plynový gril"],
+    name: [
+      "Gasbräter mit Spritzschutz",
+      "Gas griddles with splash guard",
+      "Plynové grily s ochranným sklom",
+    ],
     category: "cooking",
     preferredView: "top",
     modelPath: "/configurator-models/interieur/kochen/Gasbraeter.glb",

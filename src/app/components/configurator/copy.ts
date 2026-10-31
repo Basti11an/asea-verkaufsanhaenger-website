@@ -32,6 +32,16 @@ const copy = {
     "Product placement will follow in the next step.",
     "Umiestňovanie produktov bude doplnené v ďalšom kroku.",
   ],
+  position: ["Position", "Position", "Poloha"],
+  centerFromLeft: ["Mittelpunkt von links", "Centre from the left", "Stred zľava"],
+  gasGriddleMoveHelp: [
+    "Gasbräter, Unterbau und Spritzschutz bewegen sich gemeinsam.",
+    "Gas griddles, base and splash guard move together.",
+    "Plynové grily, podstavec a ochranné sklo sa pohybujú spolu.",
+  ],
+  moveLeft: ["1 cm nach links", "Move 1 cm left", "Posunúť o 1 cm doľava"],
+  moveRight: ["1 cm nach rechts", "Move 1 cm right", "Posunúť o 1 cm doprava"],
+  resetPosition: ["Standardposition", "Default position", "Predvolená poloha"],
   loading: ["3D-Modell wird geladen ...", "Loading 3D model ...", "Načítava sa 3D model ..."],
   loadError: [
     "Das 3D-Modell konnte nicht geladen werden.",
