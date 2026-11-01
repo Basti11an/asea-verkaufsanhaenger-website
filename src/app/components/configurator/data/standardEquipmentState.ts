@@ -10,6 +10,15 @@ export const movableStandardEquipmentIds = [
 
 export type MovableStandardEquipmentId = (typeof movableStandardEquipmentIds)[number];
 
+export const userConfigurableEquipmentIds = [
+  "standard-double-fryer",
+  "standard-hygiene",
+  "standard-gas-griddles",
+  "standard-undercounter-fridge",
+] as const;
+
+export type UserConfigurableEquipmentId = (typeof userConfigurableEquipmentIds)[number];
+
 export type EquipmentPlacementState = {
   active: boolean;
   centerCm: number;
@@ -37,7 +46,7 @@ export const equipmentPlacementDefinitions: Record<MovableStandardEquipmentId, E
     side: "closed-wall",
     defaultCenterCm: 100.5,
     minCenterCm: 29.5,
-    maxCenterCm: 330.5,
+    maxCenterCm: 329.5,
     widthCm: 59,
     heightStartCm: 43.28,
     heightEndCm: 85,
@@ -104,12 +113,20 @@ const fixedObstacles = [
   },
 ] as const;
 
-export const standardEquipmentIdByProductId = new Map(
-  movableStandardEquipmentIds.map((id) => [equipmentPlacementDefinitions[id].productId, id]),
-);
+export const standardEquipmentIdByProductId = new Map<string, UserConfigurableEquipmentId>([
+  ["double-fryer", "standard-double-fryer"],
+  ["extractor-hood", "standard-double-fryer"],
+  ["hygiene-area", "standard-hygiene"],
+  ["gas-griddle", "standard-gas-griddles"],
+  ["undercounter-fridge", "standard-undercounter-fridge"],
+]);
 
 export function isMovableStandardEquipmentId(id: string): id is MovableStandardEquipmentId {
   return movableStandardEquipmentIds.includes(id as MovableStandardEquipmentId);
+}
+
+export function isUserConfigurableEquipmentId(id: string): id is UserConfigurableEquipmentId {
+  return userConfigurableEquipmentIds.includes(id as UserConfigurableEquipmentId);
 }
 
 export function createDefaultStandardEquipmentState(): StandardEquipmentState {
@@ -194,6 +211,89 @@ export function restoreStandardEquipment(state: StandardEquipmentState, id: Mova
     if (!findEquipmentCollision(state, id, candidate)) {
       return {
         state: { ...state, [id]: { active: true, centerCm: candidate } },
+        restored: true,
+      };
+    }
+  }
+
+  return { state, restored: false };
+}
+
+const fryerAssemblyOffsetCm = 0.5;
+
+function withoutFryerAssembly(state: StandardEquipmentState): StandardEquipmentState {
+  return {
+    ...state,
+    "standard-double-fryer": { ...state["standard-double-fryer"], active: false },
+    "standard-hood": { ...state["standard-hood"], active: false },
+  };
+}
+
+function canPlaceFryerAssembly(state: StandardEquipmentState, fryerCenterCm: number) {
+  const stateWithoutAssembly = withoutFryerAssembly(state);
+  const hoodCenterCm = fryerCenterCm + fryerAssemblyOffsetCm;
+  return !findEquipmentCollision(stateWithoutAssembly, "standard-double-fryer", fryerCenterCm)
+    && !findEquipmentCollision(stateWithoutAssembly, "standard-hood", hoodCenterCm);
+}
+
+export function moveStandardEquipmentAssembly(
+  state: StandardEquipmentState,
+  id: UserConfigurableEquipmentId,
+  requestedCenterCm: number,
+) {
+  if (id !== "standard-double-fryer") {
+    return moveStandardEquipment(state, id, requestedCenterCm);
+  }
+
+  const fryerCenterCm = clampEquipmentCenterCm(id, requestedCenterCm);
+  if (!canPlaceFryerAssembly(state, fryerCenterCm)) {
+    return { state, collisionWith: "equipment" };
+  }
+
+  return {
+    state: {
+      ...state,
+      "standard-double-fryer": { active: true, centerCm: fryerCenterCm },
+      "standard-hood": { active: true, centerCm: fryerCenterCm + fryerAssemblyOffsetCm },
+    },
+    collisionWith: null,
+  };
+}
+
+export function removeStandardEquipmentAssembly(
+  state: StandardEquipmentState,
+  id: UserConfigurableEquipmentId,
+) {
+  if (id !== "standard-double-fryer") return removeStandardEquipment(state, id);
+  return withoutFryerAssembly(state);
+}
+
+export function restoreStandardEquipmentAssembly(
+  state: StandardEquipmentState,
+  id: UserConfigurableEquipmentId,
+) {
+  if (id !== "standard-double-fryer") return restoreStandardEquipment(state, id);
+
+  const definition = equipmentPlacementDefinitions[id];
+  const candidates: number[] = [definition.defaultCenterCm];
+  const maxDistanceInHalfCentimeters = Math.ceil(
+    (definition.maxCenterCm - definition.minCenterCm) * 2,
+  );
+
+  for (let step = 1; step <= maxDistanceInHalfCentimeters; step += 1) {
+    const distance = step / 2;
+    candidates.push(definition.defaultCenterCm - distance, definition.defaultCenterCm + distance);
+  }
+
+  for (const candidate of candidates) {
+    if (candidate < definition.minCenterCm || candidate > definition.maxCenterCm) continue;
+    if (canPlaceFryerAssembly(state, candidate)) {
+      return {
+        state: {
+          ...state,
+          "standard-double-fryer": { active: true, centerCm: candidate },
+          "standard-hood": { active: true, centerCm: candidate + fryerAssemblyOffsetCm },
+        },
         restored: true,
       };
     }

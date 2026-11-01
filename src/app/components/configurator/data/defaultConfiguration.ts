@@ -106,7 +106,11 @@ export const standardEquipment: readonly StandardEquipmentDefinition[] = [
   {
     id: "standard-double-fryer",
     productId: "double-fryer",
-    name: ["Doppelfritteuse", "Double fryer", "Dvojitá fritéza"],
+    name: [
+      "Doppelfritteuse mit Dunstabzug",
+      "Double fryer with extractor hood",
+      "Dvojitá fritéza s odsávačom pár",
+    ],
     modelPath: "/configurator-models/interieur/kochen/Doppelfriteuse.glb",
     sceneNodeName: null,
     dimensionsCm: { width: 59, height: 41.1, depth: 60 },
@@ -260,6 +264,5 @@ export const sidebarEquipmentIds = [
   "standard-gas-griddles",
   "standard-undercounter-fridge",
   "standard-worktables",
-  "standard-hood",
   "standard-countertops",
 ] as const;

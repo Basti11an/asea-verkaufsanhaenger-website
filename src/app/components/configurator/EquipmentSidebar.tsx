@@ -1,17 +1,12 @@
 import {
   Check,
-  ChevronLeft,
-  ChevronRight,
   ClipboardCheck,
   LockKeyhole,
   MoveHorizontal,
-  RotateCcw,
-  Trash2,
 } from "lucide-react";
 import { sidebarEquipmentIds, standardEquipment } from "./data/defaultConfiguration";
 import {
-  equipmentPlacementDefinitions,
-  isMovableStandardEquipmentId,
+  isUserConfigurableEquipmentId,
   type StandardEquipmentState,
 } from "./data/standardEquipmentState";
 import { useConfiguratorCopy } from "./copy";
@@ -21,8 +16,6 @@ type EquipmentSidebarProps = {
   selectedEquipmentId: string | null;
   equipmentState: StandardEquipmentState;
   onEquipmentSelect: (equipmentId: string) => void;
-  onEquipmentCenterChange: (equipmentId: string, value: number) => void;
-  onEquipmentRemove: (equipmentId: string) => void;
   onFinish: () => void;
 };
 
@@ -31,26 +24,16 @@ export function EquipmentSidebar({
   selectedEquipmentId,
   equipmentState,
   onEquipmentSelect,
-  onEquipmentCenterChange,
-  onEquipmentRemove,
   onFinish,
 }: EquipmentSidebarProps) {
   const { text, name } = useConfiguratorCopy();
   const equipment = standardEquipment.filter((item) => (
     sidebarEquipmentIds.includes(item.id as (typeof sidebarEquipmentIds)[number])
-    && (!isMovableStandardEquipmentId(item.id) || equipmentState[item.id].active)
+    && (!isUserConfigurableEquipmentId(item.id) || equipmentState[item.id].active)
   ));
-  const selectedId = selectedEquipmentId && isMovableStandardEquipmentId(selectedEquipmentId)
+  const selectedId = selectedEquipmentId && isUserConfigurableEquipmentId(selectedEquipmentId)
     ? selectedEquipmentId
     : null;
-  const selectedDefinition = selectedId ? equipmentPlacementDefinitions[selectedId] : null;
-  const selectedState = selectedId ? equipmentState[selectedId] : null;
-  const selectedItem = selectedId ? standardEquipment.find((item) => item.id === selectedId) : null;
-  const selectedHelp = selectedId === "standard-gas-griddles"
-    ? text("gasGriddleMoveHelp")
-    : selectedId === "standard-hygiene"
-      ? text("hygieneMoveHelp")
-      : text("equipmentMoveHelp");
 
   return (
     <aside className="asea-equipment-sidebar">
@@ -60,7 +43,7 @@ export function EquipmentSidebar({
       </div>
       <ul className="asea-standard-list">
         {equipment.map((item) => {
-          const isMovable = isMovableStandardEquipmentId(item.id);
+          const isMovable = isUserConfigurableEquipmentId(item.id);
           const isFixed = item.id === "standard-gas-cabinet";
           const isSelected = item.id === selectedId;
 
@@ -88,76 +71,6 @@ export function EquipmentSidebar({
           );
         })}
       </ul>
-      {selectedId && selectedDefinition && selectedState && selectedItem ? (
-        <div className="asea-placement-panel">
-          <div className="asea-placement-heading">
-            <MoveHorizontal size={16} aria-hidden="true" />
-            <strong>{name(selectedItem.name)}</strong>
-          </div>
-          <label htmlFor="equipment-position">{text("centerFromLeft")}</label>
-          <input
-            id="equipment-position"
-            type="range"
-            min={selectedDefinition.minCenterCm}
-            max={selectedDefinition.maxCenterCm}
-            step={0.5}
-            value={selectedState.centerCm}
-            onChange={(event) => onEquipmentCenterChange(selectedId, Number(event.target.value))}
-          />
-          <div className="asea-centimeter-control">
-            <button
-              type="button"
-              title={text("moveLeft")}
-              aria-label={text("moveLeft")}
-              disabled={selectedState.centerCm <= selectedDefinition.minCenterCm}
-              onClick={() => onEquipmentCenterChange(selectedId, selectedState.centerCm - 1)}
-            >
-              <ChevronLeft size={17} aria-hidden="true" />
-            </button>
-            <div>
-              <input
-                type="number"
-                min={selectedDefinition.minCenterCm}
-                max={selectedDefinition.maxCenterCm}
-                step={0.5}
-                value={selectedState.centerCm}
-                aria-label={text("centerFromLeft")}
-                onChange={(event) => onEquipmentCenterChange(selectedId, Number(event.target.value))}
-              />
-              <span>cm</span>
-            </div>
-            <button
-              type="button"
-              title={text("moveRight")}
-              aria-label={text("moveRight")}
-              disabled={selectedState.centerCm >= selectedDefinition.maxCenterCm}
-              onClick={() => onEquipmentCenterChange(selectedId, selectedState.centerCm + 1)}
-            >
-              <ChevronRight size={17} aria-hidden="true" />
-            </button>
-          </div>
-          <p>{selectedHelp}</p>
-          <div className="asea-placement-actions">
-            <button
-              type="button"
-              className="asea-reset-position"
-              disabled={selectedState.centerCm === selectedDefinition.defaultCenterCm}
-              onClick={() => onEquipmentCenterChange(selectedId, selectedDefinition.defaultCenterCm)}
-            >
-              <RotateCcw size={14} aria-hidden="true" />
-              {text("resetPosition")}
-            </button>
-            <button
-              type="button"
-              className="asea-remove-equipment"
-              onClick={() => onEquipmentRemove(selectedId)}
-            >
-              <Trash2 size={14} aria-hidden="true" />
-              {text("removeEquipment")}
-            </button>
-          </div>
-        </div>
-      ) : null}
       <div className="asea-sidebar-finish">
         <p className="asea-inline-notice" role="status" aria-live="polite">{notice}</p>
         <button type="button" className="asea-finish-button" onClick={onFinish}>

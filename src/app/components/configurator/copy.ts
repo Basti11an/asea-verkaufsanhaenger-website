@@ -49,6 +49,16 @@ const copy = {
     "Wall cabinet, sink and tap move together.",
     "Nástenná skrinka, drez a batéria sa pohybujú spolu.",
   ],
+  fryerMoveHelp: [
+    "Doppelfritteuse und Dunstabzug bewegen sich gemeinsam.",
+    "Double fryer and extractor hood move together.",
+    "Dvojitá fritéza a odsávač pár sa pohybujú spolu.",
+  ],
+  editEquipment: [
+    "Ausgewählte Ausstattung bearbeiten",
+    "Edit selected equipment",
+    "Upraviť vybrané vybavenie",
+  ],
   moveLeft: ["1 cm nach links", "Move 1 cm left", "Posunúť o 1 cm doľava"],
   moveRight: ["1 cm nach rechts", "Move 1 cm right", "Posunúť o 1 cm doprava"],
   resetPosition: ["Standardposition", "Default position", "Predvolená poloha"],

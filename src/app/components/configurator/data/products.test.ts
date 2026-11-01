@@ -31,4 +31,16 @@ describe("configurator products", () => {
     expect(products[0].rules).not.toBe(products[1].rules);
     expect(products[0].rules.allowedSides).not.toBe(products[1].rules.allowedSides);
   });
+
+  it("offers fryer and extractor hood as one selectable product", () => {
+    expect(productById.get("double-fryer")).toMatchObject({
+      active: true,
+      name: [
+        "Doppelfritteuse mit Dunstabzug",
+        "Double fryer with extractor hood",
+        "Dvojitá fritéza s odsávačom pár",
+      ],
+    });
+    expect(productById.get("extractor-hood")?.active).toBe(false);
+  });
 });

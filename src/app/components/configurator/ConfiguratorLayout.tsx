@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Monitor } from "lucide-react";
 import { ConfiguratorTopbar } from "./ConfiguratorTopbar";
 import { EquipmentSidebar } from "./EquipmentSidebar";
+import { EquipmentEditor } from "./EquipmentEditor";
 import { ProductBar } from "./ProductBar";
 import { StartOverlay } from "./StartOverlay";
 import { ConfiguratorScene } from "./three/ConfiguratorScene";
@@ -9,10 +10,10 @@ import type { ConfiguratorView, ProductDefinition } from "./types";
 import { useConfiguratorCopy } from "./copy";
 import {
   createDefaultStandardEquipmentState,
-  isMovableStandardEquipmentId,
-  moveStandardEquipment,
-  removeStandardEquipment,
-  restoreStandardEquipment,
+  isUserConfigurableEquipmentId,
+  moveStandardEquipmentAssembly,
+  removeStandardEquipmentAssembly,
+  restoreStandardEquipmentAssembly,
   standardEquipmentIdByProductId,
 } from "./data/standardEquipmentState";
 import "./configurator.css";
@@ -26,7 +27,7 @@ export function ConfiguratorLayout() {
   const [equipmentState, setEquipmentState] = useState(createDefaultStandardEquipmentState);
 
   function selectEquipment(equipmentId: string) {
-    if (!isMovableStandardEquipmentId(equipmentId) || !equipmentState[equipmentId].active) return;
+    if (!isUserConfigurableEquipmentId(equipmentId) || !equipmentState[equipmentId].active) return;
     setStarted(true);
     setSelectedEquipmentId(equipmentId);
     setNotice(null);
@@ -41,7 +42,7 @@ export function ConfiguratorLayout() {
     }
 
     if (!equipmentState[equipmentId].active) {
-      const result = restoreStandardEquipment(equipmentState, equipmentId);
+      const result = restoreStandardEquipmentAssembly(equipmentState, equipmentId);
       if (!result.restored) {
         setNotice(text("noSpaceNotice"));
         return;
@@ -62,8 +63,8 @@ export function ConfiguratorLayout() {
   }
 
   function handleEquipmentCenterChange(equipmentId: string, centerCm: number) {
-    if (!isMovableStandardEquipmentId(equipmentId)) return;
-    const result = moveStandardEquipment(equipmentState, equipmentId, centerCm);
+    if (!isUserConfigurableEquipmentId(equipmentId)) return;
+    const result = moveStandardEquipmentAssembly(equipmentState, equipmentId, centerCm);
     if (result.collisionWith) {
       setNotice(text("collisionNotice"));
       return;
@@ -73,8 +74,8 @@ export function ConfiguratorLayout() {
   }
 
   function handleEquipmentRemove(equipmentId: string) {
-    if (!isMovableStandardEquipmentId(equipmentId)) return;
-    setEquipmentState(removeStandardEquipment(equipmentState, equipmentId));
+    if (!isUserConfigurableEquipmentId(equipmentId)) return;
+    setEquipmentState(removeStandardEquipmentAssembly(equipmentState, equipmentId));
     setSelectedEquipmentId(null);
     setNotice(text("removedNotice"));
   }
@@ -103,11 +104,15 @@ export function ConfiguratorLayout() {
             selectedEquipmentId={selectedEquipmentId}
             equipmentState={equipmentState}
             onEquipmentSelect={handleEquipmentSelect}
-            onEquipmentCenterChange={handleEquipmentCenterChange}
-            onEquipmentRemove={handleEquipmentRemove}
             onFinish={() => setNotice(text("finishNotice"))}
           />
         </div>
+        <EquipmentEditor
+          selectedEquipmentId={selectedEquipmentId}
+          equipmentState={equipmentState}
+          onEquipmentCenterChange={handleEquipmentCenterChange}
+          onEquipmentRemove={handleEquipmentRemove}
+        />
         <ProductBar onProductClick={handleProductClick} />
       </div>
     </section>

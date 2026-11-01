@@ -32,7 +32,11 @@ const productEntries: readonly ProductEntry[] = [
   },
   {
     id: "double-fryer",
-    name: ["Doppelfriteuse", "Double fryer", "Dvojitá fritéza"],
+    name: [
+      "Doppelfritteuse mit Dunstabzug",
+      "Double fryer with extractor hood",
+      "Dvojitá fritéza s odsávačom pár",
+    ],
     category: "cooking",
     preferredView: "top",
     modelPath: "/configurator-models/interieur/kochen/Doppelfriteuse.glb",
@@ -200,7 +204,7 @@ const productEntries: readonly ProductEntry[] = [
     sceneNodeName: null,
     dimensionsCm: null,
     measuredGlbBoundsCm: null,
-    active: true,
+    active: false,
     rules: createEmptyRules(),
   },
 ];

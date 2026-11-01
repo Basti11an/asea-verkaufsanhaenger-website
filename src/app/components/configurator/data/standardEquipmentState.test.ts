@@ -3,9 +3,13 @@ import {
   createDefaultStandardEquipmentState,
   equipmentCenterToWorldOffset,
   findEquipmentCollision,
+  moveStandardEquipmentAssembly,
   moveStandardEquipment,
+  removeStandardEquipmentAssembly,
   removeStandardEquipment,
+  restoreStandardEquipmentAssembly,
   restoreStandardEquipment,
+  standardEquipmentIdByProductId,
 } from "./standardEquipmentState";
 
 describe("standard equipment placement", () => {
@@ -59,5 +63,31 @@ describe("standard equipment placement", () => {
     expect(removed["standard-hygiene"].active).toBe(false);
     expect(restored.restored).toBe(true);
     expect(restored.state["standard-hygiene"]).toEqual({ active: true, centerCm: 245 });
+  });
+
+  it("treats the double fryer and extractor hood as one product", () => {
+    expect(standardEquipmentIdByProductId.get("double-fryer")).toBe("standard-double-fryer");
+    expect(standardEquipmentIdByProductId.get("extractor-hood")).toBe("standard-double-fryer");
+  });
+
+  it("moves the double fryer and extractor hood together", () => {
+    const state = removeStandardEquipment(createDefaultStandardEquipmentState(), "standard-hygiene");
+    const result = moveStandardEquipmentAssembly(state, "standard-double-fryer", 180);
+
+    expect(result.collisionWith).toBeNull();
+    expect(result.state["standard-double-fryer"].centerCm).toBe(180);
+    expect(result.state["standard-hood"].centerCm).toBe(180.5);
+  });
+
+  it("deletes and restores the complete fryer assembly", () => {
+    const state = createDefaultStandardEquipmentState();
+    const removed = removeStandardEquipmentAssembly(state, "standard-double-fryer");
+    const restored = restoreStandardEquipmentAssembly(removed, "standard-double-fryer");
+
+    expect(removed["standard-double-fryer"].active).toBe(false);
+    expect(removed["standard-hood"].active).toBe(false);
+    expect(restored.restored).toBe(true);
+    expect(restored.state["standard-double-fryer"]).toEqual({ active: true, centerCm: 100.5 });
+    expect(restored.state["standard-hood"]).toEqual({ active: true, centerCm: 101 });
   });
 });

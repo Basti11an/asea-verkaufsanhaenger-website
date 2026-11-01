@@ -4,8 +4,9 @@ import { sidebarEquipmentIds, standardEquipment, trailerConfiguration } from "./
 describe("default configurator configuration", () => {
   it("contains the complete standard equipment from the plan", () => {
     expect(standardEquipment).toHaveLength(9);
-    expect(sidebarEquipmentIds).toHaveLength(8);
+    expect(sidebarEquipmentIds).toHaveLength(7);
     expect(sidebarEquipmentIds).not.toContain("standard-splash-guard");
+    expect(sidebarEquipmentIds).not.toContain("standard-hood");
     expect(standardEquipment.every((item) => item.placementStatus === "confirmed")).toBe(true);
   });
 
