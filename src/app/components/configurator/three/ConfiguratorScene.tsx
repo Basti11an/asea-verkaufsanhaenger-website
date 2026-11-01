@@ -43,6 +43,7 @@ type SceneRuntime = {
   cameraController: CameraController;
   controls: OrbitControls;
   applyEquipmentState: (state: StandardEquipmentState) => void;
+  applyViewVisibility: (view: ConfiguratorView) => void;
 };
 
 type Placement = {
@@ -73,6 +74,8 @@ const FRONT_INNER_STAND_OFFSETS = [
   -(GAS_GRIDDLE_NICHE_HALF_WIDTH + 0.045),
   GAS_GRIDDLE_NICHE_HALF_WIDTH + 0.045,
 ] as const;
+const CLOSED_WALL_NAME = "ASEA_ClosedWall";
+const SALES_WALL_NAME = "ASEA_SalesWall";
 
 function addBox(
   parent: Group,
@@ -220,7 +223,10 @@ function createInteriorShell(floorTexture: Texture) {
   woodFloor.position.y = 0.002;
   woodFloor.receiveShadow = true;
   shell.add(woodFloor);
-  addBox(shell, [3.6, 2.3, 0.04], [0, 1.15, -1.02], wall);
+  const closedWall = new Group();
+  closedWall.name = CLOSED_WALL_NAME;
+  addBox(closedWall, [3.6, 2.3, 0.04], [0, 1.15, -1.02], wall);
+  shell.add(closedWall);
   addBox(shell, [0.04, 2.3, 2], [-1.82, 1.15, 0], wall);
 
   // Rear wall with the 80 cm entrance from the plan left open.
@@ -229,8 +235,11 @@ function createInteriorShell(floorTexture: Texture) {
   addBox(shell, [0.04, 0.3, 0.8], [1.82, 2.15, 0], wall);
 
   // The low sales-side wall shows the room boundary without hiding the equipment.
-  addBox(shell, [3.6, 0.76, 0.04], [0, 0.38, 1.02], wall);
-  addBox(shell, [3.62, 0.035, 0.055], [0, 0.79, 1.025], trim);
+  const salesWall = new Group();
+  salesWall.name = SALES_WALL_NAME;
+  addBox(salesWall, [3.6, 0.76, 0.04], [0, 0.38, 1.02], wall);
+  addBox(salesWall, [3.62, 0.035, 0.055], [0, 0.79, 1.025], trim);
+  shell.add(salesWall);
 
   return shell;
 }
@@ -321,6 +330,7 @@ export function ConfiguratorScene({ view, started, equipmentState }: Configurato
   useEffect(() => {
     viewRef.current = view;
     runtimeRef.current?.cameraController.moveTo(cameraPresets[view], 700);
+    runtimeRef.current?.applyViewVisibility(view);
   }, [view]);
 
   useEffect(() => {
@@ -338,6 +348,8 @@ export function ConfiguratorScene({ view, started, equipmentState }: Configurato
     let frontCountertops: Group | null = null;
     let rearCounterFurniture: Group | null = null;
     let standardModels: Group | null = null;
+    let closedWallEquipment: Group | null = null;
+    let salesWallEquipment: Group | null = null;
     const equipmentGroups = new Map<MovableStandardEquipmentId, Group>();
     let frontInnerStandWrappers: Group[] = [];
     const scene = new Scene();
@@ -363,6 +375,17 @@ export function ConfiguratorScene({ view, started, equipmentState }: Configurato
     controls.update();
 
     const cameraController = new CameraController(camera, controls);
+    const applyViewVisibility = (currentView: ConfiguratorView) => {
+      const hideCustomerSide = currentView === "front";
+      const hideSellerSide = currentView === "rear";
+      const closedWall = interiorShell?.getObjectByName(CLOSED_WALL_NAME);
+      const salesWall = interiorShell?.getObjectByName(SALES_WALL_NAME);
+
+      if (closedWall) closedWall.visible = !hideSellerSide;
+      if (salesWall) salesWall.visible = !hideCustomerSide;
+      if (closedWallEquipment) closedWallEquipment.visible = !hideSellerSide;
+      if (salesWallEquipment) salesWallEquipment.visible = !hideCustomerSide;
+    };
     const applyEquipmentState = (state: StandardEquipmentState) => {
       movableStandardEquipmentIds.forEach((id) => {
         const group = equipmentGroups.get(id);
@@ -380,21 +403,22 @@ export function ConfiguratorScene({ view, started, equipmentState }: Configurato
         wrapper.position.x = innerStandPositions[index];
       });
 
-      if (interiorShell) {
+      if (closedWallEquipment && salesWallEquipment) {
         if (frontCountertops) {
-          interiorShell.remove(frontCountertops);
+          salesWallEquipment.remove(frontCountertops);
           disposeGroup(frontCountertops);
         }
         if (rearCounterFurniture) {
-          interiorShell.remove(rearCounterFurniture);
+          closedWallEquipment.remove(rearCounterFurniture);
           disposeGroup(rearCounterFurniture);
         }
         frontCountertops = createFrontCountertops(state);
         rearCounterFurniture = createRearCounterFurniture(state);
-        interiorShell.add(frontCountertops, rearCounterFurniture);
+        salesWallEquipment.add(frontCountertops);
+        closedWallEquipment.add(rearCounterFurniture);
       }
     };
-    runtimeRef.current = { cameraController, controls, applyEquipmentState };
+    runtimeRef.current = { cameraController, controls, applyEquipmentState, applyViewVisibility };
 
     const resize = () => {
       const width = Math.max(container.clientWidth, 1);
@@ -452,6 +476,10 @@ export function ConfiguratorScene({ view, started, equipmentState }: Configurato
 
         standardModels = new Group();
         standardModels.name = "ASEA_StandardEquipment";
+        closedWallEquipment = new Group();
+        closedWallEquipment.name = "ASEA_ClosedWallEquipment";
+        salesWallEquipment = new Group();
+        salesWallEquipment.name = "ASEA_SalesWallEquipment";
         const createEquipmentGroup = (id: MovableStandardEquipmentId, model: Group) => {
           const group = new Group();
           group.name = id;
@@ -473,7 +501,7 @@ export function ConfiguratorScene({ view, started, equipmentState }: Configurato
           return wrapper;
         });
 
-        standardModels.add(
+        closedWallEquipment.add(
           prepareModel(gasCabinet.scene, Math.PI / 2, { minX: -1.8, minY: 0, minZ: -1 }),
           createEquipmentGroup(
             "standard-double-fryer",
@@ -491,14 +519,18 @@ export function ConfiguratorScene({ view, started, equipmentState }: Configurato
             "standard-hood",
             prepareModel(hood.scene, -Math.PI / 2, { minX: -1.09, minY: 1.36, minZ: -1, width: 0.6 }),
           ),
+        );
+        salesWallEquipment.add(
           createEquipmentGroup("standard-gas-griddles", gasGriddleAssembly),
           ...frontInnerStandWrappers,
           ...FRONT_OUTER_STAND_POSITIONS.map((centerX) =>
             prepareModel(countertopStand.scene.clone(), 0, { centerX, minY: 0, centerZ: 0.445 }),
           ),
         );
+        standardModels.add(closedWallEquipment, salesWallEquipment);
         scene.add(standardModels);
         applyEquipmentState(equipmentStateRef.current);
+        applyViewVisibility(viewRef.current);
 
         setStatus("ready");
       } catch (error) {
