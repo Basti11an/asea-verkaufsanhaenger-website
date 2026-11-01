@@ -1,30 +1,56 @@
-import { Check, ChevronLeft, ChevronRight, ClipboardCheck, MoveHorizontal, RotateCcw } from "lucide-react";
-import { gasGriddlePlacement, sidebarEquipmentIds, standardEquipment } from "./data/defaultConfiguration";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardCheck,
+  LockKeyhole,
+  MoveHorizontal,
+  RotateCcw,
+  Trash2,
+} from "lucide-react";
+import { sidebarEquipmentIds, standardEquipment } from "./data/defaultConfiguration";
+import {
+  equipmentPlacementDefinitions,
+  isMovableStandardEquipmentId,
+  type StandardEquipmentState,
+} from "./data/standardEquipmentState";
 import { useConfiguratorCopy } from "./copy";
 
 type EquipmentSidebarProps = {
   notice: string | null;
   selectedEquipmentId: string | null;
-  gasGriddleCenterCm: number;
+  equipmentState: StandardEquipmentState;
   onEquipmentSelect: (equipmentId: string) => void;
-  onGasGriddleCenterChange: (value: number) => void;
+  onEquipmentCenterChange: (equipmentId: string, value: number) => void;
+  onEquipmentRemove: (equipmentId: string) => void;
   onFinish: () => void;
 };
-
-const GAS_GRIDDLE_EQUIPMENT_ID = "standard-gas-griddles";
 
 export function EquipmentSidebar({
   notice,
   selectedEquipmentId,
-  gasGriddleCenterCm,
+  equipmentState,
   onEquipmentSelect,
-  onGasGriddleCenterChange,
+  onEquipmentCenterChange,
+  onEquipmentRemove,
   onFinish,
 }: EquipmentSidebarProps) {
   const { text, name } = useConfiguratorCopy();
-  const equipment = standardEquipment.filter((item) => sidebarEquipmentIds.includes(
-    item.id as (typeof sidebarEquipmentIds)[number],
+  const equipment = standardEquipment.filter((item) => (
+    sidebarEquipmentIds.includes(item.id as (typeof sidebarEquipmentIds)[number])
+    && (!isMovableStandardEquipmentId(item.id) || equipmentState[item.id].active)
   ));
+  const selectedId = selectedEquipmentId && isMovableStandardEquipmentId(selectedEquipmentId)
+    ? selectedEquipmentId
+    : null;
+  const selectedDefinition = selectedId ? equipmentPlacementDefinitions[selectedId] : null;
+  const selectedState = selectedId ? equipmentState[selectedId] : null;
+  const selectedItem = selectedId ? standardEquipment.find((item) => item.id === selectedId) : null;
+  const selectedHelp = selectedId === "standard-gas-griddles"
+    ? text("gasGriddleMoveHelp")
+    : selectedId === "standard-hygiene"
+      ? text("hygieneMoveHelp")
+      : text("equipmentMoveHelp");
 
   return (
     <aside className="asea-equipment-sidebar">
@@ -34,8 +60,9 @@ export function EquipmentSidebar({
       </div>
       <ul className="asea-standard-list">
         {equipment.map((item) => {
-          const isMovable = item.id === GAS_GRIDDLE_EQUIPMENT_ID;
-          const isSelected = item.id === selectedEquipmentId;
+          const isMovable = isMovableStandardEquipmentId(item.id);
+          const isFixed = item.id === "standard-gas-cabinet";
+          const isSelected = item.id === selectedId;
 
           return (
             <li key={item.id} className={isSelected ? "is-selected" : undefined}>
@@ -51,7 +78,9 @@ export function EquipmentSidebar({
                 </button>
               ) : (
                 <>
-                  <span className="asea-standard-check"><Check size={13} aria-hidden="true" /></span>
+                  <span className="asea-standard-check">
+                    {isFixed ? <LockKeyhole size={12} aria-hidden="true" /> : <Check size={13} aria-hidden="true" />}
+                  </span>
                   <span>{name(item.name)}</span>
                 </>
               )}
@@ -59,41 +88,41 @@ export function EquipmentSidebar({
           );
         })}
       </ul>
-      {selectedEquipmentId === GAS_GRIDDLE_EQUIPMENT_ID ? (
+      {selectedId && selectedDefinition && selectedState && selectedItem ? (
         <div className="asea-placement-panel">
           <div className="asea-placement-heading">
             <MoveHorizontal size={16} aria-hidden="true" />
-            <strong>{text("position")}</strong>
+            <strong>{name(selectedItem.name)}</strong>
           </div>
-          <label htmlFor="gas-griddle-position">{text("centerFromLeft")}</label>
+          <label htmlFor="equipment-position">{text("centerFromLeft")}</label>
           <input
-            id="gas-griddle-position"
+            id="equipment-position"
             type="range"
-            min={gasGriddlePlacement.minCenterCm}
-            max={gasGriddlePlacement.maxCenterCm}
-            step={gasGriddlePlacement.stepCm}
-            value={gasGriddleCenterCm}
-            onChange={(event) => onGasGriddleCenterChange(Number(event.target.value))}
+            min={selectedDefinition.minCenterCm}
+            max={selectedDefinition.maxCenterCm}
+            step={0.5}
+            value={selectedState.centerCm}
+            onChange={(event) => onEquipmentCenterChange(selectedId, Number(event.target.value))}
           />
           <div className="asea-centimeter-control">
             <button
               type="button"
               title={text("moveLeft")}
               aria-label={text("moveLeft")}
-              disabled={gasGriddleCenterCm <= gasGriddlePlacement.minCenterCm}
-              onClick={() => onGasGriddleCenterChange(gasGriddleCenterCm - 1)}
+              disabled={selectedState.centerCm <= selectedDefinition.minCenterCm}
+              onClick={() => onEquipmentCenterChange(selectedId, selectedState.centerCm - 1)}
             >
               <ChevronLeft size={17} aria-hidden="true" />
             </button>
             <div>
               <input
                 type="number"
-                min={gasGriddlePlacement.minCenterCm}
-                max={gasGriddlePlacement.maxCenterCm}
-                step={gasGriddlePlacement.stepCm}
-                value={gasGriddleCenterCm}
+                min={selectedDefinition.minCenterCm}
+                max={selectedDefinition.maxCenterCm}
+                step={0.5}
+                value={selectedState.centerCm}
                 aria-label={text("centerFromLeft")}
-                onChange={(event) => onGasGriddleCenterChange(Number(event.target.value))}
+                onChange={(event) => onEquipmentCenterChange(selectedId, Number(event.target.value))}
               />
               <span>cm</span>
             </div>
@@ -101,22 +130,32 @@ export function EquipmentSidebar({
               type="button"
               title={text("moveRight")}
               aria-label={text("moveRight")}
-              disabled={gasGriddleCenterCm >= gasGriddlePlacement.maxCenterCm}
-              onClick={() => onGasGriddleCenterChange(gasGriddleCenterCm + 1)}
+              disabled={selectedState.centerCm >= selectedDefinition.maxCenterCm}
+              onClick={() => onEquipmentCenterChange(selectedId, selectedState.centerCm + 1)}
             >
               <ChevronRight size={17} aria-hidden="true" />
             </button>
           </div>
-          <p>{text("gasGriddleMoveHelp")}</p>
-          <button
-            type="button"
-            className="asea-reset-position"
-            disabled={gasGriddleCenterCm === gasGriddlePlacement.defaultCenterCm}
-            onClick={() => onGasGriddleCenterChange(gasGriddlePlacement.defaultCenterCm)}
-          >
-            <RotateCcw size={14} aria-hidden="true" />
-            {text("resetPosition")}
-          </button>
+          <p>{selectedHelp}</p>
+          <div className="asea-placement-actions">
+            <button
+              type="button"
+              className="asea-reset-position"
+              disabled={selectedState.centerCm === selectedDefinition.defaultCenterCm}
+              onClick={() => onEquipmentCenterChange(selectedId, selectedDefinition.defaultCenterCm)}
+            >
+              <RotateCcw size={14} aria-hidden="true" />
+              {text("resetPosition")}
+            </button>
+            <button
+              type="button"
+              className="asea-remove-equipment"
+              onClick={() => onEquipmentRemove(selectedId)}
+            >
+              <Trash2 size={14} aria-hidden="true" />
+              {text("removeEquipment")}
+            </button>
+          </div>
         </div>
       ) : null}
       <div className="asea-sidebar-finish">

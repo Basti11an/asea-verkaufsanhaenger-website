@@ -7,11 +7,15 @@ import { StartOverlay } from "./StartOverlay";
 import { ConfiguratorScene } from "./three/ConfiguratorScene";
 import type { ConfiguratorView, ProductDefinition } from "./types";
 import { useConfiguratorCopy } from "./copy";
-import { gasGriddlePlacement } from "./data/defaultConfiguration";
-import { clampGasGriddleCenterCm } from "./utils/gasGriddlePlacement";
+import {
+  createDefaultStandardEquipmentState,
+  isMovableStandardEquipmentId,
+  moveStandardEquipment,
+  removeStandardEquipment,
+  restoreStandardEquipment,
+  standardEquipmentIdByProductId,
+} from "./data/standardEquipmentState";
 import "./configurator.css";
-
-const GAS_GRIDDLE_EQUIPMENT_ID = "standard-gas-griddles";
 
 export function ConfiguratorLayout() {
   const { text } = useConfiguratorCopy();
@@ -19,25 +23,60 @@ export function ConfiguratorLayout() {
   const [started, setStarted] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [selectedEquipmentId, setSelectedEquipmentId] = useState<string | null>(null);
-  const [gasGriddleCenterCm, setGasGriddleCenterCm] = useState(gasGriddlePlacement.defaultCenterCm);
+  const [equipmentState, setEquipmentState] = useState(createDefaultStandardEquipmentState);
 
-  function selectGasGriddleAssembly() {
+  function selectEquipment(equipmentId: string) {
+    if (!isMovableStandardEquipmentId(equipmentId) || !equipmentState[equipmentId].active) return;
     setStarted(true);
-    setSelectedEquipmentId(GAS_GRIDDLE_EQUIPMENT_ID);
+    setSelectedEquipmentId(equipmentId);
     setNotice(null);
     setView("top");
   }
 
   function handleProductClick(product: ProductDefinition) {
-    if (product.id === "gas-griddle") {
-      selectGasGriddleAssembly();
+    const equipmentId = standardEquipmentIdByProductId.get(product.id);
+    if (!equipmentId) {
+      setNotice(text("productNotice"));
       return;
     }
-    setNotice(text("productNotice"));
+
+    if (!equipmentState[equipmentId].active) {
+      const result = restoreStandardEquipment(equipmentState, equipmentId);
+      if (!result.restored) {
+        setNotice(text("noSpaceNotice"));
+        return;
+      }
+      setEquipmentState(result.state);
+      setNotice(text("restoredNotice"));
+    } else {
+      setNotice(null);
+    }
+
+    setStarted(true);
+    setSelectedEquipmentId(equipmentId);
+    setView("top");
   }
 
   function handleEquipmentSelect(equipmentId: string) {
-    if (equipmentId === GAS_GRIDDLE_EQUIPMENT_ID) selectGasGriddleAssembly();
+    selectEquipment(equipmentId);
+  }
+
+  function handleEquipmentCenterChange(equipmentId: string, centerCm: number) {
+    if (!isMovableStandardEquipmentId(equipmentId)) return;
+    const result = moveStandardEquipment(equipmentState, equipmentId, centerCm);
+    if (result.collisionWith) {
+      setNotice(text("collisionNotice"));
+      return;
+    }
+    setEquipmentState(result.state);
+    setNotice(null);
+  }
+
+  function handleEquipmentRemove(equipmentId: string) {
+    if (!isMovableStandardEquipmentId(equipmentId)) return;
+    setEquipmentState(removeStandardEquipment(equipmentState, equipmentId));
+    setSelectedEquipmentId(null);
+    setNotice(text("removedNotice"));
   }
 
   return (
@@ -55,16 +94,17 @@ export function ConfiguratorLayout() {
             <ConfiguratorScene
               view={view}
               started={started}
-              gasGriddleCenterCm={gasGriddleCenterCm}
+              equipmentState={equipmentState}
             />
             <StartOverlay visible={!started} onStart={() => setStarted(true)} />
           </main>
           <EquipmentSidebar
             notice={notice}
             selectedEquipmentId={selectedEquipmentId}
-            gasGriddleCenterCm={gasGriddleCenterCm}
+            equipmentState={equipmentState}
             onEquipmentSelect={handleEquipmentSelect}
-            onGasGriddleCenterChange={(value) => setGasGriddleCenterCm(clampGasGriddleCenterCm(value))}
+            onEquipmentCenterChange={handleEquipmentCenterChange}
+            onEquipmentRemove={handleEquipmentRemove}
             onFinish={() => setNotice(text("finishNotice"))}
           />
         </div>

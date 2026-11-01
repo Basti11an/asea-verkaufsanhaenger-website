@@ -39,9 +39,40 @@ const copy = {
     "Gas griddles, base and splash guard move together.",
     "Plynové grily, podstavec a ochranné sklo sa pohybujú spolu.",
   ],
+  equipmentMoveHelp: [
+    "Das ausgewählte Gerät wird als vollständige Einheit verschoben.",
+    "The selected appliance moves as one complete unit.",
+    "Vybrané zariadenie sa presúva ako jeden celok.",
+  ],
+  hygieneMoveHelp: [
+    "Hängeschrank, Spüle und Wasserhahn bewegen sich gemeinsam.",
+    "Wall cabinet, sink and tap move together.",
+    "Nástenná skrinka, drez a batéria sa pohybujú spolu.",
+  ],
   moveLeft: ["1 cm nach links", "Move 1 cm left", "Posunúť o 1 cm doľava"],
   moveRight: ["1 cm nach rechts", "Move 1 cm right", "Posunúť o 1 cm doprava"],
   resetPosition: ["Standardposition", "Default position", "Predvolená poloha"],
+  removeEquipment: ["Aus Ausstattung entfernen", "Remove from equipment", "Odstrániť z vybavenia"],
+  collisionNotice: [
+    "Diese Position ist bereits belegt.",
+    "This position is already occupied.",
+    "Táto poloha je už obsadená.",
+  ],
+  removedNotice: [
+    "Das Gerät wurde entfernt. Über die Ausstattung unten kann es wieder hinzugefügt werden.",
+    "The appliance was removed. It can be added again from the equipment bar below.",
+    "Zariadenie bolo odstránené. Znova ho môžete pridať z panela vybavenia dole.",
+  ],
+  restoredNotice: [
+    "Das Gerät wurde wieder zur Ausstattung hinzugefügt.",
+    "The appliance was added back to the equipment.",
+    "Zariadenie bolo znova pridané do vybavenia.",
+  ],
+  noSpaceNotice: [
+    "Für dieses Gerät ist derzeit kein freier Platz vorhanden.",
+    "There is currently no free space for this appliance.",
+    "Pre toto zariadenie momentálne nie je voľné miesto.",
+  ],
   loading: ["3D-Modell wird geladen ...", "Loading 3D model ...", "Načítava sa 3D model ..."],
   loadError: [
     "Das 3D-Modell konnte nicht geladen werden.",

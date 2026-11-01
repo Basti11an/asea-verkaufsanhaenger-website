@@ -20,7 +20,14 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import type { ConfiguratorView } from "../types";
 import { WatermarkOverlay } from "../WatermarkOverlay";
 import { useConfiguratorCopy } from "../copy";
-import { gasGriddleCenterToWorldOffset } from "../utils/gasGriddlePlacement";
+import {
+  equipmentCenterToWorldOffset,
+  equipmentPlacementDefinitions,
+  getEquipmentIntervalCm,
+  movableStandardEquipmentIds,
+  type MovableStandardEquipmentId,
+  type StandardEquipmentState,
+} from "../data/standardEquipmentState";
 import { CameraController } from "./CameraController";
 import { cameraPresets } from "./cameraPresets";
 import { loadConfiguratorModel } from "./ModelLoader";
@@ -29,13 +36,13 @@ import { installStudioEnvironment } from "./StudioEnvironment";
 type ConfiguratorSceneProps = {
   view: ConfiguratorView;
   started: boolean;
-  gasGriddleCenterCm: number;
+  equipmentState: StandardEquipmentState;
 };
 
 type SceneRuntime = {
   cameraController: CameraController;
   controls: OrbitControls;
-  setGasGriddleCenterCm: (centerCm: number) => void;
+  applyEquipmentState: (state: StandardEquipmentState) => void;
 };
 
 type Placement = {
@@ -50,6 +57,8 @@ type Placement = {
 };
 
 const MODEL_SCALE = 0.1;
+const TRAILER_LENGTH_CM = 360;
+const TRAILER_MIN_X = -1.8;
 const GAS_GRIDDLE_HALF_WIDTH = 0.33025;
 const GAS_GRIDDLE_NICHE_HALF_WIDTH = GAS_GRIDDLE_HALF_WIDTH + 0.03;
 const GAS_CABINET_EXTERNAL_CONNECTIONS = [
@@ -93,23 +102,106 @@ function addGasGriddleNiche(parent: Group) {
   addBox(parent, [0.03, 0.33, 0.6], [GAS_GRIDDLE_NICHE_HALF_WIDTH - 0.015, 0.685, 0.7], steel);
 }
 
-function createFrontCountertops(centerX: number) {
+function centimetersToWorldX(valueCm: number) {
+  return TRAILER_MIN_X + valueCm / 100;
+}
+
+type CounterInterval = { startCm: number; endCm: number };
+
+function mergeIntervals(intervals: readonly CounterInterval[]) {
+  const sorted = [...intervals].sort((a, b) => a.startCm - b.startCm);
+  return sorted.reduce<CounterInterval[]>((merged, interval) => {
+    const previous = merged.at(-1);
+    if (!previous || interval.startCm > previous.endCm) {
+      merged.push({ ...interval });
+    } else {
+      previous.endCm = Math.max(previous.endCm, interval.endCm);
+    }
+    return merged;
+  }, []);
+}
+
+function getFreeIntervals(blockedIntervals: readonly CounterInterval[]) {
+  const merged = mergeIntervals(blockedIntervals);
+  const free: CounterInterval[] = [];
+  let cursor = 0;
+
+  merged.forEach((interval) => {
+    if (interval.startCm > cursor) free.push({ startCm: cursor, endCm: interval.startCm });
+    cursor = Math.max(cursor, interval.endCm);
+  });
+  if (cursor < TRAILER_LENGTH_CM) free.push({ startCm: cursor, endCm: TRAILER_LENGTH_CM });
+  return free;
+}
+
+function createRearCounterFurniture(state: StandardEquipmentState) {
+  const furniture = new Group();
+  furniture.name = "ASEA_RearCounterFurniture";
+  const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.52, metalness: 0.55 });
+  const blockedIntervals: CounterInterval[] = [{ startCm: 0, endCm: 71 }];
+
+  movableStandardEquipmentIds.forEach((id) => {
+    const definition = equipmentPlacementDefinitions[id];
+    if (!state[id].active || definition.side !== "closed-wall" || !definition.blocksCountertop) return;
+    blockedIntervals.push(getEquipmentIntervalCm(state, id));
+  });
+
+  const freeIntervals = getFreeIntervals(blockedIntervals);
+  const fridgeInterval = state["standard-undercounter-fridge"].active
+    ? getEquipmentIntervalCm(state, "standard-undercounter-fridge")
+    : null;
+  const addedPanels = new Set<string>();
+
+  const addPanel = (boundaryCm: number, direction: -1 | 1, preferredWidth = 0.03) => {
+    if (boundaryCm <= 0 || boundaryCm >= TRAILER_LENGTH_CM) return;
+    const nextToFridge = fridgeInterval
+      && Math.abs(fridgeInterval.startCm - boundaryCm) <= 5.01;
+    const width = nextToFridge ? 0.05 : preferredWidth;
+    const centerCm = boundaryCm + direction * width * 50;
+    if (fridgeInterval && centerCm > fridgeInterval.startCm && centerCm < fridgeInterval.endCm) return;
+    const key = centerCm.toFixed(2);
+    if (addedPanels.has(key)) return;
+    addedPanels.add(key);
+    addBox(furniture, [width, 0.81, 0.58], [centimetersToWorldX(centerCm), 0.405, -0.7], steel);
+  };
+
+  freeIntervals.forEach((interval) => {
+    if (interval.endCm - interval.startCm < 0.5) return;
+    addCountertop(
+      furniture,
+      centimetersToWorldX(interval.startCm),
+      centimetersToWorldX(interval.endCm),
+      -0.7,
+    );
+    addPanel(interval.startCm, 1);
+    addPanel(interval.endCm, -1);
+
+    for (let supportCm = interval.startCm + 100; supportCm < interval.endCm - 20; supportCm += 100) {
+      addPanel(supportCm, 1);
+    }
+  });
+
+  return furniture;
+}
+
+function createFrontCountertops(state: StandardEquipmentState) {
   const countertops = new Group();
   countertops.name = "ASEA_FrontCountertops";
+  if (!state["standard-gas-griddles"].active) {
+    addCountertop(countertops, -1.8, 1.8, 0.7);
+    return countertops;
+  }
+
+  const centerX = equipmentCenterToWorldOffset(
+    "standard-gas-griddles",
+    state["standard-gas-griddles"].centerCm,
+  );
   const leftEdge = centerX - GAS_GRIDDLE_NICHE_HALF_WIDTH;
   const rightEdge = centerX + GAS_GRIDDLE_NICHE_HALF_WIDTH;
 
   addCountertop(countertops, -1.8, leftEdge, 0.7);
   addCountertop(countertops, rightEdge, 1.8, 0.7);
   return countertops;
-}
-
-function addRearCounterPanels(parent: Group) {
-  const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.52, metalness: 0.55 });
-
-  addBox(parent, [0.03, 0.81, 0.58], [-0.485, 0.405, -0.7], steel);
-  addBox(parent, [0.03, 0.81, 0.58], [0.135, 0.405, -0.7], steel);
-  addBox(parent, [0.05, 0.81, 0.58], [1.175, 0.405, -0.7], steel);
 }
 
 function createInteriorShell(floorTexture: Texture) {
@@ -139,10 +231,6 @@ function createInteriorShell(floorTexture: Texture) {
   // The low sales-side wall shows the room boundary without hiding the equipment.
   addBox(shell, [3.6, 0.76, 0.04], [0, 0.38, 1.02], wall);
   addBox(shell, [3.62, 0.035, 0.055], [0, 0.79, 1.025], trim);
-
-  addCountertop(shell, -0.5, 0.15, -0.7);
-  addCountertop(shell, 1.15, 1.8, -0.7);
-  addRearCounterPanels(shell);
 
   return shell;
 }
@@ -210,12 +298,12 @@ function disposeGroup(group: Group) {
   });
 }
 
-export function ConfiguratorScene({ view, started, gasGriddleCenterCm }: ConfiguratorSceneProps) {
+export function ConfiguratorScene({ view, started, equipmentState }: ConfiguratorSceneProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const runtimeRef = useRef<SceneRuntime | null>(null);
   const startedRef = useRef(started);
   const viewRef = useRef(view);
-  const gasGriddleCenterRef = useRef(gasGriddleCenterCm);
+  const equipmentStateRef = useRef(equipmentState);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const { text } = useConfiguratorCopy();
   const sceneLabel = text("sceneLabel");
@@ -236,9 +324,9 @@ export function ConfiguratorScene({ view, started, gasGriddleCenterCm }: Configu
   }, [view]);
 
   useEffect(() => {
-    gasGriddleCenterRef.current = gasGriddleCenterCm;
-    runtimeRef.current?.setGasGriddleCenterCm(gasGriddleCenterCm);
-  }, [gasGriddleCenterCm]);
+    equipmentStateRef.current = equipmentState;
+    runtimeRef.current?.applyEquipmentState(equipmentState);
+  }, [equipmentState]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -248,8 +336,10 @@ export function ConfiguratorScene({ view, started, gasGriddleCenterCm }: Configu
     let frameId = 0;
     let interiorShell: Group | null = null;
     let frontCountertops: Group | null = null;
+    let rearCounterFurniture: Group | null = null;
     let standardModels: Group | null = null;
-    let gasGriddleAssembly: Group | null = null;
+    const equipmentGroups = new Map<MovableStandardEquipmentId, Group>();
+    let frontInnerStandWrappers: Group[] = [];
     const scene = new Scene();
     const camera = new PerspectiveCamera(cameraPresets.three.fov, 1, 0.05, 100);
     camera.position.set(...cameraPresets.three.position);
@@ -273,20 +363,38 @@ export function ConfiguratorScene({ view, started, gasGriddleCenterCm }: Configu
     controls.update();
 
     const cameraController = new CameraController(camera, controls);
-    const setGasGriddleCenterCm = (centerCm: number) => {
-      const centerX = gasGriddleCenterToWorldOffset(centerCm);
-      if (gasGriddleAssembly) gasGriddleAssembly.position.x = centerX;
+    const applyEquipmentState = (state: StandardEquipmentState) => {
+      movableStandardEquipmentIds.forEach((id) => {
+        const group = equipmentGroups.get(id);
+        if (!group) return;
+        group.visible = state[id].active;
+        group.position.x = equipmentCenterToWorldOffset(id, state[id].centerCm);
+      });
+
+      const gasGriddle = state["standard-gas-griddles"];
+      const gasCenterX = equipmentCenterToWorldOffset("standard-gas-griddles", gasGriddle.centerCm);
+      const innerStandPositions = gasGriddle.active
+        ? FRONT_INNER_STAND_OFFSETS.map((offset) => gasCenterX + offset)
+        : [-0.6, 0.6];
+      frontInnerStandWrappers.forEach((wrapper, index) => {
+        wrapper.position.x = innerStandPositions[index];
+      });
 
       if (interiorShell) {
         if (frontCountertops) {
           interiorShell.remove(frontCountertops);
           disposeGroup(frontCountertops);
         }
-        frontCountertops = createFrontCountertops(centerX);
-        interiorShell.add(frontCountertops);
+        if (rearCounterFurniture) {
+          interiorShell.remove(rearCounterFurniture);
+          disposeGroup(rearCounterFurniture);
+        }
+        frontCountertops = createFrontCountertops(state);
+        rearCounterFurniture = createRearCounterFurniture(state);
+        interiorShell.add(frontCountertops, rearCounterFurniture);
       }
     };
-    runtimeRef.current = { cameraController, controls, setGasGriddleCenterCm };
+    runtimeRef.current = { cameraController, controls, applyEquipmentState };
 
     const resize = () => {
       const width = Math.max(container.clientWidth, 1);
@@ -336,8 +444,6 @@ export function ConfiguratorScene({ view, started, gasGriddleCenterCm }: Configu
         floorTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
         floorTexture.needsUpdate = true;
         interiorShell = createInteriorShell(floorTexture);
-        frontCountertops = createFrontCountertops(gasGriddleCenterToWorldOffset(gasGriddleCenterRef.current));
-        interiorShell.add(frontCountertops);
         scene.add(interiorShell);
 
         GAS_CABINET_EXTERNAL_CONNECTIONS.forEach((nodeName) => {
@@ -346,30 +452,53 @@ export function ConfiguratorScene({ view, started, gasGriddleCenterCm }: Configu
 
         standardModels = new Group();
         standardModels.name = "ASEA_StandardEquipment";
-        gasGriddleAssembly = new Group();
+        const createEquipmentGroup = (id: MovableStandardEquipmentId, model: Group) => {
+          const group = new Group();
+          group.name = id;
+          group.add(model);
+          equipmentGroups.set(id, group);
+          return group;
+        };
+
+        const gasGriddleAssembly = new Group();
         gasGriddleAssembly.name = "ASEA_GasGriddleAssembly";
         addGasGriddleNiche(gasGriddleAssembly);
         gasGriddleAssembly.add(
           prepareModel(gasGriddles.scene, Math.PI / 2, { centerX: 0, minY: 0.6, minZ: 0.4 }),
           prepareModel(splashGuard.scene, Math.PI / 2, { centerX: 0, minY: 0.85, maxZ: 1 }),
-          ...FRONT_INNER_STAND_OFFSETS.map((centerX) =>
-            prepareModel(countertopStand.scene.clone(), 0, { centerX, minY: 0, centerZ: 0.445 }),
-          ),
         );
-        gasGriddleAssembly.position.x = gasGriddleCenterToWorldOffset(gasGriddleCenterRef.current);
+        frontInnerStandWrappers = FRONT_INNER_STAND_OFFSETS.map(() => {
+          const wrapper = new Group();
+          wrapper.add(prepareModel(countertopStand.scene.clone(), 0, { centerX: 0, minY: 0, centerZ: 0.445 }));
+          return wrapper;
+        });
 
         standardModels.add(
           prepareModel(gasCabinet.scene, Math.PI / 2, { minX: -1.8, minY: 0, minZ: -1 }),
-          prepareModel(fryer.scene, -Math.PI / 2, { minX: -1.09, minY: 0.4328, minZ: -1, width: 0.59 }),
-          prepareModel(hygiene.scene, -Math.PI / 2, { minX: 0.15, minY: 0, minZ: -1, width: 1 }),
-          prepareModel(fridge.scene, -Math.PI / 2, { minX: 1.2, minY: 0, minZ: -1, width: 0.6, height: 0.81 }),
-          prepareModel(hood.scene, -Math.PI / 2, { minX: -1.09, minY: 1.36, minZ: -1, width: 0.6 }),
-          gasGriddleAssembly,
+          createEquipmentGroup(
+            "standard-double-fryer",
+            prepareModel(fryer.scene, -Math.PI / 2, { minX: -1.09, minY: 0.4328, minZ: -1, width: 0.59 }),
+          ),
+          createEquipmentGroup(
+            "standard-hygiene",
+            prepareModel(hygiene.scene, -Math.PI / 2, { minX: 0.15, minY: 0, minZ: -1, width: 1 }),
+          ),
+          createEquipmentGroup(
+            "standard-undercounter-fridge",
+            prepareModel(fridge.scene, -Math.PI / 2, { minX: 1.2, minY: 0, minZ: -1, width: 0.6, height: 0.81 }),
+          ),
+          createEquipmentGroup(
+            "standard-hood",
+            prepareModel(hood.scene, -Math.PI / 2, { minX: -1.09, minY: 1.36, minZ: -1, width: 0.6 }),
+          ),
+          createEquipmentGroup("standard-gas-griddles", gasGriddleAssembly),
+          ...frontInnerStandWrappers,
           ...FRONT_OUTER_STAND_POSITIONS.map((centerX) =>
             prepareModel(countertopStand.scene.clone(), 0, { centerX, minY: 0, centerZ: 0.445 }),
           ),
         );
         scene.add(standardModels);
+        applyEquipmentState(equipmentStateRef.current);
 
         setStatus("ready");
       } catch (error) {

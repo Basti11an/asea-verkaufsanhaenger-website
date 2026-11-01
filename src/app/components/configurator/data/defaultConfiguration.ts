@@ -84,13 +84,6 @@ export const trailerConfiguration = {
   },
 };
 
-export const gasGriddlePlacement = {
-  defaultCenterCm: 180,
-  minCenterCm: 39,
-  maxCenterCm: 321,
-  stepCm: 1,
-} as const;
-
 export const standardEquipment: readonly StandardEquipmentDefinition[] = [
   {
     id: "standard-gas-cabinet",

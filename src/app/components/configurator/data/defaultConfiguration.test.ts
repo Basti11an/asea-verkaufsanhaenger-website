@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  gasGriddlePlacement,
-  sidebarEquipmentIds,
-  standardEquipment,
-  trailerConfiguration,
-} from "./defaultConfiguration";
+import { sidebarEquipmentIds, standardEquipment, trailerConfiguration } from "./defaultConfiguration";
 
 describe("default configurator configuration", () => {
   it("contains the complete standard equipment from the plan", () => {
@@ -47,7 +42,6 @@ describe("default configurator configuration", () => {
     expect((gasGriddles?.positionCm?.height ?? 0) + (gasGriddles?.dimensionsCm?.height ?? 0)).toBe(85);
     expect(gasGriddles?.planFootprintCm).toMatchObject({ depthStart: 140, depthEnd: 200 });
     expect(gasGriddles?.name[0]).toBe("Gasbräter mit Spritzschutz");
-    expect(gasGriddlePlacement.defaultCenterCm).toBe(180);
   });
 
   it("fits the undercounter fridge below the rear work surface", () => {
