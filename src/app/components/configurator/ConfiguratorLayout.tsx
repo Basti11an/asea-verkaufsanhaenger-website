@@ -31,7 +31,6 @@ export function ConfiguratorLayout() {
     setStarted(true);
     setSelectedEquipmentId(equipmentId);
     setNotice(null);
-    setView("top");
   }
 
   function handleProductClick(product: ProductDefinition) {
@@ -55,7 +54,6 @@ export function ConfiguratorLayout() {
 
     setStarted(true);
     setSelectedEquipmentId(equipmentId);
-    setView("top");
   }
 
   function handleEquipmentSelect(equipmentId: string) {
