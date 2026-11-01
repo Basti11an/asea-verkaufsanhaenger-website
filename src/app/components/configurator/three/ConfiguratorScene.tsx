@@ -53,6 +53,7 @@ type Placement = {
   centerZ?: number;
   width?: number;
   height?: number;
+  depth?: number;
 };
 
 const MODEL_SCALE = 0.1;
@@ -91,12 +92,13 @@ function addCountertop(parent: Group, startX: number, endX: number, centerZ: num
   addBox(parent, [endX - startX, 0.04, depth], [(startX + endX) / 2, 0.83, centerZ], steel);
 }
 
-function addGasGriddleNiche(parent: Group) {
+function addGasGriddleNiche(parent: Group, side: EquipmentSide) {
   const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.52, metalness: 0.55 });
   const nicheWidth = GAS_GRIDDLE_NICHE_HALF_WIDTH * 2;
-  addBox(parent, [nicheWidth, 0.03, 0.6], [0, 0.585, 0.7], steel);
-  addBox(parent, [0.03, 0.33, 0.6], [-GAS_GRIDDLE_NICHE_HALF_WIDTH + 0.015, 0.685, 0.7], steel);
-  addBox(parent, [0.03, 0.33, 0.6], [GAS_GRIDDLE_NICHE_HALF_WIDTH - 0.015, 0.685, 0.7], steel);
+  const centerZ = side === "closed-wall" ? -0.7 : 0.7;
+  addBox(parent, [nicheWidth, 0.03, 0.6], [0, 0.585, centerZ], steel);
+  addBox(parent, [0.03, 0.33, 0.6], [-GAS_GRIDDLE_NICHE_HALF_WIDTH + 0.015, 0.685, centerZ], steel);
+  addBox(parent, [0.03, 0.33, 0.6], [GAS_GRIDDLE_NICHE_HALF_WIDTH - 0.015, 0.685, centerZ], steel);
 }
 
 function centimetersToWorldX(valueCm: number) {
@@ -157,29 +159,31 @@ function createInteriorShell(floorTexture: Texture) {
 }
 
 function prepareModel(model: Group, rotationY: number, placement: Placement) {
+  const wrapper = new Group();
+  wrapper.add(model);
   model.rotation.y = rotationY;
   model.scale.setScalar(MODEL_SCALE);
-  model.updateMatrixWorld(true);
-  let bounds = new Box3().setFromObject(model);
+  wrapper.updateMatrixWorld(true);
+  let bounds = new Box3().setFromObject(wrapper);
   const size = bounds.getSize(new Vector3());
-  if (placement.width) model.scale.multiplyScalar(placement.width / size.x);
-  model.updateMatrixWorld(true);
-  bounds = new Box3().setFromObject(model);
-  if (placement.height) model.scale.y *= placement.height / bounds.getSize(new Vector3()).y;
-  model.updateMatrixWorld(true);
-  bounds = new Box3().setFromObject(model);
+  if (placement.width) wrapper.scale.x *= placement.width / size.x;
+  if (placement.height) wrapper.scale.y *= placement.height / size.y;
+  if (placement.depth) wrapper.scale.z *= placement.depth / size.z;
+  wrapper.updateMatrixWorld(true);
+  bounds = new Box3().setFromObject(wrapper);
 
   const center = bounds.getCenter(new Vector3());
-  const offset = new Vector3(0, placement.minY - bounds.min.y, 0);
+  const offset = new Vector3(-center.x, placement.minY - bounds.min.y, 0);
   if (placement.minX !== undefined) offset.x = placement.minX - bounds.min.x;
   if (placement.centerX !== undefined) offset.x = placement.centerX - center.x;
   if (placement.minZ !== undefined) offset.z = placement.minZ - bounds.min.z;
   if (placement.maxZ !== undefined) offset.z = placement.maxZ - bounds.max.z;
   if (placement.centerZ !== undefined) offset.z = placement.centerZ - center.z;
-  model.position.add(offset);
+  wrapper.position.add(offset);
 
-  model.traverse((object) => {
+  wrapper.traverse((object) => {
     if (!(object instanceof Mesh)) return;
+    object.userData.sharedModelAsset = true;
     const materials = Array.isArray(object.material) ? object.material : [object.material];
     const transparent = materials.some((material) => material.transparent);
     materials.forEach((material) => {
@@ -195,7 +199,7 @@ function prepareModel(model: Group, rotationY: number, placement: Placement) {
     object.castShadow = !transparent;
     object.receiveShadow = !transparent;
   });
-  return model;
+  return wrapper;
 }
 
 function fallbackModel(sizeCm: readonly [number, number, number], materialColor = 0xb7b5ac) {
@@ -213,7 +217,7 @@ function sidePlacement(side: EquipmentSide, minY: number, width: number, height?
 
 function addPart(
   parent: Group,
-  asset: Group | undefined,
+  asset: ModelAsset | undefined,
   fallbackSizeCm: readonly [number, number, number],
   rotationY: number,
   placement: Placement,
@@ -224,6 +228,7 @@ function addPart(
 function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
   const group = new Group();
   group.name = item.id;
+  group.userData.equipmentSide = item.side;
   const rotation = item.side === "closed-wall" ? -Math.PI / 2 : Math.PI / 2;
   const side = item.side;
 
@@ -237,7 +242,7 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
       addPart(group, assets.hood, [60, 88, 60], rotation, sidePlacement(side, 1.36, 0.6));
       break;
     case "gas-griddle":
-      addGasGriddleNiche(group);
+      addGasGriddleNiche(group, side);
       addPart(group, assets.gasGriddle, [66, 25, 60], rotation, sidePlacement(side, 0.6, 0.6605));
       addPart(group, assets.splashGuard, [77, 40, 7], rotation, sidePlacement(side, 0.85, 0.77));
       break;
@@ -245,10 +250,10 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
       addPart(group, assets.contactGrill, [41, 20, 46], rotation, sidePlacement(side, 0.85, 0.41));
       break;
     case "electric-griddle":
-      addPart(group, assets.electricGriddle, [60, 12, 45], rotation, sidePlacement(side, 0.85, 0.6));
+      addPart(group, assets.electricGriddle, [66, 31, 58], rotation, sidePlacement(side, 0.85, 0.66));
       break;
     case "induction":
-      addPart(group, assets.induction, [50, 12, 45], rotation, sidePlacement(side, 0.85, 0.5));
+      addPart(group, assets.induction, [33, 10.5, 47], rotation, sidePlacement(side, 0.85, 0.33));
       break;
     case "bottle-fridge":
       addPart(group, assets.bottleFridge, [61, 173, 64], rotation, sidePlacement(side, 0, 0.61, 1.73));
@@ -260,7 +265,7 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
       addPart(group, assets.undercounterFridge, [60, 81, 60], rotation, sidePlacement(side, 0, 0.6, 0.81));
       break;
     case "double-sink":
-      addPart(group, assets.doubleSink, [90, 15, 55], rotation, sidePlacement(side, 0.83, 0.9));
+      addPart(group, assets.doubleSink, [100, 136, 62], rotation, sidePlacement(side, 0, 1));
       break;
     case "hygiene-area":
       addPart(group, assets.hygieneArea, [100, 211, 60], rotation, sidePlacement(side, 0, 1));
@@ -269,7 +274,10 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
       addPart(group, assets.worktable, [120, 85, 60], rotation, sidePlacement(side, 0, 1.2));
       break;
     case "wall-cabinet":
-      addPart(group, assets.wallCabinet, [60, 60, 35], rotation, sidePlacement(side, 1.36, 0.6));
+      addPart(group, assets.wallCabinet, [60, 66, 40], rotation, {
+        ...sidePlacement(side, 1.36, 0.6, 0.66),
+        depth: 0.4,
+      });
       break;
     case "splash-guard":
       addPart(group, assets.splashGuard, [77, 40, 7], rotation, sidePlacement(side, 0.85, 0.77));
@@ -297,7 +305,10 @@ function createCounterFurniture(
     addCountertop(furniture, centimetersToWorldX(interval.startCm), centimetersToWorldX(interval.endCm), centerZ);
 
     if (!standAsset) return;
-    const supportCenters = [interval.startCm, interval.endCm];
+    const supportInsetCm = 5;
+    const supportCenters = interval.endCm - interval.startCm >= supportInsetCm * 2
+      ? [interval.startCm + supportInsetCm, interval.endCm - supportInsetCm]
+      : [];
     for (let support = interval.startCm + 100; support < interval.endCm - 20; support += 100) {
       supportCenters.push(support);
     }
@@ -317,6 +328,7 @@ function createCounterFurniture(
 function disposeGroup(group: Group) {
   group.traverse((object) => {
     if (!(object instanceof Mesh)) return;
+    if (object.userData.sharedModelAsset) return;
     object.geometry.dispose();
     const materials = Array.isArray(object.material) ? object.material : [object.material];
     materials.forEach((material) => {
@@ -419,10 +431,17 @@ export function ConfiguratorScene({ view, started, equipmentState }: Configurato
       equipmentGroups.forEach((group, id) => {
         if (activeIds.has(id)) return;
         group.parent?.remove(group);
+        disposeGroup(group);
         equipmentGroups.delete(id);
       });
       state.items.forEach((item) => {
         let group = equipmentGroups.get(item.id);
+        if (group && group.userData.equipmentSide !== item.side) {
+          group.removeFromParent();
+          disposeGroup(group);
+          equipmentGroups.delete(item.id);
+          group = undefined;
+        }
         if (!group) {
           group = createEquipmentVisual(item, assets);
           equipmentGroups.set(item.id, group);

@@ -15,7 +15,7 @@ if not arguments:
     raise RuntimeError("Expected an output path after --")
 
 output_path = Path(arguments[0]).resolve()
-prefixes = tuple(arguments[1:])
+selectors = tuple(arguments[1:])
 output_path.parent.mkdir(parents=True, exist_ok=True)
 
 bpy.ops.object.select_all(action="DESELECT")
@@ -24,7 +24,13 @@ selected_count = 0
 for scene_object in bpy.context.scene.objects:
     if scene_object.type != "MESH":
         continue
-    if prefixes and not scene_object.name.startswith(prefixes):
+    matches_selector = any(
+        scene_object.name == selector[1:]
+        if selector.startswith("=")
+        else scene_object.name.startswith(selector)
+        for selector in selectors
+    )
+    if selectors and not matches_selector:
         continue
     scene_object.hide_set(False)
     scene_object.hide_viewport = False
@@ -33,7 +39,7 @@ for scene_object in bpy.context.scene.objects:
     selected_count += 1
 
 if selected_count == 0:
-    raise RuntimeError(f"No mesh objects matched prefixes: {prefixes}")
+    raise RuntimeError(f"No mesh objects matched selectors: {selectors}")
 
 bpy.ops.export_scene.gltf(
     filepath=str(output_path),

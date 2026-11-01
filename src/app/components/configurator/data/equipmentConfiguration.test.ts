@@ -21,6 +21,13 @@ describe("configurable equipment rules", () => {
     ]);
   });
 
+  it("uses the real installation widths for collision checks", () => {
+    expect(equipmentPlacementDefinitions["electric-griddle"].widthCm).toBe(66);
+    expect(equipmentPlacementDefinitions.induction.widthCm).toBe(33);
+    expect(equipmentPlacementDefinitions["double-sink"].widthCm).toBe(100);
+    expect(equipmentPlacementDefinitions["wall-cabinet"].widthCm).toBe(60);
+  });
+
   it("allows multiple independent splash guards and wall cabinets", () => {
     let state = createDefaultEquipmentConfiguration();
     const firstSplash = addEquipment(state, "splash-guard", "sales-hatch");
