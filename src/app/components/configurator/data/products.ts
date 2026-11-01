@@ -207,6 +207,19 @@ const productEntries: readonly ProductEntry[] = [
     active: false,
     rules: createEmptyRules(),
   },
+  {
+    id: "splash-guard",
+    name: ["Spritzschutz", "Splash guard", "Ochranné sklo"],
+    category: "furniture",
+    preferredView: "top",
+    modelPath: "/configurator-models/interieur/lueftung-und-schutz/Spritzschutz_700.glb",
+    sourceModelPath: "3d-source/interieur/lueftung-und-schutz/Spritzschutz.blend",
+    sceneNodeName: null,
+    dimensionsCm: null,
+    measuredGlbBoundsCm: { width: 77, height: 40.12, depth: 7 },
+    active: true,
+    rules: createEmptyRules(),
+  },
 ];
 
 export const products: readonly ProductDefinition[] = productEntries.map((product) => ({

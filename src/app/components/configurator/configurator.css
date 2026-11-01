@@ -333,7 +333,7 @@
   bottom: 120px;
   z-index: 19;
   display: grid;
-  grid-template-columns: minmax(190px, 1.2fr) minmax(190px, 1fr) 190px 82px;
+  grid-template-columns: minmax(180px, 1.1fr) 112px minmax(160px, 1fr) 190px 82px;
   align-items: center;
   gap: 14px;
   width: min(860px, calc(100% - var(--sidebar-width) - 32px));
@@ -379,6 +379,30 @@
   flex-direction: column;
   gap: 4px;
   min-width: 0;
+}
+
+.asea-editor-side {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid #d7dbd2;
+  border-radius: 4px;
+  background: #e9ebe6;
+}
+
+.asea-configurator .asea-editor-side button {
+  min-height: 30px;
+  padding: 0 5px;
+  border: 0;
+  color: #62675f;
+  background: transparent;
+  font-size: 10px;
+}
+
+.asea-configurator .asea-editor-side button[aria-pressed="true"] {
+  color: #fff;
+  background: var(--bronze-dark);
 }
 
 .asea-editor-slider input[type="range"] {
@@ -604,7 +628,7 @@
   }
 
   .asea-equipment-editor {
-    grid-template-columns: minmax(120px, 1fr) minmax(100px, 1fr) 150px 78px;
+    grid-template-columns: minmax(110px, 1fr) 92px minmax(100px, 1fr) 150px 78px;
     gap: 9px;
     width: calc(100% - var(--sidebar-width) - 20px);
   }

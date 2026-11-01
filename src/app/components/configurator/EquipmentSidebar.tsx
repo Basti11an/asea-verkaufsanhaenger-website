@@ -1,20 +1,12 @@
-import {
-  Check,
-  ClipboardCheck,
-  LockKeyhole,
-  MoveHorizontal,
-} from "lucide-react";
-import { sidebarEquipmentIds, standardEquipment } from "./data/defaultConfiguration";
-import {
-  isUserConfigurableEquipmentId,
-  type StandardEquipmentState,
-} from "./data/standardEquipmentState";
+import { Check, ClipboardCheck, LockKeyhole, MoveHorizontal } from "lucide-react";
+import { productById } from "./data/products";
+import type { EquipmentConfigurationState } from "./data/equipmentConfiguration";
 import { useConfiguratorCopy } from "./copy";
 
 type EquipmentSidebarProps = {
   notice: string | null;
   selectedEquipmentId: string | null;
-  equipmentState: StandardEquipmentState;
+  equipmentState: EquipmentConfigurationState;
   onEquipmentSelect: (equipmentId: string) => void;
   onFinish: () => void;
 };
@@ -27,13 +19,6 @@ export function EquipmentSidebar({
   onFinish,
 }: EquipmentSidebarProps) {
   const { text, name } = useConfiguratorCopy();
-  const equipment = standardEquipment.filter((item) => (
-    sidebarEquipmentIds.includes(item.id as (typeof sidebarEquipmentIds)[number])
-    && (!isUserConfigurableEquipmentId(item.id) || equipmentState[item.id].active)
-  ));
-  const selectedId = selectedEquipmentId && isUserConfigurableEquipmentId(selectedEquipmentId)
-    ? selectedEquipmentId
-    : null;
 
   return (
     <aside className="asea-equipment-sidebar">
@@ -42,34 +27,37 @@ export function EquipmentSidebar({
         <h2>{text("equipment")}</h2>
       </div>
       <ul className="asea-standard-list">
-        {equipment.map((item) => {
-          const isMovable = isUserConfigurableEquipmentId(item.id);
-          const isFixed = item.id === "standard-gas-cabinet";
-          const isSelected = item.id === selectedId;
+        <li>
+          <span className="asea-standard-check"><LockKeyhole size={12} aria-hidden="true" /></span>
+          <span>{text("gasCabinetFixed")}</span>
+        </li>
+        {equipmentState.items.map((item, index) => {
+          const product = productById.get(item.productId);
+          if (!product) return null;
+          const isSelected = item.id === selectedEquipmentId;
+          const duplicateCount = equipmentState.items
+            .slice(0, index)
+            .filter((other) => other.productId === item.productId).length;
+          const label = duplicateCount > 0 ? `${name(product.name)} ${duplicateCount + 1}` : name(product.name);
 
           return (
             <li key={item.id} className={isSelected ? "is-selected" : undefined}>
-              {isMovable ? (
-                <button
-                  type="button"
-                  className="asea-standard-item-button"
-                  aria-pressed={isSelected}
-                  onClick={() => onEquipmentSelect(item.id)}
-                >
-                  <span className="asea-standard-check"><MoveHorizontal size={13} aria-hidden="true" /></span>
-                  <span>{name(item.name)}</span>
-                </button>
-              ) : (
-                <>
-                  <span className="asea-standard-check">
-                    {isFixed ? <LockKeyhole size={12} aria-hidden="true" /> : <Check size={13} aria-hidden="true" />}
-                  </span>
-                  <span>{name(item.name)}</span>
-                </>
-              )}
+              <button
+                type="button"
+                className="asea-standard-item-button"
+                aria-pressed={isSelected}
+                onClick={() => onEquipmentSelect(item.id)}
+              >
+                <span className="asea-standard-check"><MoveHorizontal size={13} aria-hidden="true" /></span>
+                <span>{label}</span>
+              </button>
             </li>
           );
         })}
+        <li>
+          <span className="asea-standard-check"><Check size={13} aria-hidden="true" /></span>
+          <span>{text("workSurfacesFixed")}</span>
+        </li>
       </ul>
       <div className="asea-sidebar-finish">
         <p className="asea-inline-notice" role="status" aria-live="polite">{notice}</p>

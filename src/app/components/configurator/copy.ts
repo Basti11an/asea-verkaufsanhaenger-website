@@ -9,6 +9,8 @@ const copy = {
     "Interaktívny 3D model predajného prívesu ASEA",
   ],
   equipment: ["Ihre Ausstattung", "Your equipment", "Vaše vybavenie"],
+  gasCabinetFixed: ["Gasschrank (fix)", "Gas cabinet (fixed)", "Plynová skriňa (fixná)"],
+  workSurfacesFixed: ["Arbeitsflächen", "Work surfaces", "Pracovné plochy"],
   products: ["Ausstattung", "Equipment", "Vybavenie"],
   three: ["3D", "3D", "3D"],
   top: ["Draufsicht", "Top view", "Pohľad zhora"],
@@ -34,6 +36,9 @@ const copy = {
   ],
   position: ["Position", "Position", "Poloha"],
   centerFromLeft: ["Mittelpunkt von links", "Centre from the left", "Stred zľava"],
+  allowedSide: ["Erlaubte Seite", "Allowed side", "Povolená strana"],
+  closedWall: ["Hinten", "Rear", "Vzadu"],
+  salesHatch: ["Vorne", "Front", "Vpredu"],
   gasGriddleMoveHelp: [
     "Gasbräter, Unterbau und Spritzschutz bewegen sich gemeinsam.",
     "Gas griddles, base and splash guard move together.",

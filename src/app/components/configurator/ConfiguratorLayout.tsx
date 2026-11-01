@@ -9,13 +9,14 @@ import { ConfiguratorScene } from "./three/ConfiguratorScene";
 import type { ConfiguratorView, ProductDefinition } from "./types";
 import { useConfiguratorCopy } from "./copy";
 import {
-  createDefaultStandardEquipmentState,
-  isUserConfigurableEquipmentId,
-  moveStandardEquipmentAssembly,
-  removeStandardEquipmentAssembly,
-  restoreStandardEquipmentAssembly,
-  standardEquipmentIdByProductId,
-} from "./data/standardEquipmentState";
+  addEquipment,
+  createDefaultEquipmentConfiguration,
+  moveEquipment,
+  moveEquipmentSide,
+  removeEquipment,
+  type EquipmentConfigurationState,
+} from "./data/equipmentConfiguration";
+import { isConfigurableProductId } from "./data/productPlacement";
 import "./configurator.css";
 
 export function ConfiguratorLayout() {
@@ -24,36 +25,32 @@ export function ConfiguratorLayout() {
   const [started, setStarted] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [selectedEquipmentId, setSelectedEquipmentId] = useState<string | null>(null);
-  const [equipmentState, setEquipmentState] = useState(createDefaultStandardEquipmentState);
+  const [equipmentState, setEquipmentState] = useState<EquipmentConfigurationState>(createDefaultEquipmentConfiguration);
 
   function selectEquipment(equipmentId: string) {
-    if (!isUserConfigurableEquipmentId(equipmentId) || !equipmentState[equipmentId].active) return;
+    if (!equipmentState.items.some((item) => item.id === equipmentId)) return;
     setStarted(true);
     setSelectedEquipmentId(equipmentId);
     setNotice(null);
   }
 
   function handleProductClick(product: ProductDefinition) {
-    const equipmentId = standardEquipmentIdByProductId.get(product.id);
-    if (!equipmentId) {
+    if (!isConfigurableProductId(product.id)) {
       setNotice(text("productNotice"));
       return;
     }
 
-    if (!equipmentState[equipmentId].active) {
-      const result = restoreStandardEquipmentAssembly(equipmentState, equipmentId);
-      if (!result.restored) {
-        setNotice(text("noSpaceNotice"));
-        return;
-      }
-      setEquipmentState(result.state);
-      setNotice(text("restoredNotice"));
-    } else {
-      setNotice(null);
+    const preferredSide = view === "rear" ? "sales-hatch" : "closed-wall";
+    const result = addEquipment(equipmentState, product.id, preferredSide);
+    if (result.item === null) {
+      setNotice(text("noSpaceNotice"));
+      return;
     }
 
+    setEquipmentState(result.state);
     setStarted(true);
-    setSelectedEquipmentId(equipmentId);
+    setSelectedEquipmentId(result.item.id);
+    setNotice(null);
   }
 
   function handleEquipmentSelect(equipmentId: string) {
@@ -61,8 +58,7 @@ export function ConfiguratorLayout() {
   }
 
   function handleEquipmentCenterChange(equipmentId: string, centerCm: number) {
-    if (!isUserConfigurableEquipmentId(equipmentId)) return;
-    const result = moveStandardEquipmentAssembly(equipmentState, equipmentId, centerCm);
+    const result = moveEquipment(equipmentState, equipmentId, centerCm);
     if (result.collisionWith) {
       setNotice(text("collisionNotice"));
       return;
@@ -72,10 +68,19 @@ export function ConfiguratorLayout() {
   }
 
   function handleEquipmentRemove(equipmentId: string) {
-    if (!isUserConfigurableEquipmentId(equipmentId)) return;
-    setEquipmentState(removeStandardEquipmentAssembly(equipmentState, equipmentId));
+    setEquipmentState(removeEquipment(equipmentState, equipmentId));
     setSelectedEquipmentId(null);
     setNotice(text("removedNotice"));
+  }
+
+  function handleEquipmentSideChange(equipmentId: string, side: "closed-wall" | "sales-hatch") {
+    const result = moveEquipmentSide(equipmentState, equipmentId, side);
+    if (result.collisionWith) {
+      setNotice(text("noSpaceNotice"));
+      return;
+    }
+    setEquipmentState(result.state);
+    setNotice(null);
   }
 
   return (
@@ -109,6 +114,7 @@ export function ConfiguratorLayout() {
           selectedEquipmentId={selectedEquipmentId}
           equipmentState={equipmentState}
           onEquipmentCenterChange={handleEquipmentCenterChange}
+          onEquipmentSideChange={handleEquipmentSideChange}
           onEquipmentRemove={handleEquipmentRemove}
         />
         <ProductBar onProductClick={handleProductClick} />

@@ -35,14 +35,22 @@ const expectedSourceModels = [
 
 const expectedWebModels = [
   "public/configurator-models/interieur/arbeitsflaechen/Arbeitsplatten_Staender.glb",
+  "public/configurator-models/interieur/hygiene/Doppelwaschbecken.glb",
   "public/configurator-models/interieur/hygiene/Hygienebereich.glb",
   "public/configurator-models/interieur/kochen/Doppelfriteuse.glb",
+  "public/configurator-models/interieur/kochen/Friteuse.glb",
   "public/configurator-models/interieur/kochen/Gasbraeter.glb",
+  "public/configurator-models/interieur/kochen/Griddleplatte_Elektro.glb",
+  "public/configurator-models/interieur/kochen/Induktionskocher.glb",
+  "public/configurator-models/interieur/kochen/Kontaktgrill.glb",
+  "public/configurator-models/interieur/kuehlung/Flaschenkuehlschrank_gross.glb",
+  "public/configurator-models/interieur/kuehlung/Kuehlaufsatz.glb",
   "public/configurator-models/interieur/kuehlung/Kuehlschrank_Unterbau.glb",
   "public/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb",
   "public/configurator-models/interieur/lueftung-und-schutz/Spritzschutz_700.glb",
   "public/configurator-models/interieur/moebel/Arbeitstisch_1200.glb",
   "public/configurator-models/interieur/moebel/Gasschrank.glb",
+  "public/configurator-models/interieur/moebel/Haengeschrank.glb",
 ];
 
 describe("configurator model structure", () => {

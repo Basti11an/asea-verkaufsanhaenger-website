@@ -17,17 +17,15 @@ import {
 } from "three";
 import type { Texture } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import type { ConfiguratorView } from "../types";
+import type { ConfiguratorView, EquipmentSide } from "../types";
 import { WatermarkOverlay } from "../WatermarkOverlay";
 import { useConfiguratorCopy } from "../copy";
 import {
-  equipmentCenterToWorldOffset,
   equipmentPlacementDefinitions,
-  getEquipmentIntervalCm,
-  movableStandardEquipmentIds,
-  type MovableStandardEquipmentId,
-  type StandardEquipmentState,
-} from "../data/standardEquipmentState";
+  getEquipmentInterval,
+  type EquipmentConfigurationState,
+  type EquipmentPlacement,
+} from "../data/equipmentConfiguration";
 import { CameraController } from "./CameraController";
 import { cameraPresets } from "./cameraPresets";
 import { loadConfiguratorModel } from "./ModelLoader";
@@ -36,13 +34,13 @@ import { installStudioEnvironment } from "./StudioEnvironment";
 type ConfiguratorSceneProps = {
   view: ConfiguratorView;
   started: boolean;
-  equipmentState: StandardEquipmentState;
+  equipmentState: EquipmentConfigurationState;
 };
 
 type SceneRuntime = {
   cameraController: CameraController;
   controls: OrbitControls;
-  applyEquipmentState: (state: StandardEquipmentState) => void;
+  applyConfiguration: (state: EquipmentConfigurationState) => void;
   applyViewVisibility: (view: ConfiguratorView) => void;
 };
 
@@ -62,6 +60,8 @@ const TRAILER_LENGTH_CM = 360;
 const TRAILER_MIN_X = -1.8;
 const GAS_GRIDDLE_HALF_WIDTH = 0.33025;
 const GAS_GRIDDLE_NICHE_HALF_WIDTH = GAS_GRIDDLE_HALF_WIDTH + 0.03;
+const CLOSED_WALL_NAME = "ASEA_ClosedWall";
+const SALES_WALL_NAME = "ASEA_SalesWall";
 const GAS_CABINET_EXTERNAL_CONNECTIONS = [
   "Gasschrank_710x600x850_Absperrhahn",
   "Gasschrank_710x600x850_Absperrhahn_Hebel",
@@ -69,13 +69,9 @@ const GAS_CABINET_EXTERNAL_CONNECTIONS = [
   "Gasschrank_710x600x850_Pruefanschluss",
   "Gasschrank_710x600x850_Schottverschraubung",
 ] as const;
-const FRONT_OUTER_STAND_POSITIONS = [-1.755, 1.755] as const;
-const FRONT_INNER_STAND_OFFSETS = [
-  -(GAS_GRIDDLE_NICHE_HALF_WIDTH + 0.045),
-  GAS_GRIDDLE_NICHE_HALF_WIDTH + 0.045,
-] as const;
-const CLOSED_WALL_NAME = "ASEA_ClosedWall";
-const SALES_WALL_NAME = "ASEA_SalesWall";
+
+type ModelAsset = { scene: Group };
+type ModelAssets = Partial<Record<string, ModelAsset>>;
 
 function addBox(
   parent: Group,
@@ -92,14 +88,12 @@ function addBox(
 
 function addCountertop(parent: Group, startX: number, endX: number, centerZ: number, depth = 0.6) {
   const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.52, metalness: 0.55 });
-  const width = endX - startX;
-  addBox(parent, [width, 0.04, depth], [(startX + endX) / 2, 0.83, centerZ], steel);
+  addBox(parent, [endX - startX, 0.04, depth], [(startX + endX) / 2, 0.83, centerZ], steel);
 }
 
 function addGasGriddleNiche(parent: Group) {
   const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.52, metalness: 0.55 });
   const nicheWidth = GAS_GRIDDLE_NICHE_HALF_WIDTH * 2;
-
   addBox(parent, [nicheWidth, 0.03, 0.6], [0, 0.585, 0.7], steel);
   addBox(parent, [0.03, 0.33, 0.6], [-GAS_GRIDDLE_NICHE_HALF_WIDTH + 0.015, 0.685, 0.7], steel);
   addBox(parent, [0.03, 0.33, 0.6], [GAS_GRIDDLE_NICHE_HALF_WIDTH - 0.015, 0.685, 0.7], steel);
@@ -111,24 +105,16 @@ function centimetersToWorldX(valueCm: number) {
 
 type CounterInterval = { startCm: number; endCm: number };
 
-function mergeIntervals(intervals: readonly CounterInterval[]) {
-  const sorted = [...intervals].sort((a, b) => a.startCm - b.startCm);
-  return sorted.reduce<CounterInterval[]>((merged, interval) => {
-    const previous = merged.at(-1);
-    if (!previous || interval.startCm > previous.endCm) {
-      merged.push({ ...interval });
-    } else {
-      previous.endCm = Math.max(previous.endCm, interval.endCm);
-    }
-    return merged;
-  }, []);
-}
-
 function getFreeIntervals(blockedIntervals: readonly CounterInterval[]) {
-  const merged = mergeIntervals(blockedIntervals);
+  const sorted = [...blockedIntervals].sort((a, b) => a.startCm - b.startCm);
+  const merged = sorted.reduce<CounterInterval[]>((result, interval) => {
+    const previous = result.at(-1);
+    if (!previous || interval.startCm > previous.endCm) result.push({ ...interval });
+    else previous.endCm = Math.max(previous.endCm, interval.endCm);
+    return result;
+  }, []);
   const free: CounterInterval[] = [];
   let cursor = 0;
-
   merged.forEach((interval) => {
     if (interval.startCm > cursor) free.push({ startCm: cursor, endCm: interval.startCm });
     cursor = Math.max(cursor, interval.endCm);
@@ -137,80 +123,9 @@ function getFreeIntervals(blockedIntervals: readonly CounterInterval[]) {
   return free;
 }
 
-function createRearCounterFurniture(state: StandardEquipmentState) {
-  const furniture = new Group();
-  furniture.name = "ASEA_RearCounterFurniture";
-  const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.52, metalness: 0.55 });
-  const blockedIntervals: CounterInterval[] = [{ startCm: 0, endCm: 71 }];
-
-  movableStandardEquipmentIds.forEach((id) => {
-    const definition = equipmentPlacementDefinitions[id];
-    if (!state[id].active || definition.side !== "closed-wall" || !definition.blocksCountertop) return;
-    blockedIntervals.push(getEquipmentIntervalCm(state, id));
-  });
-
-  const freeIntervals = getFreeIntervals(blockedIntervals);
-  const fridgeInterval = state["standard-undercounter-fridge"].active
-    ? getEquipmentIntervalCm(state, "standard-undercounter-fridge")
-    : null;
-  const addedPanels = new Set<string>();
-
-  const addPanel = (boundaryCm: number, direction: -1 | 1, preferredWidth = 0.03) => {
-    if (boundaryCm <= 0 || boundaryCm >= TRAILER_LENGTH_CM) return;
-    const nextToFridge = fridgeInterval
-      && Math.abs(fridgeInterval.startCm - boundaryCm) <= 5.01;
-    const width = nextToFridge ? 0.05 : preferredWidth;
-    const centerCm = boundaryCm + direction * width * 50;
-    if (fridgeInterval && centerCm > fridgeInterval.startCm && centerCm < fridgeInterval.endCm) return;
-    const key = centerCm.toFixed(2);
-    if (addedPanels.has(key)) return;
-    addedPanels.add(key);
-    addBox(furniture, [width, 0.81, 0.58], [centimetersToWorldX(centerCm), 0.405, -0.7], steel);
-  };
-
-  freeIntervals.forEach((interval) => {
-    if (interval.endCm - interval.startCm < 0.5) return;
-    addCountertop(
-      furniture,
-      centimetersToWorldX(interval.startCm),
-      centimetersToWorldX(interval.endCm),
-      -0.7,
-    );
-    addPanel(interval.startCm, 1);
-    addPanel(interval.endCm, -1);
-
-    for (let supportCm = interval.startCm + 100; supportCm < interval.endCm - 20; supportCm += 100) {
-      addPanel(supportCm, 1);
-    }
-  });
-
-  return furniture;
-}
-
-function createFrontCountertops(state: StandardEquipmentState) {
-  const countertops = new Group();
-  countertops.name = "ASEA_FrontCountertops";
-  if (!state["standard-gas-griddles"].active) {
-    addCountertop(countertops, -1.8, 1.8, 0.7);
-    return countertops;
-  }
-
-  const centerX = equipmentCenterToWorldOffset(
-    "standard-gas-griddles",
-    state["standard-gas-griddles"].centerCm,
-  );
-  const leftEdge = centerX - GAS_GRIDDLE_NICHE_HALF_WIDTH;
-  const rightEdge = centerX + GAS_GRIDDLE_NICHE_HALF_WIDTH;
-
-  addCountertop(countertops, -1.8, leftEdge, 0.7);
-  addCountertop(countertops, rightEdge, 1.8, 0.7);
-  return countertops;
-}
-
 function createInteriorShell(floorTexture: Texture) {
   const shell = new Group();
   shell.name = "ASEA_InteriorShell";
-
   const wall = new MeshStandardMaterial({ color: 0xe7e7e3, roughness: 0.74, metalness: 0.05 });
   const floorBase = new MeshStandardMaterial({ color: 0x777a73, roughness: 0.82, metalness: 0 });
   const floorSurface = new MeshStandardMaterial({ map: floorTexture, roughness: 0.88, metalness: 0 });
@@ -223,24 +138,21 @@ function createInteriorShell(floorTexture: Texture) {
   woodFloor.position.y = 0.002;
   woodFloor.receiveShadow = true;
   shell.add(woodFloor);
+
   const closedWall = new Group();
   closedWall.name = CLOSED_WALL_NAME;
   addBox(closedWall, [3.6, 2.3, 0.04], [0, 1.15, -1.02], wall);
   shell.add(closedWall);
   addBox(shell, [0.04, 2.3, 2], [-1.82, 1.15, 0], wall);
-
-  // Rear wall with the 80 cm entrance from the plan left open.
   addBox(shell, [0.04, 2.3, 0.6], [1.82, 1.15, 0.7], wall);
   addBox(shell, [0.04, 2.3, 0.6], [1.82, 1.15, -0.7], wall);
   addBox(shell, [0.04, 0.3, 0.8], [1.82, 2.15, 0], wall);
 
-  // The low sales-side wall shows the room boundary without hiding the equipment.
   const salesWall = new Group();
   salesWall.name = SALES_WALL_NAME;
   addBox(salesWall, [3.6, 0.76, 0.04], [0, 0.38, 1.02], wall);
   addBox(salesWall, [3.62, 0.035, 0.055], [0, 0.79, 1.025], trim);
   shell.add(salesWall);
-
   return shell;
 }
 
@@ -248,7 +160,6 @@ function prepareModel(model: Group, rotationY: number, placement: Placement) {
   model.rotation.y = rotationY;
   model.scale.setScalar(MODEL_SCALE);
   model.updateMatrixWorld(true);
-
   let bounds = new Box3().setFromObject(model);
   const size = bounds.getSize(new Vector3());
   if (placement.width) model.scale.multiplyScalar(placement.width / size.x);
@@ -268,31 +179,139 @@ function prepareModel(model: Group, rotationY: number, placement: Placement) {
   model.position.add(offset);
 
   model.traverse((object) => {
-    if (object instanceof Mesh) {
-      const materials = Array.isArray(object.material) ? object.material : [object.material];
-      const hasTransparentMaterial = materials.some((material) => material.transparent);
-
-      materials.forEach((material) => {
-        if (!(material instanceof MeshStandardMaterial)) return;
-
-        if (material.transparent) {
-          material.depthWrite = false;
-          material.envMapIntensity = Math.min(material.envMapIntensity, 0.45);
-          return;
-        }
-
-        if (material.metalness >= 0.8) {
-          material.roughness = Math.max(material.roughness, 0.42);
-          material.envMapIntensity = Math.min(material.envMapIntensity, 0.65);
-        }
-      });
-
-      object.castShadow = !hasTransparentMaterial;
-      object.receiveShadow = !hasTransparentMaterial;
-    }
+    if (!(object instanceof Mesh)) return;
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    const transparent = materials.some((material) => material.transparent);
+    materials.forEach((material) => {
+      if (!(material instanceof MeshStandardMaterial)) return;
+      if (material.transparent) {
+        material.depthWrite = false;
+        material.envMapIntensity = Math.min(material.envMapIntensity, 0.45);
+      } else if (material.metalness >= 0.8) {
+        material.roughness = Math.max(material.roughness, 0.42);
+        material.envMapIntensity = Math.min(material.envMapIntensity, 0.65);
+      }
+    });
+    object.castShadow = !transparent;
+    object.receiveShadow = !transparent;
   });
-
   return model;
+}
+
+function fallbackModel(sizeCm: readonly [number, number, number], materialColor = 0xb7b5ac) {
+  const group = new Group();
+  const material = new MeshStandardMaterial({ color: materialColor, roughness: 0.62, metalness: 0.18 });
+  addBox(group, [sizeCm[0] / 100, sizeCm[1] / 100, sizeCm[2] / 100], [0, sizeCm[1] / 200, 0], material);
+  return group;
+}
+
+function sidePlacement(side: EquipmentSide, minY: number, width: number, height?: number): Placement {
+  return side === "closed-wall"
+    ? { minY, minZ: -1, width, height }
+    : { minY, maxZ: 1, width, height };
+}
+
+function addPart(
+  parent: Group,
+  asset: Group | undefined,
+  fallbackSizeCm: readonly [number, number, number],
+  rotationY: number,
+  placement: Placement,
+) {
+  parent.add(asset ? prepareModel(asset.scene.clone(true), rotationY, placement) : fallbackModel(fallbackSizeCm));
+}
+
+function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
+  const group = new Group();
+  group.name = item.id;
+  const rotation = item.side === "closed-wall" ? -Math.PI / 2 : Math.PI / 2;
+  const side = item.side;
+
+  switch (item.productId) {
+    case "fryer":
+      addPart(group, assets.fryer, [30, 85, 60], rotation, sidePlacement(side, 0.4328, 0.3));
+      addPart(group, assets.hood, [60, 88, 60], rotation, sidePlacement(side, 1.36, 0.6));
+      break;
+    case "double-fryer":
+      addPart(group, assets.doubleFryer, [59, 41, 60], rotation, sidePlacement(side, 0.4328, 0.59));
+      addPart(group, assets.hood, [60, 88, 60], rotation, sidePlacement(side, 1.36, 0.6));
+      break;
+    case "gas-griddle":
+      addGasGriddleNiche(group);
+      addPart(group, assets.gasGriddle, [66, 25, 60], rotation, sidePlacement(side, 0.6, 0.6605));
+      addPart(group, assets.splashGuard, [77, 40, 7], rotation, sidePlacement(side, 0.85, 0.77));
+      break;
+    case "contact-grill":
+      addPart(group, assets.contactGrill, [41, 20, 46], rotation, sidePlacement(side, 0.85, 0.41));
+      break;
+    case "electric-griddle":
+      addPart(group, assets.electricGriddle, [60, 12, 45], rotation, sidePlacement(side, 0.85, 0.6));
+      break;
+    case "induction":
+      addPart(group, assets.induction, [50, 12, 45], rotation, sidePlacement(side, 0.85, 0.5));
+      break;
+    case "bottle-fridge":
+      addPart(group, assets.bottleFridge, [61, 173, 64], rotation, sidePlacement(side, 0, 0.61, 1.73));
+      break;
+    case "cooling-top":
+      addPart(group, assets.coolingTop, [120, 46, 40], rotation, sidePlacement(side, 0.85, 1.2));
+      break;
+    case "undercounter-fridge":
+      addPart(group, assets.undercounterFridge, [60, 81, 60], rotation, sidePlacement(side, 0, 0.6, 0.81));
+      break;
+    case "double-sink":
+      addPart(group, assets.doubleSink, [90, 15, 55], rotation, sidePlacement(side, 0.83, 0.9));
+      break;
+    case "hygiene-area":
+      addPart(group, assets.hygieneArea, [100, 211, 60], rotation, sidePlacement(side, 0, 1));
+      break;
+    case "worktable":
+      addPart(group, assets.worktable, [120, 85, 60], rotation, sidePlacement(side, 0, 1.2));
+      break;
+    case "wall-cabinet":
+      addPart(group, assets.wallCabinet, [60, 60, 35], rotation, sidePlacement(side, 1.36, 0.6));
+      break;
+    case "splash-guard":
+      addPart(group, assets.splashGuard, [77, 40, 7], rotation, sidePlacement(side, 0.85, 0.77));
+      break;
+  }
+  return group;
+}
+
+function createCounterFurniture(
+  state: EquipmentConfigurationState,
+  side: EquipmentSide,
+  standAsset?: ModelAsset,
+) {
+  const furniture = new Group();
+  furniture.name = `ASEA_${side}_CounterFurniture`;
+  const blocked = state.items
+    .filter((item) => item.side === side && equipmentPlacementDefinitions[item.productId].blocksCountertop)
+    .map((item) => getEquipmentInterval(item));
+  if (side === "closed-wall") blocked.push({ startCm: 0, endCm: 71 });
+  const freeIntervals = getFreeIntervals(blocked);
+  const centerZ = side === "closed-wall" ? -0.7 : 0.7;
+
+  freeIntervals.forEach((interval) => {
+    if (interval.endCm - interval.startCm < 0.5) return;
+    addCountertop(furniture, centimetersToWorldX(interval.startCm), centimetersToWorldX(interval.endCm), centerZ);
+
+    if (!standAsset) return;
+    const supportCenters = [interval.startCm, interval.endCm];
+    for (let support = interval.startCm + 100; support < interval.endCm - 20; support += 100) {
+      supportCenters.push(support);
+    }
+    supportCenters.forEach((supportCm) => {
+      const support = prepareModel(standAsset.scene.clone(true), 0, {
+        centerX: 0,
+        minY: 0,
+        centerZ: centerZ,
+      });
+      support.position.x = centimetersToWorldX(supportCm);
+      furniture.add(support);
+    });
+  });
+  return furniture;
 }
 
 function disposeGroup(group: Group) {
@@ -305,6 +324,15 @@ function disposeGroup(group: Group) {
       material.dispose();
     });
   });
+}
+
+async function loadOptional(path: string) {
+  try {
+    return await loadConfiguratorModel(path);
+  } catch (error) {
+    console.warn(`Configurator model unavailable: ${path}`, error);
+    return undefined;
+  }
 }
 
 export function ConfiguratorScene({ view, started, equipmentState }: ConfiguratorSceneProps) {
@@ -335,34 +363,31 @@ export function ConfiguratorScene({ view, started, equipmentState }: Configurato
 
   useEffect(() => {
     equipmentStateRef.current = equipmentState;
-    runtimeRef.current?.applyEquipmentState(equipmentState);
+    runtimeRef.current?.applyConfiguration(equipmentState);
   }, [equipmentState]);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-
     let disposed = false;
     let frameId = 0;
     let interiorShell: Group | null = null;
-    let frontCountertops: Group | null = null;
-    let rearCounterFurniture: Group | null = null;
     let standardModels: Group | null = null;
     let closedWallEquipment: Group | null = null;
     let salesWallEquipment: Group | null = null;
-    const equipmentGroups = new Map<MovableStandardEquipmentId, Group>();
-    let frontInnerStandWrappers: Group[] = [];
+    let closedFurniture: Group | null = null;
+    let salesFurniture: Group | null = null;
+    const equipmentGroups = new Map<string, Group>();
+    let assets: ModelAssets = {};
     const scene = new Scene();
     const camera = new PerspectiveCamera(cameraPresets.three.fov, 1, 0.05, 100);
     camera.position.set(...cameraPresets.three.position);
     camera.up.set(...cameraPresets.three.up);
-
     const renderer = new WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.domElement.setAttribute("aria-label", sceneLabel);
     container.appendChild(renderer.domElement);
     const studioEnvironment = installStudioEnvironment(scene, renderer);
-
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.set(...cameraPresets.three.target);
     controls.enableDamping = true;
@@ -373,52 +398,55 @@ export function ConfiguratorScene({ view, started, equipmentState }: Configurato
     controls.maxDistance = 9;
     controls.maxPolarAngle = Math.PI * 0.49;
     controls.update();
-
     const cameraController = new CameraController(camera, controls);
+
     const applyViewVisibility = (currentView: ConfiguratorView) => {
       const hideCustomerSide = currentView === "front";
       const hideSellerSide = currentView === "rear";
       const closedWall = interiorShell?.getObjectByName(CLOSED_WALL_NAME);
       const salesWall = interiorShell?.getObjectByName(SALES_WALL_NAME);
-
       if (closedWall) closedWall.visible = !hideSellerSide;
       if (salesWall) salesWall.visible = !hideCustomerSide;
       if (closedWallEquipment) closedWallEquipment.visible = !hideSellerSide;
       if (salesWallEquipment) salesWallEquipment.visible = !hideCustomerSide;
+      if (closedFurniture) closedFurniture.visible = !hideSellerSide;
+      if (salesFurniture) salesFurniture.visible = !hideCustomerSide;
     };
-    const applyEquipmentState = (state: StandardEquipmentState) => {
-      movableStandardEquipmentIds.forEach((id) => {
-        const group = equipmentGroups.get(id);
-        if (!group) return;
-        group.visible = state[id].active;
-        group.position.x = equipmentCenterToWorldOffset(id, state[id].centerCm);
+
+    const applyConfiguration = (state: EquipmentConfigurationState) => {
+      if (!standardModels || !closedWallEquipment || !salesWallEquipment || !closedFurniture || !salesFurniture) return;
+      const activeIds = new Set(state.items.map((item) => item.id));
+      equipmentGroups.forEach((group, id) => {
+        if (activeIds.has(id)) return;
+        group.parent?.remove(group);
+        equipmentGroups.delete(id);
+      });
+      state.items.forEach((item) => {
+        let group = equipmentGroups.get(item.id);
+        if (!group) {
+          group = createEquipmentVisual(item, assets);
+          equipmentGroups.set(item.id, group);
+        }
+        const equipmentParent = item.side === "closed-wall" ? closedWallEquipment : salesWallEquipment;
+        if (group.parent !== equipmentParent) equipmentParent.add(group);
+        group.position.x = centimetersToWorldX(item.centerCm);
       });
 
-      const gasGriddle = state["standard-gas-griddles"];
-      const gasCenterX = equipmentCenterToWorldOffset("standard-gas-griddles", gasGriddle.centerCm);
-      const innerStandPositions = gasGriddle.active
-        ? FRONT_INNER_STAND_OFFSETS.map((offset) => gasCenterX + offset)
-        : [-0.6, 0.6];
-      frontInnerStandWrappers.forEach((wrapper, index) => {
-        wrapper.position.x = innerStandPositions[index];
-      });
-
-      if (closedWallEquipment && salesWallEquipment) {
-        if (frontCountertops) {
-          salesWallEquipment.remove(frontCountertops);
-          disposeGroup(frontCountertops);
-        }
-        if (rearCounterFurniture) {
-          closedWallEquipment.remove(rearCounterFurniture);
-          disposeGroup(rearCounterFurniture);
-        }
-        frontCountertops = createFrontCountertops(state);
-        rearCounterFurniture = createRearCounterFurniture(state);
-        salesWallEquipment.add(frontCountertops);
-        closedWallEquipment.add(rearCounterFurniture);
+      if (closedFurniture) {
+        closedFurniture.removeFromParent();
+        disposeGroup(closedFurniture);
       }
+      if (salesFurniture) {
+        salesFurniture.removeFromParent();
+        disposeGroup(salesFurniture);
+      }
+      closedFurniture = createCounterFurniture(state, "closed-wall", assets.countertopStand);
+      salesFurniture = createCounterFurniture(state, "sales-hatch", assets.countertopStand);
+      closedWallEquipment.add(closedFurniture);
+      salesWallEquipment.add(salesFurniture);
+      applyViewVisibility(viewRef.current);
     };
-    runtimeRef.current = { cameraController, controls, applyEquipmentState, applyViewVisibility };
+    runtimeRef.current = { cameraController, controls, applyConfiguration, applyViewVisibility };
 
     const resize = () => {
       const width = Math.max(container.clientWidth, 1);
@@ -430,12 +458,10 @@ export function ConfiguratorScene({ view, started, equipmentState }: Configurato
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(container);
     resize();
-
     const timer = new Timer();
     const render = () => {
       timer.update();
-      const delta = Math.min(timer.getDelta(), 0.05);
-      cameraController.update(delta);
+      cameraController.update(Math.min(timer.getDelta(), 0.05));
       controls.enabled = startedRef.current && viewRef.current === "three" && !cameraController.isAnimating;
       if (controls.enabled) controls.update();
       renderer.render(scene, camera);
@@ -443,102 +469,57 @@ export function ConfiguratorScene({ view, started, equipmentState }: Configurato
     };
     render();
 
-    async function loadStandardConfiguration() {
+    async function loadConfiguration() {
       try {
-        const [floorTexture, gasCabinet, fryer, hygiene, fridge, gasGriddles, hood, splashGuard, countertopStand] =
-          await Promise.all([
-            new TextureLoader().loadAsync("/configurator-textures/floor/grey-oak-vinyl.png"),
-            loadConfiguratorModel("/configurator-models/interieur/moebel/Gasschrank.glb"),
-            loadConfiguratorModel("/configurator-models/interieur/kochen/Doppelfriteuse.glb"),
-            loadConfiguratorModel("/configurator-models/interieur/hygiene/Hygienebereich.glb"),
-            loadConfiguratorModel("/configurator-models/interieur/kuehlung/Kuehlschrank_Unterbau.glb"),
-            loadConfiguratorModel("/configurator-models/interieur/kochen/Gasbraeter.glb"),
-            loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb"),
-            loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Spritzschutz_700.glb"),
-            loadConfiguratorModel("/configurator-models/interieur/arbeitsflaechen/Arbeitsplatten_Staender.glb"),
-          ]);
-        if (disposed) {
-          floorTexture.dispose();
-          return;
-        }
-
+        const [floorTexture, gasCabinet, doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet] = await Promise.all([
+          new TextureLoader().loadAsync("/configurator-textures/floor/grey-oak-vinyl.png"),
+          loadConfiguratorModel("/configurator-models/interieur/moebel/Gasschrank.glb"),
+          loadConfiguratorModel("/configurator-models/interieur/kochen/Doppelfriteuse.glb"),
+          loadConfiguratorModel("/configurator-models/interieur/hygiene/Hygienebereich.glb"),
+          loadConfiguratorModel("/configurator-models/interieur/kuehlung/Kuehlschrank_Unterbau.glb"),
+          loadConfiguratorModel("/configurator-models/interieur/kochen/Gasbraeter.glb"),
+          loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb"),
+          loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Spritzschutz_700.glb"),
+          loadConfiguratorModel("/configurator-models/interieur/arbeitsflaechen/Arbeitsplatten_Staender.glb"),
+          loadOptional("/configurator-models/interieur/kochen/Friteuse.glb"),
+          loadOptional("/configurator-models/interieur/kochen/Kontaktgrill.glb"),
+          loadOptional("/configurator-models/interieur/kochen/Griddleplatte_Elektro.glb"),
+          loadOptional("/configurator-models/interieur/kochen/Induktionskocher.glb"),
+          loadOptional("/configurator-models/interieur/kuehlung/Flaschenkuehlschrank_gross.glb"),
+          loadOptional("/configurator-models/interieur/kuehlung/Kuehlaufsatz.glb"),
+          loadOptional("/configurator-models/interieur/hygiene/Doppelwaschbecken.glb"),
+          loadOptional("/configurator-models/interieur/moebel/Arbeitstisch_1200.glb"),
+          loadOptional("/configurator-models/interieur/moebel/Haengeschrank.glb"),
+        ]);
+        if (disposed) return;
         floorTexture.colorSpace = SRGBColorSpace;
         floorTexture.wrapS = RepeatWrapping;
         floorTexture.wrapT = RepeatWrapping;
         floorTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
         floorTexture.needsUpdate = true;
+        assets = { gasCabinet, doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet };
         interiorShell = createInteriorShell(floorTexture);
         scene.add(interiorShell);
-
-        GAS_CABINET_EXTERNAL_CONNECTIONS.forEach((nodeName) => {
-          gasCabinet.scene.getObjectByName(nodeName)?.removeFromParent();
-        });
-
+        GAS_CABINET_EXTERNAL_CONNECTIONS.forEach((nodeName) => gasCabinet.scene.getObjectByName(nodeName)?.removeFromParent());
         standardModels = new Group();
-        standardModels.name = "ASEA_StandardEquipment";
         closedWallEquipment = new Group();
-        closedWallEquipment.name = "ASEA_ClosedWallEquipment";
         salesWallEquipment = new Group();
+        closedFurniture = new Group();
+        salesFurniture = new Group();
+        standardModels.name = "ASEA_StandardEquipment";
+        closedWallEquipment.name = "ASEA_ClosedWallEquipment";
         salesWallEquipment.name = "ASEA_SalesWallEquipment";
-        const createEquipmentGroup = (id: MovableStandardEquipmentId, model: Group) => {
-          const group = new Group();
-          group.name = id;
-          group.add(model);
-          equipmentGroups.set(id, group);
-          return group;
-        };
-
-        const gasGriddleAssembly = new Group();
-        gasGriddleAssembly.name = "ASEA_GasGriddleAssembly";
-        addGasGriddleNiche(gasGriddleAssembly);
-        gasGriddleAssembly.add(
-          prepareModel(gasGriddles.scene, Math.PI / 2, { centerX: 0, minY: 0.6, minZ: 0.4 }),
-          prepareModel(splashGuard.scene, Math.PI / 2, { centerX: 0, minY: 0.85, maxZ: 1 }),
-        );
-        frontInnerStandWrappers = FRONT_INNER_STAND_OFFSETS.map(() => {
-          const wrapper = new Group();
-          wrapper.add(prepareModel(countertopStand.scene.clone(), 0, { centerX: 0, minY: 0, centerZ: 0.445 }));
-          return wrapper;
-        });
-
-        closedWallEquipment.add(
-          prepareModel(gasCabinet.scene, Math.PI / 2, { minX: -1.8, minY: 0, minZ: -1 }),
-          createEquipmentGroup(
-            "standard-double-fryer",
-            prepareModel(fryer.scene, -Math.PI / 2, { minX: -1.09, minY: 0.4328, minZ: -1, width: 0.59 }),
-          ),
-          createEquipmentGroup(
-            "standard-hygiene",
-            prepareModel(hygiene.scene, -Math.PI / 2, { minX: 0.15, minY: 0, minZ: -1, width: 1 }),
-          ),
-          createEquipmentGroup(
-            "standard-undercounter-fridge",
-            prepareModel(fridge.scene, -Math.PI / 2, { minX: 1.2, minY: 0, minZ: -1, width: 0.6, height: 0.81 }),
-          ),
-          createEquipmentGroup(
-            "standard-hood",
-            prepareModel(hood.scene, -Math.PI / 2, { minX: -1.09, minY: 1.36, minZ: -1, width: 0.6 }),
-          ),
-        );
-        salesWallEquipment.add(
-          createEquipmentGroup("standard-gas-griddles", gasGriddleAssembly),
-          ...frontInnerStandWrappers,
-          ...FRONT_OUTER_STAND_POSITIONS.map((centerX) =>
-            prepareModel(countertopStand.scene.clone(), 0, { centerX, minY: 0, centerZ: 0.445 }),
-          ),
-        );
+        closedWallEquipment.add(prepareModel(gasCabinet.scene, Math.PI / 2, { minX: -1.8, minY: 0, minZ: -1 }));
         standardModels.add(closedWallEquipment, salesWallEquipment);
         scene.add(standardModels);
-        applyEquipmentState(equipmentStateRef.current);
-        applyViewVisibility(viewRef.current);
-
+        applyConfiguration(equipmentStateRef.current);
         setStatus("ready");
       } catch (error) {
         console.error("Configurator model loading failed:", error);
         if (!disposed) setStatus("error");
       }
     }
-    void loadStandardConfiguration();
+    void loadConfiguration();
 
     return () => {
       disposed = true;

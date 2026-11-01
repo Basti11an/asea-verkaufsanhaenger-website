@@ -2,6 +2,8 @@ export type LocalizedText = readonly [string, string, string];
 
 export type ConfiguratorView = "three" | "top" | "front" | "rear";
 
+export type EquipmentSide = "closed-wall" | "sales-hatch";
+
 export type ProductCategory = "cooking" | "cooling" | "hygiene" | "furniture";
 
 export type PositionCm = {
