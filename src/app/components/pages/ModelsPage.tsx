@@ -33,10 +33,14 @@ export const STATIC_DETAILS: Record<number, StaticModelDetails> = {
     descriptionKey: 'home_model1_desc',
     shortDescriptionKey: 'model_sales_short',
     images: [
-      'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-85.jpg',
-      'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-10.jpg',
-      'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-86.jpg',
-      'https://www.verkaufsanhaenger-asea.at/wp/wp-content/uploads/Verkaufsanhaenger-Asea-aus-Waldburg-in-Oberoesterreich-87.jpg',
+      '/images/models/verkaufsanhaenger/20240717_120015.jpg',
+      '/images/models/verkaufsanhaenger/20240717_120058.jpg',
+      '/images/models/verkaufsanhaenger/20240719_095754.jpg',
+      '/images/models/verkaufsanhaenger/20260528_140616.jpg',
+      '/images/models/verkaufsanhaenger/20260528_140700.jpg',
+      '/images/models/verkaufsanhaenger/20260528_140750.jpg',
+      '/images/models/verkaufsanhaenger/20260528_140928.jpg',
+      '/images/models/verkaufsanhaenger/20260528_141031.jpg',
     ],
     featureKeys: [
       'model_sales_feature1',
