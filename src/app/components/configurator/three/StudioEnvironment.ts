@@ -15,7 +15,7 @@ import {
 } from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
-const STUDIO_BACKGROUND_BOTTOM = 0xb9dca2;
+const STUDIO_BACKGROUND_BOTTOM = 0xe7e2d9;
 
 function createStudioBackgroundTexture() {
   const canvas = document.createElement("canvas");
@@ -28,81 +28,29 @@ function createStudioBackgroundTexture() {
   }
 
   const verticalGradient = context.createLinearGradient(0, 0, 0, canvas.height);
-  verticalGradient.addColorStop(0, "#277bc4");
-  verticalGradient.addColorStop(0.48, "#79b9e8");
-  verticalGradient.addColorStop(0.7, "#d9edf6");
-  verticalGradient.addColorStop(1, "#b9dca2");
+  verticalGradient.addColorStop(0, "#f8f6f1");
+  verticalGradient.addColorStop(0.08, "#f3efe7");
+  verticalGradient.addColorStop(0.18, "#e7e2d9");
+  verticalGradient.addColorStop(1, "#e7e2d9");
   context.fillStyle = verticalGradient;
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  const clouds = [
-    [150, 170, 145], [440, 125, 110], [770, 205, 165], [930, 95, 90],
-  ] as const;
-  clouds.forEach(([x, y, radius]) => {
-    const cloud = context.createRadialGradient(x, y, radius * 0.08, x, y, radius);
-    cloud.addColorStop(0, "rgba(255,255,255,0.86)");
-    cloud.addColorStop(0.5, "rgba(255,255,255,0.52)");
-    cloud.addColorStop(1, "rgba(255,255,255,0)");
-    context.fillStyle = cloud;
-    context.fillRect(x - radius, y - radius * 0.55, radius * 2, radius * 1.1);
-  });
-
-  const texture = new CanvasTexture(canvas);
-  texture.colorSpace = SRGBColorSpace;
-  return texture;
-}
-
-function createGrassTexture() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 512;
-  canvas.height = 512;
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("Unable to create the configurator grass texture");
-
-  context.fillStyle = "#5f9147";
+  const lightSpot = context.createRadialGradient(
+    canvas.width * 0.5,
+    canvas.height * 0.44,
+    0,
+    canvas.width * 0.5,
+    canvas.height * 0.44,
+    canvas.width * 0.58,
+  );
+  lightSpot.addColorStop(0, "rgba(255, 253, 248, 0.2)");
+  lightSpot.addColorStop(0.48, "rgba(255, 253, 248, 0.08)");
+  lightSpot.addColorStop(1, "rgba(255, 253, 248, 0)");
+  context.fillStyle = lightSpot;
   context.fillRect(0, 0, canvas.width, canvas.height);
-  let seed = 17;
-  const random = () => {
-    seed = (seed * 9301 + 49297) % 233280;
-    return seed / 233280;
-  };
-
-  for (let index = 0; index < 1800; index += 1) {
-    const x = random() * canvas.width;
-    const y = random() * canvas.height;
-    context.strokeStyle = random() > 0.5 ? "#477b3c" : "#78a94e";
-    context.lineWidth = 1 + random() * 1.5;
-    context.beginPath();
-    context.moveTo(x, y + 4);
-    context.lineTo(x - 2 + random() * 4, y - 3 - random() * 6);
-    context.stroke();
-  }
-
-  for (let index = 0; index < 36; index += 1) {
-    const x = random() * canvas.width;
-    const y = random() * canvas.height;
-    context.fillStyle = random() > 0.5 ? "#f6e8a6" : "#f8f8ed";
-    context.beginPath();
-    context.arc(x, y, 3.2, 0, Math.PI * 2);
-    context.fill();
-    context.fillStyle = "#e6b94b";
-    context.beginPath();
-    context.arc(x, y, 1.2, 0, Math.PI * 2);
-    context.fill();
-  }
-
-  for (let index = 0; index < 28; index += 1) {
-    context.fillStyle = "rgba(116, 116, 103, 0.55)";
-    context.beginPath();
-    context.ellipse(random() * canvas.width, random() * canvas.height, 5 + random() * 7, 3 + random() * 4, random(), 0, Math.PI * 2);
-    context.fill();
-  }
 
   const texture = new CanvasTexture(canvas);
   texture.colorSpace = SRGBColorSpace;
-  texture.wrapS = RepeatWrapping;
-  texture.wrapT = RepeatWrapping;
-  texture.repeat.set(18, 18);
   return texture;
 }
 
@@ -157,14 +105,12 @@ export function installStudioEnvironment(scene: Scene, renderer: WebGLRenderer) 
   rimLight.target = lightTarget;
   scene.add(rimLight);
 
-  const grassTexture = createGrassTexture();
   const floorMaterial = new MeshStandardMaterial({
-    map: grassTexture,
-    color: 0xffffff,
-    roughness: 0.96,
+    color: 0xe7e3db,
+    roughness: 0.9,
     metalness: 0,
   });
-  const floor = new Mesh(new PlaneGeometry(160, 160), floorMaterial);
+  const floor = new Mesh(new PlaneGeometry(32, 32), floorMaterial);
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -0.4;
   floor.receiveShadow = true;
@@ -177,7 +123,6 @@ export function installStudioEnvironment(scene: Scene, renderer: WebGLRenderer) 
       scene.environment = null;
       scene.fog = null;
       floor.geometry.dispose();
-      grassTexture.dispose();
       floorMaterial.dispose();
       keyLight.shadow.dispose();
       environmentTarget.dispose();
