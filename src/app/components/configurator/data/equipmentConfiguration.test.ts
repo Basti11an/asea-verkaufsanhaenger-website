@@ -15,10 +15,20 @@ describe("configurable equipment rules", () => {
 
     expect(state.items).toMatchObject([
       { productId: "double-fryer", side: "closed-wall", centerCm: 100.5 },
+      { productId: "extractor-hood", side: "closed-wall", centerCm: 100.5 },
       { productId: "hygiene-area", side: "closed-wall", centerCm: 245 },
       { productId: "gas-griddle", side: "sales-hatch", centerCm: 180 },
       { productId: "undercounter-fridge", side: "closed-wall", centerCm: 330 },
     ]);
+  });
+
+  it("keeps fryer and extractor hood as separate overlapping placements", () => {
+    const state = createDefaultEquipmentConfiguration();
+    const hood = state.items.find((item) => item.productId === "extractor-hood")!;
+
+    expect(hood.id).toBe("standard-hood");
+    expect(findConfigurationCollision(state, hood)).toBeNull();
+    expect(equipmentPlacementDefinitions["extractor-hood"].blocksCountertop).toBe(false);
   });
 
   it("uses the real installation widths for collision checks", () => {
@@ -61,6 +71,8 @@ describe("configurable equipment rules", () => {
     };
     expect(findConfigurationCollision(state, fridge)).toBe("wheel-arch");
     expect(moveEquipment({ items: [fridge] }, "fridge", 180).collisionWith).toBe("wheel-arch");
+    expect(findConfigurationCollision(state, fridge, 111.5)).toBeNull();
+    expect(findConfigurationCollision(state, fridge, 248.5)).toBeNull();
   });
 
   it("moves an allowed appliance between the two sides", () => {

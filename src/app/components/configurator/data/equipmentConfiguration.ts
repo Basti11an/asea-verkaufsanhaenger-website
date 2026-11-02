@@ -1,8 +1,10 @@
 import type { EquipmentSide } from "../types";
+import { trailerConfiguration } from "./defaultConfiguration";
 
 export type ConfigurableProductId =
   | "fryer"
   | "double-fryer"
+  | "extractor-hood"
   | "gas-griddle"
   | "contact-grill"
   | "electric-griddle"
@@ -53,7 +55,7 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     minCenterCm: 15,
     maxCenterCm: 345,
     widthCm: 30,
-    collisionChannels: ["floor", "counter", "wall"],
+    collisionChannels: ["floor", "counter"],
     blocksCountertop: true,
     avoidsWheelArch: false,
   },
@@ -64,8 +66,19 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     minCenterCm: 30,
     maxCenterCm: 330,
     widthCm: 60,
-    collisionChannels: ["floor", "counter", "wall"],
+    collisionChannels: ["floor", "counter"],
     blocksCountertop: true,
+    avoidsWheelArch: false,
+  },
+  "extractor-hood": {
+    productId: "extractor-hood",
+    allowedSides: allSides,
+    defaultCenterCm: { "closed-wall": 100.5, "sales-hatch": 100.5 },
+    minCenterCm: 30,
+    maxCenterCm: 330,
+    widthCm: 60,
+    collisionChannels: ["wall"],
+    blocksCountertop: false,
     avoidsWheelArch: false,
   },
   "gas-griddle": {
@@ -202,7 +215,10 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
   },
 };
 
-const wheelArchIntervals = [{ startCm: 125, endCm: 235 }] as const;
+const wheelArchIntervals = trailerConfiguration.wheelArchesFromModelCm.map((arch) => ({
+  startCm: arch.longitudinalStart,
+  endCm: arch.longitudinalEnd,
+}));
 
 export const fixedGasCabinet = {
   side: "closed-wall" as const,
@@ -219,6 +235,7 @@ export function createDefaultEquipmentConfiguration(): EquipmentConfigurationSta
   return {
     items: [
       { id: "standard-double-fryer", productId: "double-fryer", side: "closed-wall", centerCm: 100.5, standard: true },
+      { id: "standard-hood", productId: "extractor-hood", side: "closed-wall", centerCm: 100.5, standard: true },
       { id: "standard-hygiene", productId: "hygiene-area", side: "closed-wall", centerCm: 245, standard: true },
       { id: "standard-gas-griddles", productId: "gas-griddle", side: "sales-hatch", centerCm: 180, standard: true },
       { id: "standard-undercounter-fridge", productId: "undercounter-fridge", side: "closed-wall", centerCm: 330, standard: true },

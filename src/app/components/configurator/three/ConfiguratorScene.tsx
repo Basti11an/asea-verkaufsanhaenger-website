@@ -26,6 +26,7 @@ import {
   type EquipmentConfigurationState,
   type EquipmentPlacement,
 } from "../data/equipmentConfiguration";
+import { trailerConfiguration } from "../data/defaultConfiguration";
 import { CameraController } from "./CameraController";
 import { cameraPresets } from "./cameraPresets";
 import { loadConfiguratorModel } from "./ModelLoader";
@@ -59,6 +60,11 @@ type Placement = {
 const MODEL_SCALE = 0.1;
 const TRAILER_LENGTH_CM = 360;
 const TRAILER_MIN_X = -1.8;
+const WHEEL_ARCH = trailerConfiguration.wheelArchesFromModelCm[0];
+const WHEEL_ARCH_START_CM = WHEEL_ARCH.longitudinalStart;
+const WHEEL_ARCH_END_CM = WHEEL_ARCH.longitudinalEnd;
+const WHEEL_ARCH_HEIGHT = WHEEL_ARCH.heightEnd / 100;
+const WHEEL_ARCH_DEPTH = (WHEEL_ARCH.depthEnd - WHEEL_ARCH.depthStart) / 100;
 const GAS_GRIDDLE_HALF_WIDTH = 0.33025;
 const GAS_GRIDDLE_NICHE_HALF_WIDTH = GAS_GRIDDLE_HALF_WIDTH + 0.03;
 const CLOSED_WALL_NAME = "ASEA_ClosedWall";
@@ -144,6 +150,12 @@ function createInteriorShell(floorTexture: Texture) {
   const closedWall = new Group();
   closedWall.name = CLOSED_WALL_NAME;
   addBox(closedWall, [3.6, 2.3, 0.04], [0, 1.15, -1.02], wall);
+  addBox(
+    closedWall,
+    [(WHEEL_ARCH_END_CM - WHEEL_ARCH_START_CM) / 100, WHEEL_ARCH_HEIGHT, WHEEL_ARCH_DEPTH],
+    [centimetersToWorldX((WHEEL_ARCH_START_CM + WHEEL_ARCH_END_CM) / 2), WHEEL_ARCH_HEIGHT / 2, -1 + WHEEL_ARCH_DEPTH / 2],
+    trim,
+  );
   shell.add(closedWall);
   addBox(shell, [0.04, 2.3, 2], [-1.82, 1.15, 0], wall);
   addBox(shell, [0.04, 2.3, 0.6], [1.82, 1.15, 0.7], wall);
@@ -154,6 +166,12 @@ function createInteriorShell(floorTexture: Texture) {
   salesWall.name = SALES_WALL_NAME;
   addBox(salesWall, [3.6, 0.76, 0.04], [0, 0.38, 1.02], wall);
   addBox(salesWall, [3.62, 0.035, 0.055], [0, 0.79, 1.025], trim);
+  addBox(
+    salesWall,
+    [(WHEEL_ARCH_END_CM - WHEEL_ARCH_START_CM) / 100, WHEEL_ARCH_HEIGHT, WHEEL_ARCH_DEPTH],
+    [centimetersToWorldX((WHEEL_ARCH_START_CM + WHEEL_ARCH_END_CM) / 2), WHEEL_ARCH_HEIGHT / 2, 1 - WHEEL_ARCH_DEPTH / 2],
+    trim,
+  );
   shell.add(salesWall);
   return shell;
 }
@@ -235,10 +253,11 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
   switch (item.productId) {
     case "fryer":
       addPart(group, assets.fryer, [30, 85, 60], rotation, sidePlacement(side, 0.4328, 0.3));
-      addPart(group, assets.hood, [60, 88, 60], rotation, sidePlacement(side, 1.36, 0.6));
       break;
     case "double-fryer":
       addPart(group, assets.doubleFryer, [59, 41, 60], rotation, sidePlacement(side, 0.4328, 0.59));
+      break;
+    case "extractor-hood":
       addPart(group, assets.hood, [60, 88, 60], rotation, sidePlacement(side, 1.36, 0.6));
       break;
     case "gas-griddle":

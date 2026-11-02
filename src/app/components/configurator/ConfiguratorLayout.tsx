@@ -60,7 +60,7 @@ export function ConfiguratorLayout() {
   function handleEquipmentCenterChange(equipmentId: string, centerCm: number) {
     const result = moveEquipment(equipmentState, equipmentId, centerCm);
     if (result.collisionWith) {
-      setNotice(text("collisionNotice"));
+      setNotice(text(result.collisionWith === "wheel-arch" ? "wheelArchNotice" : "collisionNotice"));
       return;
     }
     setEquipmentState(result.state);

@@ -3,6 +3,7 @@ import type { ConfigurableProductId } from "./equipmentConfiguration";
 export const configurableProductIds: readonly ConfigurableProductId[] = [
   "fryer",
   "double-fryer",
+  "extractor-hood",
   "gas-griddle",
   "contact-grill",
   "electric-griddle",

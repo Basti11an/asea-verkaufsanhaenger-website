@@ -55,9 +55,9 @@ const copy = {
     "Nástenná skrinka, drez a batéria sa pohybujú spolu.",
   ],
   fryerMoveHelp: [
-    "Doppelfritteuse und Dunstabzug bewegen sich gemeinsam.",
-    "Double fryer and extractor hood move together.",
-    "Dvojitá fritéza a odsávač pár sa pohybujú spolu.",
+    "Fritteuse und Dunstabzug werden getrennt voneinander verschoben.",
+    "The fryer and extractor hood are positioned independently.",
+    "Fritéza a odsávač pár sa umiestňujú samostatne.",
   ],
   editEquipment: [
     "Ausgewählte Ausstattung bearbeiten",
@@ -72,6 +72,11 @@ const copy = {
     "Diese Position ist bereits belegt.",
     "This position is already occupied.",
     "Táto poloha je už obsadená.",
+  ],
+  wheelArchNotice: [
+    "Diese Position ist durch den Radkasten blockiert.",
+    "This position is blocked by the wheel arch.",
+    "Táto poloha je blokovaná podbehom kolesa.",
   ],
   removedNotice: [
     "Das Gerät wurde entfernt. Über die Ausstattung unten kann es wieder hinzugefügt werden.",

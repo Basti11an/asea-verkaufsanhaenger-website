@@ -34,7 +34,7 @@ export function EquipmentEditor({
     ? text("hygieneMoveHelp")
     : placement.productId === "gas-griddle"
       ? text("gasGriddleMoveHelp")
-      : placement.productId === "fryer" || placement.productId === "double-fryer"
+      : placement.productId === "fryer" || placement.productId === "double-fryer" || placement.productId === "extractor-hood"
         ? text("fryerMoveHelp")
         : text("equipmentMoveHelp");
   const defaultCenter = definition.defaultCenterCm[placement.side];
