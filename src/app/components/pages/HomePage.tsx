@@ -39,7 +39,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
           alt={t('home_hero_alt')}
           className="absolute inset-0 w-full h-full object-contain"
           loading="eager"
-          style={{ objectPosition: 'center 45%' }}
+          style={{ objectPosition: 'right center' }}
         />
 
         <div
