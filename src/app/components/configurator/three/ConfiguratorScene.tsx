@@ -601,7 +601,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
             const materials = Array.isArray(object.material) ? object.material : [object.material];
             materials.forEach((material) => {
               if (!(material instanceof MeshStandardMaterial)) return;
-              material.emissive.setRGB(0.04 * pulse, 0.9 * pulse, 0.1 * pulse);
+              material.emissive.setRGB(0.9 * pulse, 0.04 * pulse, 0.04 * pulse);
               material.emissiveIntensity = 1.8;
             });
           });
