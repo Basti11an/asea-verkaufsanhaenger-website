@@ -312,16 +312,48 @@ function createCounterFurniture(
 ) {
   const furniture = new Group();
   furniture.name = `ASEA_${side}_CounterFurniture`;
+  const panelMaterial = side === "closed-wall"
+    ? new MeshStandardMaterial({ color: 0x777a75, roughness: 0.52, metalness: 0.55 })
+    : null;
   const blocked = state.items
     .filter((item) => item.side === side && equipmentPlacementDefinitions[item.productId].blocksCountertop)
     .map((item) => getEquipmentInterval(item));
   if (side === "closed-wall") blocked.push({ startCm: 0, endCm: 71 });
   const freeIntervals = getFreeIntervals(blocked);
   const centerZ = side === "closed-wall" ? -0.7 : 0.7;
+  const addedPanels = new Set<string>();
+
+  const addClosedWallPanel = (boundaryCm: number, direction: -1 | 1) => {
+    if (!panelMaterial || boundaryCm <= 0 || boundaryCm >= TRAILER_LENGTH_CM) return;
+    const width = 0.03;
+    const centerCm = boundaryCm + direction * width * 50;
+    const key = centerCm.toFixed(2);
+    if (addedPanels.has(key)) return;
+    addedPanels.add(key);
+
+    const aboveWheelArch = centerCm >= WHEEL_ARCH_START_CM && centerCm <= WHEEL_ARCH_END_CM;
+    const minY = aboveWheelArch ? WHEEL_ARCH_HEIGHT : 0;
+    const height = 0.81 - minY;
+    addBox(
+      furniture,
+      [width, height, 0.58],
+      [centimetersToWorldX(centerCm), minY + height / 2, centerZ],
+      panelMaterial,
+    );
+  };
 
   freeIntervals.forEach((interval) => {
     if (interval.endCm - interval.startCm < 0.5) return;
     addCountertop(furniture, centimetersToWorldX(interval.startCm), centimetersToWorldX(interval.endCm), centerZ);
+
+    if (side === "closed-wall") {
+      addClosedWallPanel(interval.startCm, 1);
+      addClosedWallPanel(interval.endCm, -1);
+      for (let supportCm = interval.startCm + 100; supportCm < interval.endCm - 20; supportCm += 100) {
+        addClosedWallPanel(supportCm, 1);
+      }
+      return;
+    }
 
     if (!standAsset) return;
     const supportInsetCm = 5;
@@ -331,15 +363,20 @@ function createCounterFurniture(
     for (let support = interval.startCm + 100; support < interval.endCm - 20; support += 100) {
       supportCenters.push(support);
     }
-    supportCenters.forEach((supportCm) => {
-      const support = prepareModel(standAsset.scene.clone(true), 0, {
-        centerX: 0,
-        minY: 0,
-        centerZ: centerZ,
+    if (interval.startCm < WHEEL_ARCH_START_CM && interval.endCm > WHEEL_ARCH_END_CM) {
+      supportCenters.push(WHEEL_ARCH_START_CM - supportInsetCm, WHEEL_ARCH_END_CM + supportInsetCm);
+    }
+    [...new Set(supportCenters.map((support) => Math.round(support * 2) / 2))]
+      .filter((support) => support + 4.5 <= WHEEL_ARCH_START_CM || support - 4.5 >= WHEEL_ARCH_END_CM)
+      .forEach((supportCm) => {
+        const support = prepareModel(standAsset.scene.clone(true), 0, {
+          centerX: 0,
+          minY: 0,
+          centerZ: centerZ,
+        });
+        support.position.x = centimetersToWorldX(supportCm);
+        furniture.add(support);
       });
-      support.position.x = centimetersToWorldX(supportCm);
-      furniture.add(support);
-    });
   });
   return furniture;
 }
