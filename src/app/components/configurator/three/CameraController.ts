@@ -72,4 +72,8 @@ export class CameraController {
   get isAnimating() {
     return this.transition !== null;
   }
+
+  cancel() {
+    this.transition = null;
+  }
 }

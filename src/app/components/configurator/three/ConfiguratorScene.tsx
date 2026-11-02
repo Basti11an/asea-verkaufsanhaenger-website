@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import {
   Box3,
   BoxGeometry,
@@ -22,15 +22,19 @@ import { WatermarkOverlay } from "../WatermarkOverlay";
 import { useConfiguratorCopy } from "../copy";
 import {
   equipmentPlacementDefinitions,
-  getEquipmentInterval,
   type EquipmentConfigurationState,
   type EquipmentPlacement,
 } from "../data/equipmentConfiguration";
+import { getCountertopIntervals } from "../data/configurationSummary";
 import { trailerConfiguration } from "../data/defaultConfiguration";
 import { CameraController } from "./CameraController";
 import { cameraPresets } from "./cameraPresets";
 import { loadConfiguratorModel } from "./ModelLoader";
 import { installStudioEnvironment } from "./StudioEnvironment";
+import {
+  captureConfigurationScreenshots,
+  type ConfigurationScreenshots,
+} from "./configurationScreenshots";
 
 type ConfiguratorSceneProps = {
   view: ConfiguratorView;
@@ -43,6 +47,11 @@ type SceneRuntime = {
   controls: OrbitControls;
   applyConfiguration: (state: EquipmentConfigurationState) => void;
   applyViewVisibility: (view: ConfiguratorView) => void;
+  captureConfigurationViews: () => ConfigurationScreenshots;
+};
+
+export type ConfiguratorSceneHandle = {
+  captureConfigurationViews: () => ConfigurationScreenshots;
 };
 
 type Placement = {
@@ -109,26 +118,6 @@ function addGasGriddleNiche(parent: Group, side: EquipmentSide) {
 
 function centimetersToWorldX(valueCm: number) {
   return TRAILER_MIN_X + valueCm / 100;
-}
-
-type CounterInterval = { startCm: number; endCm: number };
-
-function getFreeIntervals(blockedIntervals: readonly CounterInterval[]) {
-  const sorted = [...blockedIntervals].sort((a, b) => a.startCm - b.startCm);
-  const merged = sorted.reduce<CounterInterval[]>((result, interval) => {
-    const previous = result.at(-1);
-    if (!previous || interval.startCm > previous.endCm) result.push({ ...interval });
-    else previous.endCm = Math.max(previous.endCm, interval.endCm);
-    return result;
-  }, []);
-  const free: CounterInterval[] = [];
-  let cursor = 0;
-  merged.forEach((interval) => {
-    if (interval.startCm > cursor) free.push({ startCm: cursor, endCm: interval.startCm });
-    cursor = Math.max(cursor, interval.endCm);
-  });
-  if (cursor < TRAILER_LENGTH_CM) free.push({ startCm: cursor, endCm: TRAILER_LENGTH_CM });
-  return free;
 }
 
 function createInteriorShell(floorTexture: Texture) {
@@ -315,11 +304,7 @@ function createCounterFurniture(
   const panelMaterial = side === "closed-wall"
     ? new MeshStandardMaterial({ color: 0x4b4b48, roughness: 0.82, metalness: 0.04 })
     : null;
-  const blocked = state.items
-    .filter((item) => item.side === side && equipmentPlacementDefinitions[item.productId].blocksCountertop)
-    .map((item) => getEquipmentInterval(item));
-  if (side === "closed-wall") blocked.push({ startCm: 0, endCm: 71 });
-  const freeIntervals = getFreeIntervals(blocked);
+  const freeIntervals = getCountertopIntervals(state, side);
   const centerZ = side === "closed-wall" ? -0.7 : 0.7;
   const addedPanels = new Set<string>();
 
@@ -403,7 +388,10 @@ async function loadOptional(path: string) {
   }
 }
 
-export function ConfiguratorScene({ view, started, equipmentState }: ConfiguratorSceneProps) {
+export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, ConfiguratorSceneProps>(function ConfiguratorScene(
+  { view, started, equipmentState },
+  ref,
+) {
   const containerRef = useRef<HTMLDivElement>(null);
   const runtimeRef = useRef<SceneRuntime | null>(null);
   const startedRef = useRef(started);
@@ -412,6 +400,13 @@ export function ConfiguratorScene({ view, started, equipmentState }: Configurato
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const { text } = useConfiguratorCopy();
   const sceneLabel = text("sceneLabel");
+
+  useImperativeHandle(ref, () => ({
+    captureConfigurationViews() {
+      if (!runtimeRef.current) throw new Error("Configurator scene is not ready.");
+      return runtimeRef.current.captureConfigurationViews();
+    },
+  }), []);
 
   useEffect(() => {
     const canvas = containerRef.current?.querySelector("canvas");
@@ -523,7 +518,24 @@ export function ConfiguratorScene({ view, started, equipmentState }: Configurato
       salesWallEquipment.add(salesFurniture);
       applyViewVisibility(viewRef.current);
     };
-    runtimeRef.current = { cameraController, controls, applyConfiguration, applyViewVisibility };
+    const captureConfigurationViews = () => {
+      cameraController.cancel();
+      return captureConfigurationScreenshots({
+        renderer,
+        scene,
+        camera,
+        controls,
+        currentView: viewRef.current,
+        applyViewVisibility,
+      });
+    };
+    runtimeRef.current = {
+      cameraController,
+      controls,
+      applyConfiguration,
+      applyViewVisibility,
+      captureConfigurationViews,
+    };
 
     const resize = () => {
       const width = Math.max(container.clientWidth, 1);
@@ -627,4 +639,4 @@ export function ConfiguratorScene({ view, started, equipmentState }: Configurato
       <WatermarkOverlay />
     </div>
   );
-}
+});

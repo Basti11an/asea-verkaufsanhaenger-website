@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Monitor } from "lucide-react";
 import { ConfiguratorTopbar } from "./ConfiguratorTopbar";
 import { EquipmentSidebar } from "./EquipmentSidebar";
 import { EquipmentEditor } from "./EquipmentEditor";
 import { ProductBar } from "./ProductBar";
 import { StartOverlay } from "./StartOverlay";
-import { ConfiguratorScene } from "./three/ConfiguratorScene";
+import { ConfiguratorScene, type ConfiguratorSceneHandle } from "./three/ConfiguratorScene";
+import { ConfiguratorFinishModal } from "./finish/ConfiguratorFinishModal";
+import { finishConfiguration } from "./finish/configurationFinish";
+import type { ConfigurationCustomer } from "./finish/finishValidation";
 import type { ConfiguratorView, ProductDefinition } from "./types";
 import { useConfiguratorCopy } from "./copy";
 import {
@@ -21,11 +24,13 @@ import "./configurator.css";
 
 export function ConfiguratorLayout() {
   const { text } = useConfiguratorCopy();
+  const sceneRef = useRef<ConfiguratorSceneHandle>(null);
   const [view, setView] = useState<ConfiguratorView>("three");
   const [started, setStarted] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [selectedEquipmentId, setSelectedEquipmentId] = useState<string | null>(null);
   const [equipmentState, setEquipmentState] = useState<EquipmentConfigurationState>(createDefaultEquipmentConfiguration);
+  const [finishModalOpen, setFinishModalOpen] = useState(false);
 
   function selectEquipment(equipmentId: string) {
     if (!equipmentState.items.some((item) => item.id === equipmentId)) return;
@@ -83,6 +88,16 @@ export function ConfiguratorLayout() {
     setNotice(null);
   }
 
+  async function handleFinishSubmit(customer: ConfigurationCustomer) {
+    const scene = sceneRef.current;
+    if (!scene) throw new Error("Configurator scene is not ready.");
+    return finishConfiguration({
+      customer,
+      equipmentState,
+      captureScreenshots: () => scene.captureConfigurationViews(),
+    });
+  }
+
   return (
     <section className="asea-configurator">
       <div className="asea-small-screen">
@@ -96,6 +111,7 @@ export function ConfiguratorLayout() {
         <div className="asea-config-workspace">
           <main className="asea-config-stage">
             <ConfiguratorScene
+              ref={sceneRef}
               view={view}
               started={started}
               equipmentState={equipmentState}
@@ -107,7 +123,11 @@ export function ConfiguratorLayout() {
             selectedEquipmentId={selectedEquipmentId}
             equipmentState={equipmentState}
             onEquipmentSelect={handleEquipmentSelect}
-            onFinish={() => setNotice(text("finishNotice"))}
+            onFinish={() => {
+              setStarted(true);
+              setNotice(null);
+              setFinishModalOpen(true);
+            }}
           />
         </div>
         <EquipmentEditor
@@ -119,6 +139,11 @@ export function ConfiguratorLayout() {
         />
         <ProductBar onProductClick={handleProductClick} />
       </div>
+      <ConfiguratorFinishModal
+        open={finishModalOpen}
+        onClose={() => setFinishModalOpen(false)}
+        onSubmit={handleFinishSubmit}
+      />
     </section>
   );
 }
