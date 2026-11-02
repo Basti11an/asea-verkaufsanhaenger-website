@@ -40,6 +40,7 @@ type ConfiguratorSceneProps = {
   view: ConfiguratorView;
   started: boolean;
   equipmentState: EquipmentConfigurationState;
+  selectedEquipmentId: string | null;
 };
 
 type SceneRuntime = {
@@ -47,6 +48,7 @@ type SceneRuntime = {
   controls: OrbitControls;
   applyConfiguration: (state: EquipmentConfigurationState) => void;
   applyViewVisibility: (view: ConfiguratorView) => void;
+  highlightEquipment: (equipmentId: string | null) => void;
   captureConfigurationViews: () => ConfigurationScreenshots;
 };
 
@@ -400,7 +402,7 @@ async function loadOptional(path: string) {
 }
 
 export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, ConfiguratorSceneProps>(function ConfiguratorScene(
-  { view, started, equipmentState },
+  { view, started, equipmentState, selectedEquipmentId },
   ref,
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -441,6 +443,10 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
   }, [equipmentState]);
 
   useEffect(() => {
+    runtimeRef.current?.highlightEquipment(selectedEquipmentId);
+  }, [selectedEquipmentId]);
+
+  useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
     let disposed = false;
@@ -452,6 +458,8 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
     let closedFurniture: Group | null = null;
     let salesFurniture: Group | null = null;
     const equipmentGroups = new Map<string, Group>();
+    let highlightedGroup: Group | null = null;
+    let highlightStartedAt = 0;
     let assets: ModelAssets = {};
     const scene = new Scene();
     const camera = new PerspectiveCamera(cameraPresets.three.fov, 1, 0.05, 100);
@@ -529,6 +537,22 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
       salesWallEquipment.add(salesFurniture);
       applyViewVisibility(viewRef.current);
     };
+    const clearHighlight = () => {
+      highlightedGroup?.traverse((object) => {
+        if (!(object instanceof Mesh)) return;
+        const materials = Array.isArray(object.material) ? object.material : [object.material];
+        materials.forEach((material) => {
+          if (!(material instanceof MeshStandardMaterial)) return;
+          material.emissive.setRGB(0, 0, 0);
+          material.emissiveIntensity = 0;
+        });
+      });
+    };
+    const highlightEquipment = (equipmentId: string | null) => {
+      clearHighlight();
+      highlightedGroup = equipmentId ? equipmentGroups.get(equipmentId) ?? null : null;
+      highlightStartedAt = highlightedGroup ? performance.now() : 0;
+    };
     const captureConfigurationViews = () => {
       cameraController.cancel();
       return captureConfigurationScreenshots({
@@ -545,6 +569,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
       controls,
       applyConfiguration,
       applyViewVisibility,
+      highlightEquipment,
       captureConfigurationViews,
     };
 
@@ -564,6 +589,24 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
       cameraController.update(Math.min(timer.getDelta(), 0.05));
       controls.enabled = startedRef.current && viewRef.current === "three" && !cameraController.isAnimating;
       if (controls.enabled) controls.update();
+      if (highlightedGroup) {
+        const elapsed = performance.now() - highlightStartedAt;
+        if (elapsed >= 4000 || !highlightedGroup.parent) {
+          clearHighlight();
+          highlightedGroup = null;
+        } else {
+          const pulse = 0.35 + (Math.sin(elapsed / 150) + 1) * 0.16;
+          highlightedGroup.traverse((object) => {
+            if (!(object instanceof Mesh)) return;
+            const materials = Array.isArray(object.material) ? object.material : [object.material];
+            materials.forEach((material) => {
+              if (!(material instanceof MeshStandardMaterial)) return;
+              material.emissive.setRGB(0.08 * pulse, 0.42 * pulse, 0.14 * pulse);
+              material.emissiveIntensity = 1;
+            });
+          });
+        }
+      }
       renderer.render(scene, camera);
       frameId = requestAnimationFrame(render);
     };
@@ -613,6 +656,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
         standardModels.add(closedWallEquipment, salesWallEquipment);
         scene.add(standardModels);
         applyConfiguration(equipmentStateRef.current);
+        highlightEquipment(selectedEquipmentId);
         setStatus("ready");
       } catch (error) {
         console.error("Configurator model loading failed:", error);

@@ -115,6 +115,7 @@ export function ConfiguratorLayout() {
               view={view}
               started={started}
               equipmentState={equipmentState}
+              selectedEquipmentId={selectedEquipmentId}
             />
             <StartOverlay visible={!started} onStart={() => setStarted(true)} />
           </main>
