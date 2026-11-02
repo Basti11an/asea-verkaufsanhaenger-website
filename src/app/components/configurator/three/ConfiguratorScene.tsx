@@ -133,14 +133,14 @@ function createGasCabinetCover() {
   const centerZ = -0.7;
   const width = 0.71;
   const height = 0.85;
-  const depth = 0.62;
-  const boardThickness = 0.02;
+  const depth = 0.6;
+  const boardThickness = 0.035;
 
   // Front, sides and top conceal the cabinet without touching neighbouring equipment.
-  addBox(cover, [width, height, boardThickness], [centerX, height / 2, centerZ + depth / 2 - boardThickness / 2], board);
+  addBox(cover, [width, height, boardThickness], [centerX, height / 2, centerZ + depth / 2], board);
   addBox(cover, [boardThickness, height, depth], [centerX - width / 2, height / 2, centerZ], board);
   addBox(cover, [boardThickness, height, depth], [centerX + width / 2, height / 2, centerZ], board);
-  addBox(cover, [width, boardThickness, depth], [centerX, height - boardThickness / 2, centerZ], board);
+  addBox(cover, [width, boardThickness, depth], [centerX, height + boardThickness / 2, centerZ], board);
   return cover;
 }
 
