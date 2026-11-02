@@ -15,7 +15,7 @@ import {
 } from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
-const STUDIO_BACKGROUND_BOTTOM = 0x8fbd79;
+const STUDIO_BACKGROUND_BOTTOM = 0xe7e2d9;
 
 function createStudioBackgroundTexture() {
   const canvas = document.createElement("canvas");
@@ -28,10 +28,10 @@ function createStudioBackgroundTexture() {
   }
 
   const verticalGradient = context.createLinearGradient(0, 0, 0, canvas.height);
-  verticalGradient.addColorStop(0, "#1973bd");
-  verticalGradient.addColorStop(0.42, "#6fb5e5");
-  verticalGradient.addColorStop(0.68, "#d9eff5");
-  verticalGradient.addColorStop(1, "#8fbd79");
+  verticalGradient.addColorStop(0, "#f8f6f1");
+  verticalGradient.addColorStop(0.08, "#f3efe7");
+  verticalGradient.addColorStop(0.18, "#e7e2d9");
+  verticalGradient.addColorStop(1, "#e7e2d9");
   context.fillStyle = verticalGradient;
   context.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -48,16 +48,6 @@ function createStudioBackgroundTexture() {
   lightSpot.addColorStop(1, "rgba(255, 253, 248, 0)");
   context.fillStyle = lightSpot;
   context.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Soft cloud shapes keep the sky readable without adding 3D geometry.
-  [[150, 145, 120], [470, 105, 95], [790, 165, 135], [930, 80, 75]].forEach(([x, y, radius]) => {
-    const cloud = context.createRadialGradient(x, y, 5, x, y, radius);
-    cloud.addColorStop(0, "rgba(255,255,255,0.78)");
-    cloud.addColorStop(0.55, "rgba(255,255,255,0.38)");
-    cloud.addColorStop(1, "rgba(255,255,255,0)");
-    context.fillStyle = cloud;
-    context.fillRect(x - radius, y - radius / 2, radius * 2, radius);
-  });
 
   const texture = new CanvasTexture(canvas);
   texture.colorSpace = SRGBColorSpace;
@@ -116,11 +106,11 @@ export function installStudioEnvironment(scene: Scene, renderer: WebGLRenderer) 
   scene.add(rimLight);
 
   const floorMaterial = new MeshStandardMaterial({
-    color: 0x5f9147,
-    roughness: 0.96,
+    color: 0xe7e3db,
+    roughness: 0.9,
     metalness: 0,
   });
-  const floor = new Mesh(new PlaneGeometry(160, 160), floorMaterial);
+  const floor = new Mesh(new PlaneGeometry(32, 32), floorMaterial);
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -0.4;
   floor.receiveShadow = true;
