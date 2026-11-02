@@ -125,6 +125,25 @@ function addGasGriddleNiche(parent: Group, side: EquipmentSide) {
   addBox(parent, [sideGap, 0.04, 0.6], [GAS_GRIDDLE_HALF_WIDTH + sideGap / 2, 0.83, centerZ], steel);
 }
 
+function createGasCabinetCover() {
+  const cover = new Group();
+  cover.name = "ASEA_GasCabinetCover";
+  const board = new MeshStandardMaterial({ color: 0x4b4b48, roughness: 0.82, metalness: 0.04 });
+  const centerX = centimetersToWorldX(35.5);
+  const centerZ = -0.7;
+  const width = 0.71;
+  const height = 0.85;
+  const depth = 0.6;
+  const boardThickness = 0.035;
+
+  // Front, sides and top conceal the cabinet without touching neighbouring equipment.
+  addBox(cover, [width, height, boardThickness], [centerX, height / 2, centerZ + depth / 2], board);
+  addBox(cover, [boardThickness, height, depth], [centerX - width / 2, height / 2, centerZ], board);
+  addBox(cover, [boardThickness, height, depth], [centerX + width / 2, height / 2, centerZ], board);
+  addBox(cover, [width, boardThickness, depth], [centerX, height + boardThickness / 2, centerZ], board);
+  return cover;
+}
+
 function centimetersToWorldX(valueCm: number) {
   return TRAILER_MIN_X + valueCm / 100;
 }
@@ -659,7 +678,8 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
         standardModels.name = "ASEA_StandardEquipment";
         closedWallEquipment.name = "ASEA_ClosedWallEquipment";
         salesWallEquipment.name = "ASEA_SalesWallEquipment";
-        closedWallEquipment.add(prepareModel(gasCabinet.scene, Math.PI / 2, { minX: -1.8, minY: 0, minZ: -1 }));
+        closedWallEquipment.add(prepareModel(gasCabinet.scene, Math.PI / 2, { minX: -1.8, minY: 0, minZ: -1, width: 0.71 }));
+        closedWallEquipment.add(createGasCabinetCover());
         standardModels.add(closedWallEquipment, salesWallEquipment);
         scene.add(standardModels);
         applyConfiguration(equipmentStateRef.current);
