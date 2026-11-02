@@ -1,6 +1,6 @@
 import type { EquipmentConfigurationState } from "../data/equipmentConfiguration";
 import type { ConfigurationScreenshots } from "../three/configurationScreenshots";
-import { sendConfiguratorEmails } from "../../../lib/emailService";
+import { sendConfiguratorEmails } from "../../../lib/configuratorEmailService";
 import { createConfigurationPdf } from "./ConfigurationPdf";
 import type { ConfigurationCustomer } from "./finishValidation";
 

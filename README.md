@@ -102,6 +102,22 @@ Die verwendeten EmailJS-Template-Variablen sind:
 - `message`
 - `submitted_at` für das interne Template
 
+## Resend Konfigurator-PDF
+
+Der Konfigurator sendet das erzeugte PDF über die serverseitige Vercel Function
+`/api/send-configuration` an ASEA und an die angegebene Kundenadresse. Das
+Kontaktformular bleibt davon getrennt und verwendet weiterhin EmailJS.
+
+Benötigte serverseitige Variablen:
+
+- `RESEND_API_KEY`
+- `FOLLOWUP_FROM_EMAIL`
+- `FOLLOWUP_REPLY_TO_EMAIL`
+
+Optional können für den Konfigurator eigene Werte mit
+`CONFIGURATOR_FROM_EMAIL` und `CONFIGURATOR_INTERNAL_RECIPIENT` gesetzt werden.
+Ohne sie werden die bereits vorhandenen Follow-up-Adressen verwendet.
+
 ### 4. Lokale `.env` Datei anlegen
 
 Lege im Projektordner eine Datei `.env` an:
@@ -142,6 +158,8 @@ In Vercel unter `Project Settings` > `Environment Variables` dieselben Werte ein
 - `RESEND_API_KEY`
 - `FOLLOWUP_FROM_EMAIL`
 - `FOLLOWUP_REPLY_TO_EMAIL`
+- `CONFIGURATOR_FROM_EMAIL` (optional)
+- `CONFIGURATOR_INTERNAL_RECIPIENT` (optional)
 
 Danach neu deployen.
 

@@ -10,12 +10,10 @@ const emailJsConfig = {
 };
 
 const EMAILJS_SEND_DELAY_MS = 1100;
-export const CONFIGURATION_ATTACHMENT_PARAMETER = 'configuration_pdf';
 
 function wait(ms: number) {
   return new Promise((resolve) => globalThis.setTimeout(resolve, ms));
 }
-
 function formatSubmittedAt(date = new Date()) {
   const formattedDate = new Intl.DateTimeFormat('de-DE', {
     day: 'numeric',
@@ -30,7 +28,6 @@ function formatSubmittedAt(date = new Date()) {
 
   return `${formattedDate}, ${formattedTime} Uhr`;
 }
-
 function assertInternalEmailJsConfigured() {
   if (
     !emailJsConfig.serviceId ||
@@ -53,13 +50,6 @@ export function isEmailJsConfigured() {
 
 function isCustomerConfirmationConfigured() {
   return Boolean(emailJsConfig.customerTemplateId);
-}
-
-function assertConfiguratorEmailJsConfigured() {
-  assertInternalEmailJsConfigured();
-  if (!isCustomerConfirmationConfigured()) {
-    throw new Error('EmailJS customer confirmation template is not configured.');
-  }
 }
 
 function getEmailJsErrorDetails(error: unknown) {
@@ -120,55 +110,4 @@ export async function sendContactRequestEmails(request: ContactRequestInput) {
   } catch (error) {
     console.warn('EmailJS customer confirmation failed.', getEmailJsErrorDetails(error));
   }
-}
-
-export type ConfiguratorEmailRequest = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  message: string;
-  pdfDataUrl: string;
-  pdfFileName: string;
-};
-
-export async function sendConfiguratorEmails(request: ConfiguratorEmailRequest) {
-  assertConfiguratorEmailJsConfigured();
-  const customerName = `${request.firstName.trim()} ${request.lastName.trim()}`;
-  const submittedAt = formatSubmittedAt();
-  const templateParams = {
-    customer_name: customerName,
-    customer_first_name: request.firstName.trim(),
-    customer_last_name: request.lastName.trim(),
-    customer_email: request.email.trim(),
-    customer_phone: 'Nicht angegeben',
-    subject: 'ASEA Konfiguration',
-    message: request.message.trim() || 'Keine zusätzliche Nachricht.',
-    submitted_at: submittedAt,
-    [CONFIGURATION_ATTACHMENT_PARAMETER]: request.pdfDataUrl,
-    configuration_pdf_filename: request.pdfFileName,
-  };
-
-  await emailjs.send(
-    emailJsConfig.serviceId,
-    emailJsConfig.internalTemplateId,
-    {
-      ...templateParams,
-      to_email: emailJsConfig.internalRecipient,
-      recipient_email: emailJsConfig.internalRecipient,
-    },
-    { publicKey: emailJsConfig.publicKey },
-  );
-
-  await wait(EMAILJS_SEND_DELAY_MS);
-
-  await emailjs.send(
-    emailJsConfig.serviceId,
-    emailJsConfig.customerTemplateId,
-    {
-      ...templateParams,
-      to_email: request.email.trim(),
-      recipient_email: request.email.trim(),
-    },
-    { publicKey: emailJsConfig.publicKey },
-  );
 }
