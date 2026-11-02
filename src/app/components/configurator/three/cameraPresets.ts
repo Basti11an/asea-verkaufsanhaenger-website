@@ -2,8 +2,8 @@ import type { CameraPresetDefinition, ConfiguratorView } from "../types";
 
 export const cameraPresets: Record<ConfiguratorView | "interior", CameraPresetDefinition> = {
   three: {
-    position: [1.55, 1.7, 0],
-    target: [-0.45, 0.95, 0],
+    position: [1.2, 2.05, 2.55],
+    target: [-0.35, 1.05, 0],
     up: [0, 1, 0],
     fov: 62,
   },
@@ -26,8 +26,8 @@ export const cameraPresets: Record<ConfiguratorView | "interior", CameraPresetDe
     fov: 50,
   },
   interior: {
-    position: [1.55, 1.7, 0],
-    target: [-0.45, 0.95, 0],
+    position: [1.2, 2.05, 2.55],
+    target: [-0.35, 1.05, 0],
     up: [0, 1, 0],
     fov: 62,
   },
