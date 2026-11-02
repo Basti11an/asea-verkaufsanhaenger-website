@@ -78,6 +78,7 @@ const WHEEL_ARCH_HEIGHT = WHEEL_ARCH.heightEnd / 100;
 const WHEEL_ARCH_DEPTH = (WHEEL_ARCH.depthEnd - WHEEL_ARCH.depthStart) / 100;
 const GAS_GRIDDLE_HALF_WIDTH = 0.33025;
 const GAS_GRIDDLE_NICHE_HALF_WIDTH = GAS_GRIDDLE_HALF_WIDTH + 0.03;
+const GAS_GRIDDLE_PLAN_HALF_WIDTH = 0.55;
 const CLOSED_WALL_NAME = "ASEA_ClosedWall";
 const SALES_WALL_NAME = "ASEA_SalesWall";
 const GAS_CABINET_EXTERNAL_CONNECTIONS = [
@@ -116,6 +117,12 @@ function addGasGriddleNiche(parent: Group, side: EquipmentSide) {
   addBox(parent, [nicheWidth, 0.03, 0.6], [0, 0.585, centerZ], steel);
   addBox(parent, [0.03, 0.33, 0.6], [-GAS_GRIDDLE_NICHE_HALF_WIDTH + 0.015, 0.685, centerZ], steel);
   addBox(parent, [0.03, 0.33, 0.6], [GAS_GRIDDLE_NICHE_HALF_WIDTH - 0.015, 0.685, centerZ], steel);
+
+  // Close the two planned side gaps between the 110 cm gas-brater section
+  // and the actual 66 cm appliance, while keeping the braters themselves free.
+  const sideGap = GAS_GRIDDLE_PLAN_HALF_WIDTH - GAS_GRIDDLE_HALF_WIDTH;
+  addBox(parent, [sideGap, 0.04, 0.6], [-(GAS_GRIDDLE_HALF_WIDTH + sideGap / 2), 0.83, centerZ], steel);
+  addBox(parent, [sideGap, 0.04, 0.6], [GAS_GRIDDLE_HALF_WIDTH + sideGap / 2, 0.83, centerZ], steel);
 }
 
 function centimetersToWorldX(valueCm: number) {
@@ -265,7 +272,7 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
     case "gas-griddle":
       addGasGriddleNiche(group, side);
       addPart(group, assets.gasGriddle, [66, 25, 60], rotation, sidePlacement(side, 0.6, 0.6605));
-      addPart(group, assets.splashGuard, [77, 40, 7], rotation, sidePlacement(side, 0.85, 0.77));
+      addPart(group, assets.splashGuard, [100, 40, 7], rotation, sidePlacement(side, 0.85, 1));
       break;
     case "contact-grill":
       addPart(group, assets.contactGrill, [41, 20, 46], rotation, sidePlacement(side, 0.85, 0.41));
