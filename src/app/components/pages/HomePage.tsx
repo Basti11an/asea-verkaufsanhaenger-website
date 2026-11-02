@@ -33,11 +33,11 @@ export function HomePage({ onNavigate }: HomePageProps) {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative overflow-hidden" style={{ height: '480px' }}>
+      <section className="relative overflow-hidden bg-[#e8e5de]" style={{ height: '480px' }}>
         <ImageWithFallback
           src="/images/asea-startseite-verkaufsanhaenger.jpg"
           alt={t('home_hero_alt')}
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-contain"
           loading="eager"
           style={{ objectPosition: 'center 45%' }}
         />
