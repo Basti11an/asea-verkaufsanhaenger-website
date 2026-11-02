@@ -22,6 +22,11 @@ const copy = {
     "Review the standard ASEA equipment in the dimensionally accurate interior from different perspectives.",
     "Prezrite si štandardnú výbavu ASEA v rozmerovo presnom interiéri z rôznych pohľadov.",
   ],
+  startNotice: [
+    "Hinweis: Dieser Konfigurator ist ein Maturaprojekt der BBS Rohrbach. Deshalb können einzelne Inhalte oder Darstellungen noch Fehler enthalten und von der späteren Ausführung abweichen. Trotzdem bietet das Tool einen guten Einblick in den Anhänger und seine Ausstattung. Durch die 3D-Modelle kann es beim ersten Start zu kurzen Ladezeiten kommen.",
+    "Please note: This configurator is a graduation project by BBS Rohrbach. Some content or visual details may therefore still contain errors or differ from the final implementation. It nevertheless provides a useful insight into the trailer and its equipment. The 3D models may cause a short loading time when starting the configurator.",
+    "Upozornenie: Tento konfigurátor je maturitným projektom školy BBS Rohrbach. Niektorý obsah alebo zobrazenia preto môžu ešte obsahovať chyby a môžu sa líšiť od neskoršieho vyhotovenia. Nástroj však ponúka dobrý pohľad na príves a jeho vybavenie. 3D modely môžu pri prvom spustení spôsobiť krátke načítanie.",
+  ],
   startButton: ["Konfiguration starten", "Start configuration", "Spustiť konfiguráciu"],
   finish: ["Konfiguration abschließen", "Complete configuration", "Dokončiť konfiguráciu"],
   finishNotice: [

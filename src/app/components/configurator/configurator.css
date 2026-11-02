@@ -221,6 +221,13 @@
   line-height: 1.55;
 }
 
+.asea-start-panel .asea-start-notice {
+  margin-top: -6px;
+  color: #77756f;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
 .asea-start-panel button,
 .asea-finish-button {
   min-height: 40px;
