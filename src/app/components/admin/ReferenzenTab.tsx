@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
 import { Plus, Pencil, Trash2, Check, X, ImageIcon } from 'lucide-react';
@@ -228,10 +229,10 @@ export function ReferenzenTab() {
                       </div>
                       <div>
                         <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Beschreibung</label>
-                        <Input
+                        <Textarea
                           value={draft.beschreibung ?? ref.beschreibung}
                           onChange={(e) => handleEditChange(ref.id, 'beschreibung', e.target.value)}
-                          className="text-sm border-[#b08a57]"
+                          className="min-h-[120px] text-sm border-[#b08a57] resize-y"
                           placeholder="Kurzbeschreibung"
                         />
                       </div>
@@ -413,10 +414,10 @@ export function ReferenzenTab() {
                     </td>
                     <td className="px-4 py-2.5">
                       {isEditing ? (
-                        <Input
+                        <Textarea
                           value={draft.beschreibung ?? ref.beschreibung}
                           onChange={(e) => handleEditChange(ref.id, 'beschreibung', e.target.value)}
-                          className="h-7 text-xs border-[#b08a57] w-full"
+                          className="min-h-[90px] text-xs border-[#b08a57] w-full resize-y"
                           placeholder="Kurzbeschreibung"
                         />
                       ) : (

@@ -222,20 +222,29 @@ export function ModelleTab() {
 
                 <div>
                   <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                    Modellfotos
+                    Modellfotos – jedes Bild einzeln ersetzen
                   </label>
-                  <div className="space-y-2">
+                  <p className="mb-3 text-xs text-gray-500">Bild 1 ist das Hauptbild auf der Modellübersicht. Die Nummern entsprechen der Reihenfolge auf der Website.</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {Array.from({ length: 4 }, (_, index) => (
-                      <ImageUploadField
-                        key={index}
-                        label={`Bild ${index + 1}`}
-                        value={draft.images?.[index] ?? ''}
-                        onChange={(url) => updateImage(model.id, index, url)}
-                        folder="models"
-                        compact
-                        showPreview
-                        previewAlt={`${draft.name} Bild ${index + 1}`}
-                      />
+                      <div key={index} className="rounded-lg border border-gray-200 bg-gray-50/70 p-2.5">
+                        <div className="mb-2 flex items-center justify-between">
+                          <span className="text-xs font-semibold text-[#2f2f2d]">Bild {index + 1}</span>
+                          {index === 0 && <span className="rounded-full bg-[#b08a57]/15 px-2 py-0.5 text-[10px] text-[#9a7445]">Hauptbild</span>}
+                        </div>
+                        <div className="mb-2 h-24 overflow-hidden rounded-md border border-gray-200 bg-white">
+                          {draft.images?.[index] ? <img src={draft.images[index]} alt={`${draft.name} Bild ${index + 1}`} className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-gray-300"><ImageIcon size={24} /></div>}
+                        </div>
+                        <ImageUploadField
+                          label={index === 0 ? 'Hauptbild' : `Bild ${index + 1} ersetzen`}
+                          value={draft.images?.[index] ?? ''}
+                          onChange={(url) => updateImage(model.id, index, url)}
+                          folder="models"
+                          compact
+                          showPreview={false}
+                          previewAlt={`${draft.name} Bild ${index + 1}`}
+                        />
+                      </div>
                     ))}
                   </div>
                 </div>

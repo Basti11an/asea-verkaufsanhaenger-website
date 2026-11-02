@@ -191,20 +191,31 @@ function prepareModel(model: Group, rotationY: number, placement: Placement) {
   wrapper.traverse((object) => {
     if (!(object instanceof Mesh)) return;
     object.userData.sharedModelAsset = true;
-    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    // SkeletonUtils.clone keeps materials shared between model instances. Clone
+    // them here so one equipment item cannot change another item's rendering.
+    const sourceMaterials = Array.isArray(object.material) ? object.material : [object.material];
+    const materials = sourceMaterials.map((material) => material.clone());
+    object.material = Array.isArray(object.material) ? materials : materials[0];
     const transparent = materials.some((material) => material.transparent);
     materials.forEach((material) => {
       if (!(material instanceof MeshStandardMaterial)) return;
       if (material.transparent) {
         material.depthWrite = false;
         material.envMapIntensity = Math.min(material.envMapIntensity, 0.45);
-      } else if (material.metalness >= 0.8) {
-        material.roughness = Math.max(material.roughness, 0.42);
-        material.envMapIntensity = Math.min(material.envMapIntensity, 0.65);
+      } else {
+        // Prevent mirror-like GLB materials from becoming black when the camera
+        // moves across a thin or overlapping stainless-steel surface.
+        material.metalness = Math.min(material.metalness, 0.78);
+        material.roughness = Math.max(material.roughness, 0.3);
+        material.envMapIntensity = Math.min(material.envMapIntensity, 0.8);
+        material.needsUpdate = true;
       }
     });
-    object.castShadow = !transparent;
-    object.receiveShadow = !transparent;
+    // Imported equipment has many thin, coplanar faces. Let the studio shell
+    // provide the stable shadows instead of producing shadow-acne flicker on
+    // sinks, worktops and cabinet fronts while orbiting the scene.
+    object.castShadow = false;
+    object.receiveShadow = false;
   });
   return wrapper;
 }
