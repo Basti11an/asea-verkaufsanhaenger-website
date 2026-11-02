@@ -106,7 +106,7 @@ export function installStudioEnvironment(scene: Scene, renderer: WebGLRenderer) 
   scene.add(rimLight);
 
   const floorMaterial = new MeshStandardMaterial({
-    color: 0xe7e3db,
+    color: 0xb8b0a2,
     roughness: 0.9,
     metalness: 0,
   });
