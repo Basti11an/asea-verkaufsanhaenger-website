@@ -200,6 +200,13 @@ async function sendResendEmail({
     error.providerMessage = errorBody.message;
     throw error;
   }
+
+  const result = await response.json() as { id?: unknown };
+  if (typeof result.id !== 'string' || !result.id) {
+    throw new Error('resend_missing_message_id');
+  }
+
+  return result.id;
 }
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
@@ -229,19 +236,26 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       .digest('hex')
       .slice(0, 32);
 
-    await sendResendEmail({
+    const internalMessageId = await sendResendEmail({
       apiKey,
       from,
       replyTo,
       idempotencyKey: `asea-configuration-${fingerprint}-internal`,
       email: emails.internal,
     });
-    await sendResendEmail({
+    const customerMessageId = await sendResendEmail({
       apiKey,
       from,
       replyTo,
       idempotencyKey: `asea-configuration-${fingerprint}-customer`,
       email: emails.customer,
+    });
+
+    console.info('Configurator emails accepted by Resend.', {
+      internalMessageId,
+      customerMessageId,
+      internalRecipientDomain: internalRecipient.split('@').at(-1),
+      customerRecipientDomain: configuration.email.split('@').at(-1),
     });
 
     sendJson(res, 200, { ok: true });

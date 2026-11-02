@@ -66,7 +66,7 @@ describe('configurator Resend function', () => {
   });
 
   it('sends both emails through Resend from the server', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: 'email-id' }), {
+    const fetchMock = vi.fn().mockImplementation(() => new Response(JSON.stringify({ id: 'email-id' }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     }));
@@ -84,5 +84,16 @@ describe('configurator Resend function', () => {
     expect(internalRequest.to).toEqual(['office@example.at']);
     expect(customerRequest.to).toEqual(['max@example.at']);
     expect(internalRequest.attachments).toEqual(customerRequest.attachments);
+  });
+
+  it('does not report success when Resend returns no message id', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { response, getBody } = createResponse();
+
+    await handler(createRequest(validRequest()) as never, response as never);
+
+    expect(response.statusCode).toBe(400);
+    expect(JSON.parse(getBody())).toEqual({ ok: false, error: 'configuration_send_failed' });
   });
 });
