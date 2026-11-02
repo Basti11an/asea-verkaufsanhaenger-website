@@ -313,7 +313,7 @@ function createCounterFurniture(
   const furniture = new Group();
   furniture.name = `ASEA_${side}_CounterFurniture`;
   const panelMaterial = side === "closed-wall"
-    ? new MeshStandardMaterial({ color: 0x777a75, roughness: 0.52, metalness: 0.55 })
+    ? new MeshStandardMaterial({ color: 0x4b4b48, roughness: 0.82, metalness: 0.04 })
     : null;
   const blocked = state.items
     .filter((item) => item.side === side && equipmentPlacementDefinitions[item.productId].blocksCountertop)
@@ -515,7 +515,9 @@ export function ConfiguratorScene({ view, started, equipmentState }: Configurato
         salesFurniture.removeFromParent();
         disposeGroup(salesFurniture);
       }
-      closedFurniture = createCounterFurniture(state, "closed-wall", assets.countertopStand);
+      // Die hintere Reihe besteht ausschliesslich aus festen Seitenplatten.
+      // Das Metallstaender-Modell darf hier bewusst nie uebergeben werden.
+      closedFurniture = createCounterFurniture(state, "closed-wall");
       salesFurniture = createCounterFurniture(state, "sales-hatch", assets.countertopStand);
       closedWallEquipment.add(closedFurniture);
       salesWallEquipment.add(salesFurniture);
