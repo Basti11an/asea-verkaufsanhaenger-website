@@ -91,13 +91,20 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
       <div className="container mx-auto px-4 md:px-6 lg:px-8 xl:px-12">
         <div className="relative flex h-[92px] items-center justify-between lg:grid lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-12 xl:gap-16 2xl:gap-20">
           {/* Wordmark */}
-          <div className="flex items-center">
+          <div className="flex flex-col items-start justify-center gap-1">
             <button
               onClick={() => handleNavigate('home')}
               className="outline-none transition-opacity duration-200 hover:opacity-80"
             >
               <AseaWordmark size="header" />
             </button>
+            <a
+              href="tel:+436644105007"
+              className="whitespace-nowrap text-[10px] font-medium tracking-[0.05em] text-[#9a7445] transition-colors duration-200 hover:text-[#2f2f2d] sm:text-[11px]"
+              aria-label="ASEA telefonisch kontaktieren"
+            >
+              +43 664 410 5 007
+            </a>
           </div>
 
           {/* Desktop Navigation */}
