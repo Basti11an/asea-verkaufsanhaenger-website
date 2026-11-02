@@ -91,7 +91,7 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
       <div className="container mx-auto px-4 md:px-6 lg:px-8 xl:px-12">
         <div className="relative flex h-[92px] items-center justify-between lg:grid lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-12 xl:gap-16 2xl:gap-20">
           {/* Wordmark */}
-          <div className="flex flex-col items-start justify-center gap-1">
+          <div className="flex flex-col items-center justify-center gap-1">
             <button
               onClick={() => handleNavigate('home')}
               className="outline-none transition-opacity duration-200 hover:opacity-80"
