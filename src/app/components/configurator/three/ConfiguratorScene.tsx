@@ -254,10 +254,10 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
 
   switch (item.productId) {
     case "fryer":
-      addPart(group, assets.fryer, [30, 85, 60], rotation, sidePlacement(side, 0.4328, 0.3));
+      addPart(group, assets.fryer, [30, 85, 60], rotation, sidePlacement(side, 0.4828, 0.3));
       break;
     case "double-fryer":
-      addPart(group, assets.doubleFryer, [59, 41, 60], rotation, sidePlacement(side, 0.4328, 0.59));
+      addPart(group, assets.doubleFryer, [59, 41, 60], rotation, sidePlacement(side, 0.4828, 0.59));
       break;
     case "extractor-hood":
       addPart(group, assets.hood, [60, 88, 60], rotation, sidePlacement(side, 1.36, 0.6));
