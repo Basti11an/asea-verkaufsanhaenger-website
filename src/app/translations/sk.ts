@@ -47,7 +47,7 @@ export const sk = {
   home_models_title: "Naše prívesy",
   home_models_subtitle: "Hlavným zameraním ASEA sú predajné prívesy. Okrem nich ponúkame aj chladiace prívesy a prívesy na výstavy a prezentácie.",
   home_model1_name: 'Predajný príves',
-  home_model1_desc: "Spoločne s vami zostavíme predajný príves vhodný pre plánovaný spôsob použitia. Konkrétne možnosti vybavenia a konfigurácie sa dohodnú individuálne.",
+  home_model1_desc: "Náš osvedčený predajný príves je dostupný ako plne vybavený štandardný model. Osobné poradenstvo a prípadné úpravy s vami podľa potreby dohodneme priamo.",
   home_model2_name: 'Chladiarenský príves',
   home_model2_desc: "Praktické riešenie na chladenú prepravu a bezpečné skladovanie tovaru citlivého na teplotu.",
   home_model3_name: 'Veľtržný a prezentačný príves',

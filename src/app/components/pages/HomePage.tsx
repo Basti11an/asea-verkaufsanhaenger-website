@@ -234,21 +234,6 @@ export function HomePage({ onNavigate }: HomePageProps) {
             ))}
           </div>
 
-          <motion.div
-            className="text-center mt-10 md:mt-12"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <Button
-              size="lg"
-              onClick={() => onNavigate('models')}
-              className="gradient-secondary text-white hover:shadow-xl transition-all duration-300"
-            >
-              {t('home_models_view_all')}
-            </Button>
-          </motion.div>
         </div>
       </section>
 

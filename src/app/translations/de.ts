@@ -46,7 +46,7 @@ export const de = {
   home_models_title: "Unsere Anhänger",
   home_models_subtitle: "Verkaufsanhänger stehen bei ASEA im Mittelpunkt. Ergänzend bieten wir Kühlanhänger sowie Messe- und Präsentationsanhänger an.",
   home_model1_name: 'Verkaufsanhänger',
-  home_model1_desc: "Gemeinsam mit Ihnen stellen wir einen Verkaufsanhänger zusammen, der zu Ihrem geplanten Einsatz passt. Konkrete Ausstattungs- und Konfigurationsmöglichkeiten werden individuell abgestimmt.",
+  home_model1_desc: "Unser bewährter Verkaufsanhänger ist als vollständig ausgestattetes Standardmodell erhältlich. Persönliche Beratung und mögliche Anpassungen stimmen wir bei Bedarf direkt mit Ihnen ab.",
   home_model2_name: 'Kühlanhänger',
   home_model2_desc: "Eine praktische Lösung für den gekühlten Transport und die sichere Aufbewahrung temperaturempfindlicher Waren.",
   home_model3_name: 'Messe- und Präsentationsanhänger',

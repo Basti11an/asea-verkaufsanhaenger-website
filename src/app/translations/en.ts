@@ -46,7 +46,7 @@ export const en = {
   home_models_title: "Our trailers",
   home_models_subtitle: "Sales trailers are the main focus at ASEA. We also offer refrigerated trailers as well as exhibition and presentation trailers.",
   home_model1_name: 'Sales Trailer',
-  home_model1_desc: "Together with you, we put together a sales trailer that suits your planned use. Specific equipment and configuration options are agreed individually.",
+  home_model1_desc: "Our proven sales trailer is available as a fully equipped standard model. Personal advice and any possible adjustments can be discussed directly with you if required.",
   home_model2_name: 'Refrigerated Trailer',
   home_model2_desc: "A practical solution for refrigerated transport and the safe storage of temperature-sensitive goods.",
   home_model3_name: 'Trade Fair & Presentation Trailer',
