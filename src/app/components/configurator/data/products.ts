@@ -50,7 +50,7 @@ const productEntries: readonly ProductEntry[] = [
   {
     id: "extractor-hood",
     name: ["Dunstabzug", "Extractor hood", "Odsávač pár"],
-    category: "furniture",
+    category: "cooking",
     preferredView: "front",
     modelPath: "/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb",
     sourceModelPath: "3d-source/interieur/lueftung-und-schutz/Dunstabzug.blend",
@@ -184,7 +184,7 @@ const productEntries: readonly ProductEntry[] = [
   {
     id: "worktable",
     name: ["Arbeitstisch", "Worktable", "Pracovný stôl"],
-    category: "furniture",
+    category: "worktops",
     preferredView: "top",
     modelPath: "/configurator-models/interieur/moebel/Arbeitstisch_1200.glb",
     sourceModelPath: "3d-source/interieur/moebel/Arbeitstisch.blend",
@@ -197,7 +197,7 @@ const productEntries: readonly ProductEntry[] = [
   {
     id: "wall-cabinet",
     name: ["Hängeschrank", "Wall cabinet", "Závesná skrinka"],
-    category: "furniture",
+    category: "cabinets",
     preferredView: "front",
     modelPath: "/configurator-models/interieur/moebel/Haengeschrank.glb",
     sourceModelPath: "3d-source/interieur/moebel/Haengeschrank.blend",
@@ -210,7 +210,7 @@ const productEntries: readonly ProductEntry[] = [
   {
     id: "splash-guard",
     name: ["Spritzschutz", "Splash guard", "Ochranné sklo"],
-    category: "furniture",
+    category: "cooking",
     preferredView: "top",
     modelPath: "/configurator-models/interieur/lueftung-und-schutz/Spritzschutz_700.glb",
     sourceModelPath: "3d-source/interieur/lueftung-und-schutz/Spritzschutz.blend",

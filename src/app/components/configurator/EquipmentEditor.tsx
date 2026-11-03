@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight, Check, MoveHorizontal, RotateCcw, Trash2, X } from "lucide-react";
+import { useRef } from "react";
 import { useConfiguratorCopy } from "./copy";
 import { productById } from "./data/products";
 import {
@@ -10,7 +11,7 @@ import type { EquipmentSide } from "./types";
 type EquipmentEditorProps = {
   selectedEquipmentId: string | null;
   equipmentState: EquipmentConfigurationState;
-  onEquipmentCenterChange: (equipmentId: string, value: number) => void;
+  onEquipmentCenterChange: (equipmentId: string, value: number, notifyCollision?: boolean) => void;
   onEquipmentSideChange: (equipmentId: string, side: EquipmentSide) => void;
   onEquipmentRemove: (equipmentId: string) => void;
   onCancel: () => void;
@@ -27,6 +28,7 @@ export function EquipmentEditor({
   onConfirm,
 }: EquipmentEditorProps) {
   const { text, name } = useConfiguratorCopy();
+  const pendingRangeValue = useRef<number | null>(null);
   const placement = equipmentState.items.find((item) => item.id === selectedEquipmentId);
   if (!placement) return null;
 
@@ -77,7 +79,21 @@ export function EquipmentEditor({
           max={definition.maxCenterCm}
           step={0.5}
           value={placement.centerCm}
-          onChange={(event) => onEquipmentCenterChange(placement.id, Number(event.target.value))}
+          onChange={(event) => {
+            const nextValue = Number(event.target.value);
+            pendingRangeValue.current = nextValue;
+            onEquipmentCenterChange(placement.id, nextValue, false);
+          }}
+          onPointerUp={() => {
+            if (pendingRangeValue.current === null) return;
+            onEquipmentCenterChange(placement.id, pendingRangeValue.current, true);
+            pendingRangeValue.current = null;
+          }}
+          onKeyUp={() => {
+            if (pendingRangeValue.current === null) return;
+            onEquipmentCenterChange(placement.id, pendingRangeValue.current, true);
+            pendingRangeValue.current = null;
+          }}
         />
       </label>
       <div className="asea-centimeter-control">

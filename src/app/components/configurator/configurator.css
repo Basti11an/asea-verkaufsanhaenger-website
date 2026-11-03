@@ -40,7 +40,8 @@
   --sidebar-width: 260px;
   position: relative;
   display: grid;
-  grid-template-rows: 50px minmax(0, 1fr) 114px;
+  grid-template-columns: minmax(0, 1fr) var(--sidebar-width);
+  grid-template-rows: 50px minmax(0, 1fr) 152px;
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -48,6 +49,8 @@
 }
 
 .asea-config-topbar {
+  grid-column: 1 / -1;
+  grid-row: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -116,11 +119,7 @@
 }
 
 .asea-config-workspace {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--sidebar-width);
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
+  display: contents;
 }
 
 .asea-config-stage,
@@ -132,6 +131,11 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
+}
+
+.asea-config-stage {
+  grid-column: 1;
+  grid-row: 2;
 }
 
 .asea-scene canvas {
@@ -256,6 +260,8 @@
 }
 
 .asea-equipment-sidebar {
+  grid-column: 2;
+  grid-row: 2 / 4;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -372,6 +378,8 @@
   border-left: 1px solid var(--line);
   background: #f9f9f6;
   overflow-y: auto;
+  grid-column: 2;
+  grid-row: 2 / 4;
 }
 
 .asea-editor-identity {
@@ -588,6 +596,8 @@
 }
 
 .asea-product-bar {
+  grid-column: 1;
+  grid-row: 3;
   display: grid;
   grid-template-columns: 88px 28px minmax(0, 1fr) 28px;
   grid-template-rows: 24px minmax(0, 1fr);
@@ -621,7 +631,7 @@
   overflow: hidden;
 }
 
-.asea-product-categories span {
+.asea-configurator .asea-product-categories button {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -632,9 +642,11 @@
   font-size: 10px;
   line-height: 1.2;
   white-space: nowrap;
+  min-height: 24px;
+  border: 0;
 }
 
-.asea-product-categories span.is-active {
+.asea-configurator .asea-product-categories button.is-active {
   color: #fff;
   background: var(--bronze);
 }
@@ -674,8 +686,8 @@
 
 .asea-configurator .asea-product-card {
   position: relative;
-  flex: 0 0 118px;
-  height: 78px;
+  flex: 0 0 132px;
+  height: 108px;
   display: flex;
   flex-direction: column;
   justify-content: stretch;
@@ -694,7 +706,7 @@
 .asea-product-image-space {
   display: block;
   flex: 1;
-  min-height: 47px;
+  min-height: 72px;
   background: #faf9f6;
   border-bottom: 1px solid #ece9e2;
 }
@@ -712,31 +724,20 @@
   overflow-wrap: anywhere;
 }
 
-.asea-product-hover {
-  position: absolute;
-  z-index: 4;
-  left: 4px;
-  right: 4px;
-  bottom: calc(100% + 6px);
-  display: block;
-  padding: 7px 6px;
+.asea-product-popover {
+  position: fixed;
+  z-index: 40;
+  width: 210px;
+  transform: translateY(-100%);
+  padding: 9px 10px;
   border: 1px solid #d9d4cb;
-  border-radius: 4px;
+  border-radius: 5px;
   color: #343832;
-  background: #fffdf8f2;
-  box-shadow: 0 5px 14px #272b2514;
-  font-size: 9px;
-  line-height: 1.3;
-  opacity: 0;
-  transform: translateY(3px);
+  background: #fffdf9;
+  box-shadow: 0 7px 20px #272b2524;
+  font-size: 11px;
+  line-height: 1.35;
   pointer-events: none;
-  transition: opacity 150ms ease, transform 150ms ease;
-}
-
-.asea-product-card:hover .asea-product-hover,
-.asea-product-card:focus-visible .asea-product-hover {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 .asea-configurator .asea-product-card:hover {
@@ -961,10 +962,6 @@
     --sidebar-width: 220px;
   }
 
-  .asea-config-workspace {
-    grid-template-columns: minmax(0, 1fr) 220px;
-  }
-
   .asea-config-topbar {
     padding-inline: 12px;
   }
@@ -1000,14 +997,14 @@
 
 @media (max-height: 680px) and (min-width: 768px) {
   .asea-config-desktop {
-    grid-template-rows: 48px minmax(0, 1fr) 100px;
+    grid-template-rows: 48px minmax(0, 1fr) 132px;
   }
 
   .asea-configurator .asea-product-card {
-    height: 66px;
+    height: 90px;
   }
 
-  .asea-product-image-space { min-height: 37px; }
+  .asea-product-image-space { min-height: 56px; }
 
   .asea-product-bar {
     padding-block: 7px;

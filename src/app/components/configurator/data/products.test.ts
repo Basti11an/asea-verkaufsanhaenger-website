@@ -33,4 +33,25 @@ describe("configurator products", () => {
       name: ["Dunstabzug", "Extractor hood", "Odsávač pár"],
     });
   });
+
+  it("assigns every active product to the intended configurator category", () => {
+    const idsByCategory = (category: string) => products
+      .filter((product) => product.active && product.category === category)
+      .map((product) => product.id);
+
+    expect(idsByCategory("cooking")).toEqual([
+      "fryer",
+      "double-fryer",
+      "extractor-hood",
+      "gas-griddle",
+      "contact-grill",
+      "electric-griddle",
+      "induction",
+      "splash-guard",
+    ]);
+    expect(idsByCategory("cooling")).toEqual(["bottle-fridge", "cooling-top", "undercounter-fridge"]);
+    expect(idsByCategory("hygiene")).toEqual(["double-sink", "hygiene-area"]);
+    expect(idsByCategory("worktops")).toEqual(["worktable"]);
+    expect(idsByCategory("cabinets")).toEqual(["wall-cabinet"]);
+  });
 });

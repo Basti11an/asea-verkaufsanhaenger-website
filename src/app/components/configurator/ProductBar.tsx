@@ -1,7 +1,7 @@
 import { ChefHat, ChevronLeft, ChevronRight, Droplets, PanelsTopLeft, Refrigerator, Warehouse } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { products } from "./data/products";
-import type { ProductDefinition } from "./types";
+import type { ProductCategory, ProductDefinition } from "./types";
 import { useConfiguratorCopy } from "./copy";
 
 type ProductBarProps = {
@@ -9,12 +9,29 @@ type ProductBarProps = {
   editing: boolean;
 };
 
+const categories: readonly { id: ProductCategory; label: "categoryCooking" | "categoryCooling" | "categoryHygiene" | "categoryWorktops" | "categoryCabinets"; icon: typeof ChefHat }[] = [
+  { id: "cooking", label: "categoryCooking", icon: ChefHat },
+  { id: "cooling", label: "categoryCooling", icon: Refrigerator },
+  { id: "hygiene", label: "categoryHygiene", icon: Droplets },
+  { id: "worktops", label: "categoryWorktops", icon: PanelsTopLeft },
+  { id: "cabinets", label: "categoryCabinets", icon: Warehouse },
+];
+
 export function ProductBar({ onProductClick, editing }: ProductBarProps) {
   const { text, name } = useConfiguratorCopy();
   const stripRef = useRef<HTMLDivElement>(null);
+  const [activeCategory, setActiveCategory] = useState<ProductCategory>("cooking");
+  const [hoverInfo, setHoverInfo] = useState<{ name: string; left: number; top: number } | null>(null);
+  const visibleProducts = products.filter((product) => product.active && product.category === activeCategory);
   const scroll = (direction: -1 | 1) => {
     if (!stripRef.current) return;
     stripRef.current.scrollLeft += direction * 520;
+  };
+
+  const selectCategory = (category: ProductCategory) => {
+    setActiveCategory(category);
+    setHoverInfo(null);
+    if (stripRef.current) stripRef.current.scrollLeft = 0;
   };
 
   return (
@@ -22,16 +39,24 @@ export function ProductBar({ onProductClick, editing }: ProductBarProps) {
       <div className="asea-product-bar-heading">
         <h2>{text("products")}</h2>
       </div>
-      <div className="asea-product-categories" aria-hidden="true">
-        <span className="is-active"><ChefHat size={12} />{text("categoryCooking")}</span>
-        <span><Refrigerator size={12} />{text("categoryCooling")}</span>
-        <span><Droplets size={12} />{text("categoryHygiene")}</span>
-        <span><PanelsTopLeft size={12} />{text("categoryWorktops")}</span>
-        <span><Warehouse size={12} />{text("categoryCabinets")}</span>
+      <div className="asea-product-categories" role="tablist" aria-label={text("products")}>
+        {categories.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={activeCategory === id}
+            className={activeCategory === id ? "is-active" : undefined}
+            onClick={() => selectCategory(id)}
+          >
+            <Icon size={12} aria-hidden="true" />
+            {text(label)}
+          </button>
+        ))}
       </div>
       <button type="button" className="asea-strip-arrow" onClick={() => scroll(-1)} aria-label={text("scrollProductsLeft")}><ChevronLeft size={17} /></button>
       <div className="asea-product-strip" ref={stripRef}>
-        {products.filter((product) => product.active).map((product) => {
+        {visibleProducts.map((product) => {
           const productName = name(product.name);
           return (
             <button
@@ -40,15 +65,33 @@ export function ProductBar({ onProductClick, editing }: ProductBarProps) {
               className={`asea-product-card is-${product.category}`}
               title={productName}
               onClick={() => onProductClick(product)}
+              onMouseEnter={(event) => {
+                const rect = event.currentTarget.getBoundingClientRect();
+                const popoverWidth = 210;
+                setHoverInfo({
+                  name: productName,
+                  left: Math.min(Math.max(rect.left + rect.width / 2 - popoverWidth / 2, 8), window.innerWidth - popoverWidth - 8),
+                  top: rect.top - 8,
+                });
+              }}
+              onMouseLeave={() => setHoverInfo(null)}
             >
               <span className="asea-product-image-space" aria-hidden="true" />
               <span className="asea-product-name">{productName}</span>
-              <span className="asea-product-hover" role="tooltip"><strong>{productName}</strong></span>
             </button>
           );
         })}
       </div>
       <button type="button" className="asea-strip-arrow" onClick={() => scroll(1)} aria-label={text("scrollProductsRight")}><ChevronRight size={17} /></button>
+      {hoverInfo && (
+        <div
+          className="asea-product-popover"
+          role="tooltip"
+          style={{ left: hoverInfo.left, top: hoverInfo.top }}
+        >
+          <strong>{hoverInfo.name}</strong>
+        </div>
+      )}
     </section>
   );
 }

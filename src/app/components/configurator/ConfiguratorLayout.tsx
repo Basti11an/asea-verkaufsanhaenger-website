@@ -32,7 +32,7 @@ export function ConfiguratorLayout() {
   const [equipmentState, setEquipmentState] = useState<EquipmentConfigurationState>(createDefaultEquipmentConfiguration);
   const [finishModalOpen, setFinishModalOpen] = useState(false);
 
-  const showNotice = (message: string) => toast(message, { duration: 3200 });
+  const showNotice = (message: string, id?: string) => toast(message, { duration: 3200, id });
 
   function selectEquipment(equipmentId: string) {
     if (!equipmentState.items.some((item) => item.id === equipmentId)) return;
@@ -62,10 +62,15 @@ export function ConfiguratorLayout() {
     selectEquipment(equipmentId);
   }
 
-  function handleEquipmentCenterChange(equipmentId: string, centerCm: number) {
+  function handleEquipmentCenterChange(equipmentId: string, centerCm: number, notifyCollision = true) {
     const result = moveEquipment(equipmentState, equipmentId, centerCm);
     if (result.collisionWith) {
-      showNotice(text(result.collisionWith === "wheel-arch" ? "wheelArchNotice" : "collisionNotice"));
+      if (notifyCollision) {
+        showNotice(
+          text(result.collisionWith === "wheel-arch" ? "wheelArchNotice" : "collisionNotice"),
+          "placement-collision",
+        );
+      }
       return;
     }
     setEquipmentState(result.state);

@@ -4,7 +4,7 @@ export type ConfiguratorView = "three" | "top" | "front" | "rear";
 
 export type EquipmentSide = "closed-wall" | "sales-hatch";
 
-export type ProductCategory = "cooking" | "cooling" | "hygiene" | "furniture";
+export type ProductCategory = "cooking" | "cooling" | "hygiene" | "worktops" | "cabinets";
 
 export type PositionCm = {
   longitudinal: number;
