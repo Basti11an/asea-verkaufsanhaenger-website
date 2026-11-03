@@ -30,6 +30,8 @@ export function HomePage({ onNavigate }: HomePageProps) {
     { titleKey: 'home_feature6_title' as const, descKey: 'home_feature6_desc' as const },
     { titleKey: 'home_feature7_title' as const, descKey: 'home_feature7_desc' as const },
     { titleKey: 'home_feature8_title' as const, descKey: 'home_feature8_desc' as const },
+    { titleKey: 'home_feature9_title' as const, descKey: 'home_feature9_desc' as const },
+    { titleKey: 'home_feature10_title' as const, descKey: 'home_feature10_desc' as const },
   ];
 
   return (

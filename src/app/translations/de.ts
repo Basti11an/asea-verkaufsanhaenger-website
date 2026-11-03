@@ -73,6 +73,10 @@ export const de = {
   home_feature7_desc: "Standardanhänger sind grundsätzlich laufend vorrätig. Die Lieferzeit beträgt in der Regel etwa 6 bis 8 Wochen.",
   home_feature8_title: "Leasing möglich",
   home_feature8_desc: "Auf Wunsch ist auch Leasing möglich. Über die verfügbaren Möglichkeiten informieren wir Sie gerne persönlich.",
+  home_feature9_title: "Erfahrung seit 2021",
+  home_feature9_desc: "Seit 2021 begleiten wir unsere Kunden persönlich bei der Auswahl und Umsetzung ihres Verkaufsanhängers.",
+  home_feature10_title: "Vollständig ausgestattetes Standardmodell",
+  home_feature10_desc: "Unser bewährter Verkaufsanhänger ist als vollständig ausgestattetes Standardmodell erhältlich. Mögliche Anpassungen stimmen wir bei Bedarf direkt mit Ihnen ab.",
 
   // Home – CTA
   home_cta_title: "Sie möchten einen Verkaufsanhänger kaufen?",

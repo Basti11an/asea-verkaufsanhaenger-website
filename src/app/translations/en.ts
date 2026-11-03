@@ -73,6 +73,10 @@ export const en = {
   home_feature7_desc: "Standard trailers are generally kept in stock. The usual delivery time is approximately 6 to 8 weeks.",
   home_feature8_title: "Leasing available",
   home_feature8_desc: "Leasing is also available on request. We will be happy to explain the available options to you personally.",
+  home_feature9_title: "Experience since 2021",
+  home_feature9_desc: "Since 2021, we have personally supported our customers in selecting and implementing their sales trailer.",
+  home_feature10_title: "Fully equipped standard model",
+  home_feature10_desc: "Our proven sales trailer is available as a fully equipped standard model. Any possible adjustments can be discussed directly with you if required.",
 
   // Home – CTA
   home_cta_title: "Looking to buy a sales trailer?",
