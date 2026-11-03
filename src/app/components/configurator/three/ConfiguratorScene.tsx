@@ -113,10 +113,10 @@ function createGasCabinetBoardUnit() {
   const centerZ = -0.7;
   const frontZ = -0.415;
 
-  // Open worktop construction in the former gas-cabinet area: top, narrow front
-  // fascia and right side panel. It intentionally stays open underneath.
+  // Worktop construction in the former gas-cabinet area: top, closed front
+  // and right side panel, all using the same material as the worktops.
   addBox(unit, [width, 0.04, 0.6], [centerX, 0.83, centerZ], board);
-  addBox(unit, [width, 0.08, 0.03], [centerX, 0.77, frontZ], board);
+  addBox(unit, [width, 0.81, 0.03], [centerX, 0.405, frontZ], board);
   addBox(unit, [0.03, 0.81, 0.57], [endX - 0.015, 0.405, centerZ - 0.015], board);
   return unit;
 }
