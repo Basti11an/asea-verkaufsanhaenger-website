@@ -105,7 +105,7 @@ function addCountertop(parent: Group, startX: number, endX: number, centerZ: num
 function createGasCabinetBoardUnit() {
   const unit = new Group();
   unit.name = "ASEA_GasCabinetBoardUnit";
-  const board = new MeshStandardMaterial({ color: 0x4b4b48, roughness: 0.82, metalness: 0.04 });
+  const board = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.52, metalness: 0.55 });
   const startX = centimetersToWorldX(0);
   const endX = centimetersToWorldX(71);
   const width = endX - startX;
@@ -113,9 +113,10 @@ function createGasCabinetBoardUnit() {
   const centerZ = -0.7;
   const frontZ = -0.415;
 
-  // Fixed board construction in the former gas-cabinet area: top, front and right side.
+  // Open worktop construction in the former gas-cabinet area: top, narrow front
+  // fascia and right side panel. It intentionally stays open underneath.
   addBox(unit, [width, 0.04, 0.6], [centerX, 0.83, centerZ], board);
-  addBox(unit, [width, 0.81, 0.03], [centerX, 0.405, frontZ], board);
+  addBox(unit, [width, 0.08, 0.03], [centerX, 0.77, frontZ], board);
   addBox(unit, [0.03, 0.81, 0.57], [endX - 0.015, 0.405, centerZ - 0.015], board);
   return unit;
 }
