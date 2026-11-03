@@ -981,7 +981,7 @@
   }
 
   .asea-configurator .asea-product-card {
-    flex-basis: 116px;
+    flex-basis: 124px;
   }
 
   .asea-equipment-editor {
@@ -997,14 +997,14 @@
 
 @media (max-height: 680px) and (min-width: 768px) {
   .asea-config-desktop {
-    grid-template-rows: 48px minmax(0, 1fr) 132px;
+    grid-template-rows: 48px minmax(0, 1fr) 140px;
   }
 
   .asea-configurator .asea-product-card {
-    height: 90px;
+    height: 96px;
   }
 
-  .asea-product-image-space { min-height: 56px; }
+  .asea-product-image-space { min-height: 62px; }
 
   .asea-product-bar {
     padding-block: 7px;
