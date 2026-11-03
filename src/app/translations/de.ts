@@ -69,6 +69,10 @@ export const de = {
   home_feature5_desc: "Auch nach dem Verkauf begleiten wir Sie bei der Betriebsanlagengenehmigung. Unsere Standardanhänger erfüllen bereits die dafür vorgesehenen grundlegenden Voraussetzungen.",
   home_feature6_title: "Typisierung & technische Nachweise",
   home_feature6_desc: "Für die Typisierung in Österreich ist ein COC-Papier vorhanden. Zusätzlich stellen wir für Standardanhänger die erforderliche Lüftungsberechnung sowie ein Zertifikat über die Elektroprüfung bereit.",
+  home_feature7_title: "Standardanhänger laufend vorrätig",
+  home_feature7_desc: "Standardanhänger sind grundsätzlich laufend vorrätig. Die Lieferzeit beträgt in der Regel etwa 6 bis 8 Wochen.",
+  home_feature8_title: "Leasing möglich",
+  home_feature8_desc: "Auf Wunsch ist auch Leasing möglich. Über die verfügbaren Möglichkeiten informieren wir Sie gerne persönlich.",
 
   // Home – CTA
   home_cta_title: "Sie möchten einen Verkaufsanhänger kaufen?",

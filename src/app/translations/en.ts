@@ -69,6 +69,10 @@ export const en = {
   home_feature5_desc: "Even after the sale, we support you with operational approval. Our standard trailers already meet the basic requirements intended for this purpose.",
   home_feature6_title: "Type approval & technical documents",
   home_feature6_desc: "A COC document is available for type approval in Austria. For standard trailers, we also provide the required ventilation calculation and an electrical inspection certificate.",
+  home_feature7_title: "Standard trailers regularly in stock",
+  home_feature7_desc: "Standard trailers are generally kept in stock. The usual delivery time is approximately 6 to 8 weeks.",
+  home_feature8_title: "Leasing available",
+  home_feature8_desc: "Leasing is also available on request. We will be happy to explain the available options to you personally.",
 
   // Home – CTA
   home_cta_title: "Looking to buy a sales trailer?",

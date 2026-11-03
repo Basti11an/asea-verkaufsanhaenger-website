@@ -28,6 +28,8 @@ export function HomePage({ onNavigate }: HomePageProps) {
     { titleKey: 'home_feature4_title' as const, descKey: 'home_feature4_desc' as const },
     { titleKey: 'home_feature5_title' as const, descKey: 'home_feature5_desc' as const },
     { titleKey: 'home_feature6_title' as const, descKey: 'home_feature6_desc' as const },
+    { titleKey: 'home_feature7_title' as const, descKey: 'home_feature7_desc' as const },
+    { titleKey: 'home_feature8_title' as const, descKey: 'home_feature8_desc' as const },
   ];
 
   return (
