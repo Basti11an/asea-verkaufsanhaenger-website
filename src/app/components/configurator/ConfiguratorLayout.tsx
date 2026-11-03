@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Monitor } from "lucide-react";
-import { toast } from "sonner";
+import { Toaster, toast } from "sonner";
 import { ConfiguratorTopbar } from "./ConfiguratorTopbar";
 import { EquipmentSidebar } from "./EquipmentSidebar";
 import { EquipmentEditor } from "./EquipmentEditor";
@@ -98,6 +98,7 @@ export function ConfiguratorLayout() {
 
   return (
     <section className="asea-configurator">
+      <Toaster position="top-right" duration={3200} />
       <div className="asea-small-screen">
         <Monitor size={46} strokeWidth={1} />
         <h1>{text("smallTitle")}</h1>
