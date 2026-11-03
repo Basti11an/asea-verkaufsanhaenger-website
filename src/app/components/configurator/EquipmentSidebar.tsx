@@ -1,4 +1,4 @@
-import { Check, ChevronRight, ClipboardCheck, Droplets, Flame, LockKeyhole, PackageOpen, PanelTop, Snowflake } from "lucide-react";
+import { Check, ChevronRight, ClipboardCheck, Droplets, Flame, PackageOpen, Snowflake } from "lucide-react";
 import { productById } from "./data/products";
 import type { EquipmentConfigurationState } from "./data/equipmentConfiguration";
 import { useConfiguratorCopy } from "./copy";
@@ -25,16 +25,9 @@ export function EquipmentSidebar({
         <h2>{text("equipment")}</h2>
       </div>
       <ul className="asea-standard-list">
-        <li>
-          <span className="asea-standard-check"><LockKeyhole size={12} aria-hidden="true" /></span>
-          <span>{text("gasCabinetFixed")}</span>
-        </li>
         {equipmentState.items.map((item, index) => {
           const product = productById.get(item.productId);
           if (!product) return null;
-          // The hood remains part of the configuration, but is visually grouped
-          // with the double fryer in the compact overview.
-          if (item.productId === "extractor-hood") return null;
           const isSelected = item.id === selectedEquipmentId;
           const duplicateCount = equipmentState.items
             .slice(0, index)
@@ -57,10 +50,6 @@ export function EquipmentSidebar({
             </li>
           );
         })}
-        <li>
-          <span className="asea-standard-icon"><PanelTop size={14} aria-hidden="true" /></span>
-          <span>{text("workSurfacesFixed")}</span>
-        </li>
       </ul>
       <div className="asea-sidebar-finish">
         <button type="button" className="asea-finish-button" onClick={onFinish}>
