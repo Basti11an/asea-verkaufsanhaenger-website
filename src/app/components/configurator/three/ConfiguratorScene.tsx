@@ -81,14 +81,6 @@ const GAS_GRIDDLE_NICHE_HALF_WIDTH = GAS_GRIDDLE_HALF_WIDTH + 0.03;
 const GAS_GRIDDLE_PLAN_HALF_WIDTH = 0.55;
 const CLOSED_WALL_NAME = "ASEA_ClosedWall";
 const SALES_WALL_NAME = "ASEA_SalesWall";
-const GAS_CABINET_EXTERNAL_CONNECTIONS = [
-  "Gasschrank_710x600x850_Absperrhahn",
-  "Gasschrank_710x600x850_Absperrhahn_Hebel",
-  "Gasschrank_710x600x850_Gasleitung_aussen",
-  "Gasschrank_710x600x850_Pruefanschluss",
-  "Gasschrank_710x600x850_Schottverschraubung",
-] as const;
-
 type ModelAsset = { scene: Group };
 type ModelAssets = Partial<Record<string, ModelAsset>>;
 
@@ -108,6 +100,24 @@ function addBox(
 function addCountertop(parent: Group, startX: number, endX: number, centerZ: number, depth = 0.6) {
   const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.52, metalness: 0.55 });
   addBox(parent, [endX - startX, 0.04, depth], [(startX + endX) / 2, 0.83, centerZ], steel);
+}
+
+function createGasCabinetBoardUnit() {
+  const unit = new Group();
+  unit.name = "ASEA_GasCabinetBoardUnit";
+  const board = new MeshStandardMaterial({ color: 0x4b4b48, roughness: 0.82, metalness: 0.04 });
+  const startX = centimetersToWorldX(0);
+  const endX = centimetersToWorldX(71);
+  const width = endX - startX;
+  const centerX = (startX + endX) / 2;
+  const centerZ = -0.7;
+  const frontZ = -0.415;
+
+  // Fixed board construction in the former gas-cabinet area: top, front and right side.
+  addBox(unit, [width, 0.04, 0.6], [centerX, 0.83, centerZ], board);
+  addBox(unit, [width, 0.81, 0.03], [centerX, 0.405, frontZ], board);
+  addBox(unit, [0.03, 0.81, 0.57], [endX - 0.015, 0.405, centerZ - 0.015], board);
+  return unit;
 }
 
 function addGasGriddleNiche(parent: Group, side: EquipmentSide) {
@@ -621,9 +631,8 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
 
     async function loadConfiguration() {
       try {
-        const [floorTexture, gasCabinet, doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet] = await Promise.all([
+        const [floorTexture, doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet] = await Promise.all([
           new TextureLoader().loadAsync("/configurator-textures/floor/grey-oak-vinyl.png"),
-          loadConfiguratorModel("/configurator-models/interieur/moebel/Gasschrank.glb"),
           loadConfiguratorModel("/configurator-models/interieur/kochen/Doppelfriteuse.glb"),
           loadConfiguratorModel("/configurator-models/interieur/hygiene/Hygienebereich.glb"),
           loadConfiguratorModel("/configurator-models/interieur/kuehlung/Kuehlschrank_Unterbau.glb"),
@@ -647,10 +656,9 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
         floorTexture.wrapT = RepeatWrapping;
         floorTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
         floorTexture.needsUpdate = true;
-        assets = { gasCabinet, doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet };
+        assets = { doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet };
         interiorShell = createInteriorShell(floorTexture);
         scene.add(interiorShell);
-        GAS_CABINET_EXTERNAL_CONNECTIONS.forEach((nodeName) => gasCabinet.scene.getObjectByName(nodeName)?.removeFromParent());
         standardModels = new Group();
         closedWallEquipment = new Group();
         salesWallEquipment = new Group();
@@ -659,7 +667,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
         standardModels.name = "ASEA_StandardEquipment";
         closedWallEquipment.name = "ASEA_ClosedWallEquipment";
         salesWallEquipment.name = "ASEA_SalesWallEquipment";
-        closedWallEquipment.add(prepareModel(gasCabinet.scene, Math.PI / 2, { minX: -1.8, minY: 0, minZ: -1 }));
+        closedWallEquipment.add(createGasCabinetBoardUnit());
         standardModels.add(closedWallEquipment, salesWallEquipment);
         scene.add(standardModels);
         applyConfiguration(equipmentStateRef.current);
