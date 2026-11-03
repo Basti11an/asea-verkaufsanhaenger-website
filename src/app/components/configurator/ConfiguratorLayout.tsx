@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { Monitor } from "lucide-react";
+import { toast } from "sonner";
 import { ConfiguratorTopbar } from "./ConfiguratorTopbar";
 import { EquipmentSidebar } from "./EquipmentSidebar";
 import { EquipmentEditor } from "./EquipmentEditor";
@@ -27,35 +28,34 @@ export function ConfiguratorLayout() {
   const sceneRef = useRef<ConfiguratorSceneHandle>(null);
   const [view, setView] = useState<ConfiguratorView>("three");
   const [started, setStarted] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
   const [selectedEquipmentId, setSelectedEquipmentId] = useState<string | null>(null);
   const [equipmentState, setEquipmentState] = useState<EquipmentConfigurationState>(createDefaultEquipmentConfiguration);
   const [finishModalOpen, setFinishModalOpen] = useState(false);
+
+  const showNotice = (message: string) => toast(message, { duration: 3200 });
 
   function selectEquipment(equipmentId: string) {
     if (!equipmentState.items.some((item) => item.id === equipmentId)) return;
     setStarted(true);
     setSelectedEquipmentId(equipmentId);
-    setNotice(null);
   }
 
   function handleProductClick(product: ProductDefinition) {
     if (!isConfigurableProductId(product.id)) {
-      setNotice(text("productNotice"));
+      showNotice(text("productNotice"));
       return;
     }
 
     const preferredSide = view === "rear" ? "sales-hatch" : "closed-wall";
     const result = addEquipment(equipmentState, product.id, preferredSide);
     if (result.item === null) {
-      setNotice(text("noSpaceNotice"));
+      showNotice(text("noSpaceNotice"));
       return;
     }
 
     setEquipmentState(result.state);
     setStarted(true);
     setSelectedEquipmentId(result.item.id);
-    setNotice(null);
   }
 
   function handleEquipmentSelect(equipmentId: string) {
@@ -65,27 +65,25 @@ export function ConfiguratorLayout() {
   function handleEquipmentCenterChange(equipmentId: string, centerCm: number) {
     const result = moveEquipment(equipmentState, equipmentId, centerCm);
     if (result.collisionWith) {
-      setNotice(text(result.collisionWith === "wheel-arch" ? "wheelArchNotice" : "collisionNotice"));
+      showNotice(text(result.collisionWith === "wheel-arch" ? "wheelArchNotice" : "collisionNotice"));
       return;
     }
     setEquipmentState(result.state);
-    setNotice(null);
   }
 
   function handleEquipmentRemove(equipmentId: string) {
     setEquipmentState(removeEquipment(equipmentState, equipmentId));
     setSelectedEquipmentId(null);
-    setNotice(text("removedNotice"));
+    showNotice(text("removedNotice"));
   }
 
   function handleEquipmentSideChange(equipmentId: string, side: "closed-wall" | "sales-hatch") {
     const result = moveEquipmentSide(equipmentState, equipmentId, side);
     if (result.collisionWith) {
-      setNotice(text("noSpaceNotice"));
+      showNotice(text("noSpaceNotice"));
       return;
     }
     setEquipmentState(result.state);
-    setNotice(null);
   }
 
   async function handleFinishSubmit(customer: ConfigurationCustomer) {
@@ -119,26 +117,29 @@ export function ConfiguratorLayout() {
             />
             <StartOverlay visible={!started} onStart={() => setStarted(true)} />
           </main>
-          <EquipmentSidebar
-            notice={notice}
-            selectedEquipmentId={selectedEquipmentId}
-            equipmentState={equipmentState}
-            onEquipmentSelect={handleEquipmentSelect}
-            onFinish={() => {
-              setStarted(true);
-              setNotice(null);
-              setFinishModalOpen(true);
-            }}
-          />
+          {selectedEquipmentId ? (
+            <EquipmentEditor
+              selectedEquipmentId={selectedEquipmentId}
+              equipmentState={equipmentState}
+              onEquipmentCenterChange={handleEquipmentCenterChange}
+              onEquipmentSideChange={handleEquipmentSideChange}
+              onEquipmentRemove={handleEquipmentRemove}
+              onCancel={() => setSelectedEquipmentId(null)}
+              onConfirm={() => setSelectedEquipmentId(null)}
+            />
+          ) : (
+            <EquipmentSidebar
+              selectedEquipmentId={selectedEquipmentId}
+              equipmentState={equipmentState}
+              onEquipmentSelect={handleEquipmentSelect}
+              onFinish={() => {
+                setStarted(true);
+                setFinishModalOpen(true);
+              }}
+            />
+          )}
         </div>
-        <EquipmentEditor
-          selectedEquipmentId={selectedEquipmentId}
-          equipmentState={equipmentState}
-          onEquipmentCenterChange={handleEquipmentCenterChange}
-          onEquipmentSideChange={handleEquipmentSideChange}
-          onEquipmentRemove={handleEquipmentRemove}
-        />
-        <ProductBar onProductClick={handleProductClick} />
+        <ProductBar onProductClick={handleProductClick} editing={Boolean(selectedEquipmentId)} />
       </div>
       <ConfiguratorFinishModal
         open={finishModalOpen}

@@ -1,7 +1,7 @@
 import { useLanguage } from "../../context/LanguageContext";
 
 const copy = {
-  title: ["ASEA Konfigurator", "ASEA Configurator", "Konfigurátor ASEA"],
+  title: ["Konfigurator", "Configurator", "Konfigurátor"],
   viewSelector: ["Ansicht auswählen", "Select view", "Vybrať pohľad"],
   sceneLabel: [
     "Interaktives 3D-Modell des ASEA Verkaufsanhängers",
@@ -99,6 +99,16 @@ const copy = {
   moveLeft: ["1 cm nach links", "Move 1 cm left", "Posunúť o 1 cm doľava"],
   moveRight: ["1 cm nach rechts", "Move 1 cm right", "Posunúť o 1 cm doprava"],
   resetPosition: ["Standardposition", "Default position", "Predvolená poloha"],
+  equipmentWidth: ["Breite", "Width", "Šírka"],
+  confirmPosition: ["Position übernehmen", "Apply position", "Použiť polohu"],
+  cancelEditing: ["Abbrechen", "Cancel", "Zrušiť"],
+  categoryCooking: ["Kochen", "Cooking", "Varenie"],
+  categoryCooling: ["Kühlen", "Cooling", "Chladenie"],
+  categoryHygiene: ["Hygiene", "Hygiene", "Hygiena"],
+  categoryWorktops: ["Arbeitsflächen", "Worktops", "Pracovné plochy"],
+  categoryCabinets: ["Schränke", "Cabinets", "Skrinky"],
+  scrollProductsLeft: ["Produkte nach links", "Scroll products left", "Produkty doľava"],
+  scrollProductsRight: ["Produkte nach rechts", "Scroll products right", "Produkty doprava"],
   removeEquipment: ["Aus Ausstattung entfernen", "Remove from equipment", "Odstrániť z vybavenia"],
   collisionNotice: [
     "Diese Position ist bereits belegt.",

@@ -1,28 +1,30 @@
-import { Droplets, Flame, PackageOpen, Snowflake } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useRef } from "react";
 import { products } from "./data/products";
-import type { ProductCategory, ProductDefinition } from "./types";
+import type { ProductDefinition } from "./types";
 import { useConfiguratorCopy } from "./copy";
 
 type ProductBarProps = {
   onProductClick: (product: ProductDefinition) => void;
+  editing: boolean;
 };
 
-const categoryIcons = {
-  cooking: Flame,
-  cooling: Snowflake,
-  hygiene: Droplets,
-  furniture: PackageOpen,
-} satisfies Record<ProductCategory, typeof Flame>;
-
-export function ProductBar({ onProductClick }: ProductBarProps) {
+export function ProductBar({ onProductClick, editing }: ProductBarProps) {
   const { text, name } = useConfiguratorCopy();
+  const stripRef = useRef<HTMLDivElement>(null);
+  const scroll = (direction: -1 | 1) => stripRef.current?.scrollBy({ left: direction * 520, behavior: "smooth" });
 
   return (
-    <section className="asea-product-bar" aria-label={text("products")}>
-      <h2>{text("products")}</h2>
-      <div className="asea-product-strip">
+    <section className={`asea-product-bar${editing ? " is-editing" : ""}`} aria-label={text("products")}>
+      <div className="asea-product-bar-heading">
+        <h2>{text("products")}</h2>
+        <div className="asea-product-categories" aria-hidden="true">
+          <span>{text("categoryCooking")}</span><span>{text("categoryCooling")}</span><span>{text("categoryHygiene")}</span><span>{text("categoryWorktops")}</span><span>{text("categoryCabinets")}</span>
+        </div>
+      </div>
+      <button type="button" className="asea-strip-arrow" onClick={() => scroll(-1)} aria-label={text("scrollProductsLeft")}><ChevronLeft size={17} /></button>
+      <div className="asea-product-strip" ref={stripRef}>
         {products.filter((product) => product.active).map((product) => {
-          const Icon = categoryIcons[product.category];
           const productName = name(product.name);
           return (
             <button
@@ -32,12 +34,14 @@ export function ProductBar({ onProductClick }: ProductBarProps) {
               title={productName}
               onClick={() => onProductClick(product)}
             >
-              <Icon size={17} aria-hidden="true" />
-              <span>{productName}</span>
+              <span className="asea-product-image-space" aria-hidden="true" />
+              <span className="asea-product-name">{productName}</span>
+              <span className="asea-product-hover" role="tooltip"><strong>{productName}</strong></span>
             </button>
           );
         })}
       </div>
+      <button type="button" className="asea-strip-arrow" onClick={() => scroll(1)} aria-label={text("scrollProductsRight")}><ChevronRight size={17} /></button>
     </section>
   );
 }

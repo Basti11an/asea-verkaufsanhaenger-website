@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, MoveHorizontal, RotateCcw, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, MoveHorizontal, RotateCcw, Trash2, X } from "lucide-react";
 import { useConfiguratorCopy } from "./copy";
 import { productById } from "./data/products";
 import {
@@ -13,6 +13,8 @@ type EquipmentEditorProps = {
   onEquipmentCenterChange: (equipmentId: string, value: number) => void;
   onEquipmentSideChange: (equipmentId: string, side: EquipmentSide) => void;
   onEquipmentRemove: (equipmentId: string) => void;
+  onCancel: () => void;
+  onConfirm: () => void;
 };
 
 export function EquipmentEditor({
@@ -21,6 +23,8 @@ export function EquipmentEditor({
   onEquipmentCenterChange,
   onEquipmentSideChange,
   onEquipmentRemove,
+  onCancel,
+  onConfirm,
 }: EquipmentEditorProps) {
   const { text, name } = useConfiguratorCopy();
   const placement = equipmentState.items.find((item) => item.id === selectedEquipmentId);
@@ -48,6 +52,9 @@ export function EquipmentEditor({
           <span>{help}</span>
         </div>
       </div>
+      <div className="asea-editor-field-label">{text("equipmentWidth")}</div>
+      <div className="asea-editor-readonly-value">{definition.widthCm} cm</div>
+      <div className="asea-editor-field-label">{text("allowedSide")}</div>
       <div className="asea-editor-side" role="group" aria-label={text("allowedSide")}>
         {definition.allowedSides.map((side) => (
           <button
@@ -60,6 +67,7 @@ export function EquipmentEditor({
           </button>
         ))}
       </div>
+      <div className="asea-editor-field-label">{text("centerFromLeft")}</div>
       <label className="asea-editor-slider" htmlFor="equipment-position">
         <span>{text("centerFromLeft")}</span>
         <input
@@ -125,6 +133,14 @@ export function EquipmentEditor({
           <Trash2 size={17} aria-hidden="true" />
         </button>
       </div>
+      <button type="button" className="asea-editor-confirm" onClick={onConfirm}>
+        <Check size={15} aria-hidden="true" />
+        {text("confirmPosition")}
+      </button>
+      <button type="button" className="asea-editor-cancel" onClick={onCancel}>
+        <X size={15} aria-hidden="true" />
+        {text("cancelEditing")}
+      </button>
     </section>
   );
 }

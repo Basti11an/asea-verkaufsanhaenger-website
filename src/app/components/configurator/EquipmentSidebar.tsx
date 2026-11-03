@@ -1,10 +1,9 @@
-import { Check, ClipboardCheck, LockKeyhole, MoveHorizontal } from "lucide-react";
+import { Check, ChevronRight, ClipboardCheck, Droplets, Flame, LockKeyhole, PackageOpen, PanelTop, Snowflake } from "lucide-react";
 import { productById } from "./data/products";
 import type { EquipmentConfigurationState } from "./data/equipmentConfiguration";
 import { useConfiguratorCopy } from "./copy";
 
 type EquipmentSidebarProps = {
-  notice: string | null;
   selectedEquipmentId: string | null;
   equipmentState: EquipmentConfigurationState;
   onEquipmentSelect: (equipmentId: string) => void;
@@ -12,7 +11,6 @@ type EquipmentSidebarProps = {
 };
 
 export function EquipmentSidebar({
-  notice,
   selectedEquipmentId,
   equipmentState,
   onEquipmentSelect,
@@ -39,6 +37,7 @@ export function EquipmentSidebar({
             .slice(0, index)
             .filter((other) => other.productId === item.productId).length;
           const label = duplicateCount > 0 ? `${name(product.name)} ${duplicateCount + 1}` : name(product.name);
+          const Icon = product.category === "cooking" ? Flame : product.category === "cooling" ? Snowflake : product.category === "hygiene" ? Droplets : PackageOpen;
 
           return (
             <li key={item.id} className={isSelected ? "is-selected" : undefined}>
@@ -48,19 +47,19 @@ export function EquipmentSidebar({
                 aria-pressed={isSelected}
                 onClick={() => onEquipmentSelect(item.id)}
               >
-                <span className="asea-standard-check"><MoveHorizontal size={13} aria-hidden="true" /></span>
-                <span>{label}</span>
+                <span className="asea-standard-icon"><Icon size={14} aria-hidden="true" /></span>
+                <span className="asea-standard-name">{label}</span>
+                <ChevronRight size={14} className="asea-standard-chevron" aria-hidden="true" />
               </button>
             </li>
           );
         })}
         <li>
-          <span className="asea-standard-check"><Check size={13} aria-hidden="true" /></span>
+          <span className="asea-standard-icon"><PanelTop size={14} aria-hidden="true" /></span>
           <span>{text("workSurfacesFixed")}</span>
         </li>
       </ul>
       <div className="asea-sidebar-finish">
-        <p className="asea-inline-notice" role="status" aria-live="polite">{notice}</p>
         <button type="button" className="asea-finish-button" onClick={onFinish}>
           <Check size={16} aria-hidden="true" />
           {text("finish")}
