@@ -12,7 +12,10 @@ type ProductBarProps = {
 export function ProductBar({ onProductClick, editing }: ProductBarProps) {
   const { text, name } = useConfiguratorCopy();
   const stripRef = useRef<HTMLDivElement>(null);
-  const scroll = (direction: -1 | 1) => stripRef.current?.scrollBy({ left: direction * 520, behavior: "smooth" });
+  const scroll = (direction: -1 | 1) => {
+    if (!stripRef.current) return;
+    stripRef.current.scrollLeft += direction * 520;
+  };
 
   return (
     <section className={`asea-product-bar${editing ? " is-editing" : ""}`} aria-label={text("products")}>
