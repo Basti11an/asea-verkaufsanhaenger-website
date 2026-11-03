@@ -626,7 +626,8 @@
   grid-row: 1;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 9px;
   min-width: 0;
   overflow: hidden;
 }
@@ -634,16 +635,22 @@
 .asea-configurator .asea-product-categories button {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 8px;
-  border-radius: 4px;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 5px;
   color: #5f645c;
   background: transparent;
-  font-size: 10px;
+  font-size: 11.5px;
+  font-weight: 560;
   line-height: 1.2;
   white-space: nowrap;
-  min-height: 24px;
+  min-height: 30px;
   border: 0;
+}
+
+.asea-product-categories button svg {
+  width: 14px;
+  height: 14px;
 }
 
 .asea-configurator .asea-product-categories button.is-active {
