@@ -37,10 +37,10 @@
 }
 
 .asea-config-desktop {
-  --sidebar-width: 272px;
+  --sidebar-width: 260px;
   position: relative;
   display: grid;
-  grid-template-rows: 52px minmax(0, 1fr) 116px;
+  grid-template-rows: 50px minmax(0, 1fr) 114px;
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -53,7 +53,7 @@
   justify-content: space-between;
   gap: 20px;
   min-width: 0;
-  padding: 6px 18px;
+  padding: 5px 16px;
   border-bottom: 1px solid #cfd3cb;
   background: #fbfbf8;
   z-index: 20;
@@ -64,31 +64,43 @@
   align-items: center;
   min-width: 0;
   gap: 11px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 650;
   white-space: nowrap;
 }
 
 .asea-config-brand img {
-  width: 50px;
-  height: 32px;
+  width: 48px;
+  height: 28px;
   object-fit: contain;
+}
+
+.asea-config-brand::after {
+  content: "";
+  order: -1;
+  width: 1px;
+  height: 22px;
+  background: #d4d7d0;
+}
+
+.asea-config-brand img {
+  order: -2;
 }
 
 .asea-view-switcher {
   display: flex;
   align-items: center;
-  gap: 3px;
-  padding: 3px;
+  gap: 1px;
+  padding: 2px;
   background: #e9ebe6;
   border: 1px solid #d7dbd3;
   border-radius: 6px;
 }
 
 .asea-view-switcher button {
-  min-width: 68px;
-  min-height: 32px;
-  padding: 0 9px;
+  min-width: 64px;
+  min-height: 30px;
+  padding: 0 8px;
   color: #5f645c;
 }
 
@@ -247,7 +259,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  padding: 14px 15px 12px;
+  padding: 12px 14px 10px;
   border-left: 1px solid var(--line);
   background: #f9f9f6;
   overflow: hidden;
@@ -257,7 +269,7 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  padding-bottom: 10px;
+  padding-bottom: 8px;
   border-bottom: 1px solid #dfe2db;
   color: var(--bronze-dark);
 }
@@ -266,7 +278,7 @@
 .asea-product-bar h2 {
   margin: 0;
   color: var(--ink);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 680;
 }
 
@@ -274,7 +286,7 @@
   flex: 1;
   min-height: 0;
   margin: 0;
-  padding: 7px 0;
+  padding: 5px 0;
   list-style: none;
   overflow-x: hidden;
   overflow-y: auto;
@@ -284,8 +296,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 36px;
-  padding: 6px 2px;
+  min-height: 40px;
+  padding: 5px 2px;
   border-bottom: 1px solid #e4e6e0;
   color: #454942;
   font-size: 12px;
@@ -343,8 +355,7 @@
 }
 
 .asea-sidebar-finish {
-  padding-top: 9px;
-  border-top: 1px solid #dfe2db;
+  padding-top: 8px;
 }
 
 .asea-equipment-editor {
@@ -573,16 +584,19 @@
 
 .asea-finish-button {
   width: 100%;
+  min-height: 44px;
 }
 
 .asea-product-bar {
   display: grid;
-  grid-template-columns: 190px 32px minmax(0, 1fr) 32px;
+  grid-template-columns: 88px 28px minmax(0, 1fr) 28px;
+  grid-template-rows: 24px minmax(0, 1fr);
   align-items: center;
-  gap: 7px;
+  column-gap: 7px;
+  row-gap: 4px;
   min-width: 0;
   min-height: 0;
-  padding: 8px 14px;
+  padding: 5px 14px 7px;
   border-top: 1px solid #cfd3cb;
   background: #f6f7f3;
   z-index: 18;
@@ -593,37 +607,51 @@
 }
 
 .asea-product-bar-heading {
-  align-self: stretch;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 7px;
+  grid-column: 1;
+  grid-row: 1;
 }
 
 .asea-product-categories {
+  grid-column: 2 / 5;
+  grid-row: 1;
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .asea-product-categories span {
-  padding: 2px 6px;
-  border: 1px solid #ddd8cf;
-  border-radius: 999px;
-  color: #77756f;
-  background: #fbfaf7;
-  font-size: 9px;
-  line-height: 1.25;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  color: #5f645c;
+  background: transparent;
+  font-size: 10px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.asea-product-categories span.is-active {
+  color: #fff;
+  background: var(--bronze);
 }
 
 .asea-configurator .asea-strip-arrow {
-  width: 30px;
-  min-height: 72px;
+  grid-row: 2;
+  width: 26px;
+  min-height: 26px;
   padding: 0;
   border: 1px solid #d8dcd4;
+  border-radius: 50%;
   color: #686c65;
   background: #fff;
 }
+
+.asea-configurator .asea-strip-arrow:first-of-type { grid-column: 2; }
+.asea-configurator .asea-strip-arrow:last-child { grid-column: 4; }
 
 .asea-configurator .asea-strip-arrow:hover {
   border-color: var(--bronze);
@@ -631,20 +659,23 @@
 }
 
 .asea-product-strip {
+  grid-column: 3;
+  grid-row: 2;
   display: flex;
-  gap: 8px;
+  gap: 7px;
   min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 2px 1px 5px;
-  scrollbar-width: thin;
-  scrollbar-color: #9c917f #e3e6df;
+  padding: 1px;
+  scrollbar-width: none;
 }
+
+.asea-product-strip::-webkit-scrollbar { display: none; }
 
 .asea-configurator .asea-product-card {
   position: relative;
-  flex: 0 0 116px;
-  height: 84px;
+  flex: 0 0 118px;
+  height: 78px;
   display: flex;
   flex-direction: column;
   justify-content: stretch;
@@ -652,7 +683,7 @@
   gap: 0;
   padding: 0;
   border: 1px solid #d7dbd2;
-  border-top: 3px solid #9d7a4f;
+  border-top: 1px solid #d7dbd2;
   border-radius: 4px;
   background: #fff;
   color: #555a52;
@@ -663,7 +694,7 @@
 .asea-product-image-space {
   display: block;
   flex: 1;
-  min-height: 45px;
+  min-height: 47px;
   background: #faf9f6;
   border-bottom: 1px solid #ece9e2;
 }
@@ -673,8 +704,8 @@
   align-items: center;
   justify-content: center;
   min-width: 0;
-  min-height: 31px;
-  padding: 4px 6px;
+  min-height: 28px;
+  padding: 3px 5px;
   color: #343832;
   font-size: 10px;
   line-height: 1.25;
@@ -684,9 +715,9 @@
 .asea-product-hover {
   position: absolute;
   z-index: 4;
-  top: 7px;
-  left: 7px;
-  right: 7px;
+  left: 4px;
+  right: 4px;
+  bottom: calc(100% + 6px);
   display: block;
   padding: 7px 6px;
   border: 1px solid #d9d4cb;
@@ -712,10 +743,6 @@
   border-color: var(--bronze);
   background: #fdfbf7;
 }
-
-.asea-product-card.is-cooling { border-top-color: #5f8792; }
-.asea-product-card.is-hygiene { border-top-color: #6b8a75; }
-.asea-product-card.is-furniture { border-top-color: #777b72; }
 
 .asea-watermark {
   position: absolute;
@@ -952,7 +979,7 @@
   }
 
   .asea-product-bar {
-    grid-template-columns: 150px 30px minmax(0, 1fr) 30px;
+    grid-template-columns: 80px 26px minmax(0, 1fr) 26px;
     padding-inline: 10px;
   }
 
@@ -973,13 +1000,14 @@
 
 @media (max-height: 680px) and (min-width: 768px) {
   .asea-config-desktop {
-    grid-template-rows: 50px minmax(0, 1fr) 91px;
+    grid-template-rows: 48px minmax(0, 1fr) 100px;
   }
 
   .asea-configurator .asea-product-card {
-    height: 60px;
-    padding: 8px;
+    height: 66px;
   }
+
+  .asea-product-image-space { min-height: 37px; }
 
   .asea-product-bar {
     padding-block: 7px;

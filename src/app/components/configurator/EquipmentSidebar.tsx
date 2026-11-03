@@ -32,6 +32,9 @@ export function EquipmentSidebar({
         {equipmentState.items.map((item, index) => {
           const product = productById.get(item.productId);
           if (!product) return null;
+          // The hood remains part of the configuration, but is visually grouped
+          // with the double fryer in the compact overview.
+          if (item.productId === "extractor-hood") return null;
           const isSelected = item.id === selectedEquipmentId;
           const duplicateCount = equipmentState.items
             .slice(0, index)
