@@ -41,7 +41,7 @@
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--sidebar-width);
-  grid-template-rows: 50px minmax(0, 1fr) 152px;
+  grid-template-rows: 50px minmax(0, 1fr) 132px;
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -694,7 +694,7 @@
 .asea-configurator .asea-product-card {
   position: relative;
   flex: 0 0 132px;
-  height: 108px;
+  height: 86px;
   display: flex;
   flex-direction: column;
   justify-content: stretch;
@@ -713,7 +713,7 @@
 .asea-product-image-space {
   display: block;
   flex: 1;
-  min-height: 72px;
+  min-height: 52px;
   background: #faf9f6;
   border-bottom: 1px solid #ece9e2;
 }
@@ -1004,17 +1004,23 @@
 
 @media (max-height: 680px) and (min-width: 768px) {
   .asea-config-desktop {
-    grid-template-rows: 48px minmax(0, 1fr) 140px;
+    grid-template-rows: 48px minmax(0, 1fr) 120px;
   }
 
   .asea-configurator .asea-product-card {
-    height: 96px;
+    height: 78px;
   }
 
-  .asea-product-image-space { min-height: 62px; }
+  .asea-product-image-space { min-height: 46px; }
+
+  .asea-configurator .asea-product-categories button {
+    min-height: 28px;
+    padding: 4px 9px;
+    font-size: 11px;
+  }
 
   .asea-product-bar {
-    padding-block: 7px;
+    padding-block: 5px;
   }
 
   .asea-equipment-sidebar {

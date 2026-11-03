@@ -54,8 +54,6 @@ export function EquipmentEditor({
           <span>{help}</span>
         </div>
       </div>
-      <div className="asea-editor-field-label">{text("equipmentWidth")}</div>
-      <div className="asea-editor-readonly-value">{definition.widthCm} cm</div>
       <div className="asea-editor-field-label">{text("allowedSide")}</div>
       <div className="asea-editor-side" role="group" aria-label={text("allowedSide")}>
         {definition.allowedSides.map((side) => (
@@ -69,6 +67,8 @@ export function EquipmentEditor({
           </button>
         ))}
       </div>
+      <div className="asea-editor-field-label">{text("equipmentWidth")}</div>
+      <div className="asea-editor-readonly-value">{definition.widthCm} cm</div>
       <div className="asea-editor-field-label">{text("centerFromLeft")}</div>
       <label className="asea-editor-slider" htmlFor="equipment-position">
         <span>{text("centerFromLeft")}</span>
