@@ -33,7 +33,7 @@ describe("configurator view visibility", () => {
     applyConfiguratorViewVisibility(model, "three");
 
     expect(outerShell.visible).toBe(true);
-    expect(sellingFlap.visible).toBe(false);
+    expect(sellingFlap.visible).toBe(true);
   });
 
   it("hides the blocking trailer shell in the seller rear view", () => {

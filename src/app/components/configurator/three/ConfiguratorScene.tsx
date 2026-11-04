@@ -127,6 +127,11 @@ function addGasGriddleNiche(parent: Group, side: EquipmentSide) {
   addBox(parent, [0.03, 0.33, 0.6], [-GAS_GRIDDLE_NICHE_HALF_WIDTH + 0.015, 0.685, centerZ], steel);
   addBox(parent, [0.03, 0.33, 0.6], [GAS_GRIDDLE_NICHE_HALF_WIDTH - 0.015, 0.685, centerZ], steel);
 
+  // Close the customer-facing front below the gas griddles across the full
+  // planned 110 cm section. The panel sits just inside the sales-hatch edge.
+  const frontZ = side === "closed-wall" ? -0.985 : 0.985;
+  addBox(parent, [GAS_GRIDDLE_PLAN_HALF_WIDTH * 2, 0.585, 0.03], [0, 0.2925, frontZ], steel);
+
   // Close the two planned side gaps between the 110 cm gas-brater section
   // and the actual 66 cm appliance, while keeping the braters themselves free.
   const sideGap = GAS_GRIDDLE_PLAN_HALF_WIDTH - GAS_GRIDDLE_HALF_WIDTH;
@@ -637,7 +642,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
         ]);
         if (disposed) return;
         assets = { doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet };
-        trailerModel = prepareTrailerModel(trailer.scene);
+        trailerModel = prepareTrailerModel(trailer.scene, trailer.animations);
         interiorShell = createInteriorShell();
         scene.add(trailerModel, interiorShell);
         standardModels = new Group();

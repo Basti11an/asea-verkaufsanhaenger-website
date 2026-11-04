@@ -1,10 +1,39 @@
-import { Box3, Group, Mesh, MeshStandardMaterial, Vector3 } from "three";
+import { AnimationMixer, Box3, Group, Mesh, MeshStandardMaterial, Vector3 } from "three";
+import type { AnimationClip } from "three";
+import { trailerConfiguration } from "../data/defaultConfiguration";
 
 const TRAILER_SCALE = 0.1;
 const TRAILER_ROTATION_Y = Math.PI;
 const TRAILER_FLOOR_NODE = "v2_Holzboden";
 
-export function prepareTrailerModel(model: Group) {
+function applyStaticAnimationPose(
+  model: Group,
+  animations: readonly AnimationClip[],
+  clipName: string,
+  timeSeconds: number,
+) {
+  const clip = animations.find((candidate) => candidate.name === clipName);
+  if (!clip) throw new Error(`Trailer animation ${clipName} is missing.`);
+
+  const mixer = new AnimationMixer(model);
+  mixer.clipAction(clip).play();
+  mixer.setTime(timeSeconds);
+}
+
+export function prepareTrailerModel(model: Group, animations: readonly AnimationClip[]) {
+  applyStaticAnimationPose(
+    model,
+    animations,
+    trailerConfiguration.animation.sellingFlapClip,
+    trailerConfiguration.animation.sellingFlapOpenTimeSeconds,
+  );
+  applyStaticAnimationPose(
+    model,
+    animations,
+    trailerConfiguration.animation.doorClip,
+    trailerConfiguration.animation.doorOpenTimeSeconds,
+  );
+
   const trailer = new Group();
   trailer.name = "ASEA_TrailerModel";
   trailer.add(model);

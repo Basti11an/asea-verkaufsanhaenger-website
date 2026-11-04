@@ -32,9 +32,7 @@ export function applyConfiguratorViewVisibility(
   if (outerShell) outerShell.visible = showOuterShell;
 
   const sellingFlap = model.getObjectByName(trailerConfiguration.sceneNodes.sellingFlapPivot);
-  // The delivered GLB contains the selling flap in its closed position. The
-  // configurator keeps it hidden so the interior remains usable in every view.
-  if (sellingFlap) sellingFlap.visible = false;
+  if (sellingFlap) sellingFlap.visible = showOuterShell;
 
   trailerConfiguration.sceneNodes.roof.forEach((name) => {
     const object = model.getObjectByName(name);

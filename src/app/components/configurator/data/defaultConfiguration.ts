@@ -81,6 +81,8 @@ export const trailerConfiguration = {
   animation: {
     sellingFlapClip: "v2_Klappe_DrehpunktAction",
     sellingFlapOpenTimeSeconds: 2.5,
+    doorClip: "v2_Tuer_DrehpunktAction",
+    doorOpenTimeSeconds: 1.6666666,
   },
 };
 
