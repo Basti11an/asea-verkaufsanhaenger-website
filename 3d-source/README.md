@@ -19,7 +19,10 @@ Kategorie.
 
 - `Arbeitsplatten.blend` enthaelt derzeit Objekte, aber keine Mesh-Vertices und
   muss vor einem GLB-Export mit echter Geometrie versehen werden.
-- Ein neuer Anhaenger wurde noch nicht geliefert. `trailer/` bleibt deshalb leer.
+- Der fertige Web-Export `Anhaenger_v2.glb` liegt unter
+  `public/configurator-models/trailer/`. Eine bearbeitbare Blender-Quelldatei
+  des neuen Anhaengers wurde nicht mitgeliefert; `3d-source/trailer/` bleibt
+  deshalb leer.
 
 ## GLB-Export
 

@@ -8,13 +8,16 @@ describe("configurator view visibility", () => {
     const model = new Group();
     const outerShell = new Group();
     outerShell.name = trailerConfiguration.sceneNodes.outerShell;
+    const sellingFlap = new Group();
+    sellingFlap.name = trailerConfiguration.sceneNodes.sellingFlapPivot;
     const unrelatedPart = new Group();
     unrelatedPart.name = "unrelated-part";
-    model.add(outerShell, unrelatedPart);
+    model.add(outerShell, sellingFlap, unrelatedPart);
 
     applyConfiguratorViewVisibility(model, "top");
 
     expect(outerShell.visible).toBe(false);
+    expect(sellingFlap.visible).toBe(false);
     expect(unrelatedPart.visible).toBe(true);
   });
 
@@ -22,22 +25,25 @@ describe("configurator view visibility", () => {
     const model = new Group();
     const outerShell = new Group();
     outerShell.name = trailerConfiguration.sceneNodes.outerShell;
-    model.add(outerShell);
+    const sellingFlap = new Group();
+    sellingFlap.name = trailerConfiguration.sceneNodes.sellingFlapPivot;
+    model.add(outerShell, sellingFlap);
 
     applyConfiguratorViewVisibility(model, "top");
     applyConfiguratorViewVisibility(model, "three");
 
     expect(outerShell.visible).toBe(true);
+    expect(sellingFlap.visible).toBe(false);
   });
 
-  it("keeps the trailer shell visible in the rear view", () => {
+  it("hides the blocking trailer shell in the seller rear view", () => {
     const model = new Group();
     const outerShell = new Group();
     outerShell.name = trailerConfiguration.sceneNodes.outerShell;
     model.add(outerShell);
 
     applyConfiguratorViewVisibility(model, "rear");
-    expect(outerShell.visible).toBe(true);
+    expect(outerShell.visible).toBe(false);
 
     applyConfiguratorViewVisibility(model, "three");
     expect(outerShell.visible).toBe(true);

@@ -10,12 +10,12 @@ describe("default configurator configuration", () => {
     expect(standardEquipment.every((item) => item.placementStatus === "confirmed")).toBe(true);
   });
 
-  it("preserves the trailer dimensions without referencing the deleted trailer model", () => {
+  it("preserves the trailer dimensions and references the delivered web model", () => {
     expect(trailerConfiguration.measuredInteriorFloorCm).toEqual({
       length: 360,
       width: 200,
     });
-    expect(trailerConfiguration.modelPath).toBeNull();
+    expect(trailerConfiguration.modelPath).toBe("/configurator-models/trailer/Anhaenger_v2.glb");
     expect(trailerConfiguration.sourceModelPath).toBeNull();
   });
 

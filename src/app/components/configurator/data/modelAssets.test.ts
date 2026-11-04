@@ -34,6 +34,7 @@ const expectedSourceModels = [
 ];
 
 const expectedWebModels = [
+  "public/configurator-models/trailer/Anhaenger_v2.glb",
   "public/configurator-models/interieur/arbeitsflaechen/Arbeitsplatten_Staender.glb",
   "public/configurator-models/interieur/hygiene/Doppelwaschbecken.glb",
   "public/configurator-models/interieur/hygiene/Hygienebereich.glb",

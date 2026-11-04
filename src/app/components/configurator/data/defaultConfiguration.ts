@@ -1,7 +1,7 @@
 import type { StandardEquipmentDefinition } from "../types";
 
 export const trailerConfiguration = {
-  modelPath: null,
+  modelPath: "/configurator-models/trailer/Anhaenger_v2.glb",
   sourceModelPath: null,
   scale: 0.1,
   rawUnitsPerMeter: 10,
@@ -74,7 +74,7 @@ export const trailerConfiguration = {
     outerShell: "v2_Aussenhuelle",
     sellingFlapPivot: "v2_Klappe_Drehpunkt",
     doorPivot: "v2_Tuer_Drehpunkt",
-    interiorFloor: "v2_Bodenbelag_PVC",
+    interiorFloor: "v2_Holzboden",
     roof: [] as readonly string[],
     walls: [] as readonly string[],
   },

@@ -6,16 +6,11 @@ import {
   Mesh,
   MeshStandardMaterial,
   PerspectiveCamera,
-  PlaneGeometry,
-  RepeatWrapping,
   Scene,
-  SRGBColorSpace,
   Timer,
-  TextureLoader,
   Vector3,
   WebGLRenderer,
 } from "three";
-import type { Texture } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import type { ConfiguratorView, EquipmentSide } from "../types";
 import { WatermarkOverlay } from "../WatermarkOverlay";
@@ -31,10 +26,12 @@ import { CameraController } from "./CameraController";
 import { cameraPresets } from "./cameraPresets";
 import { loadConfiguratorModel } from "./ModelLoader";
 import { installStudioEnvironment } from "./StudioEnvironment";
+import { prepareTrailerModel } from "./TrailerModel";
 import {
   captureConfigurationScreenshots,
   type ConfigurationScreenshots,
 } from "./configurationScreenshots";
+import { applyConfiguratorViewVisibility } from "./viewVisibility";
 
 type ConfiguratorSceneProps = {
   view: ConfiguratorView;
@@ -81,6 +78,7 @@ const GAS_GRIDDLE_NICHE_HALF_WIDTH = GAS_GRIDDLE_HALF_WIDTH + 0.03;
 const GAS_GRIDDLE_PLAN_HALF_WIDTH = 0.55;
 const CLOSED_WALL_NAME = "ASEA_ClosedWall";
 const SALES_WALL_NAME = "ASEA_SalesWall";
+const END_WALLS_NAME = "ASEA_EndWalls";
 type ModelAsset = { scene: Group };
 type ModelAssets = Partial<Record<string, ModelAsset>>;
 
@@ -140,47 +138,28 @@ function centimetersToWorldX(valueCm: number) {
   return TRAILER_MIN_X + valueCm / 100;
 }
 
-function createInteriorShell(floorTexture: Texture) {
+function createInteriorShell() {
   const shell = new Group();
   shell.name = "ASEA_InteriorShell";
   const wall = new MeshStandardMaterial({ color: 0xe7e7e3, roughness: 0.74, metalness: 0.05 });
-  const floorBase = new MeshStandardMaterial({ color: 0x777a73, roughness: 0.82, metalness: 0 });
-  const floorSurface = new MeshStandardMaterial({ map: floorTexture, roughness: 0.88, metalness: 0 });
   const trim = new MeshStandardMaterial({ color: 0x30322f, roughness: 0.58, metalness: 0.3 });
-
-  addBox(shell, [3.6, 0.05, 2], [0, -0.025, 0], floorBase);
-  const woodFloor = new Mesh(new PlaneGeometry(3.6, 2), floorSurface);
-  woodFloor.name = "ASEA_WoodFloor";
-  woodFloor.rotation.x = -Math.PI / 2;
-  woodFloor.position.y = 0.002;
-  woodFloor.receiveShadow = true;
-  shell.add(woodFloor);
 
   const closedWall = new Group();
   closedWall.name = CLOSED_WALL_NAME;
   addBox(closedWall, [3.6, 2.3, 0.04], [0, 1.15, -1.02], wall);
-  addBox(
-    closedWall,
-    [(WHEEL_ARCH_END_CM - WHEEL_ARCH_START_CM) / 100, WHEEL_ARCH_HEIGHT, WHEEL_ARCH_DEPTH],
-    [centimetersToWorldX((WHEEL_ARCH_START_CM + WHEEL_ARCH_END_CM) / 2), WHEEL_ARCH_HEIGHT / 2, -1 + WHEEL_ARCH_DEPTH / 2],
-    trim,
-  );
   shell.add(closedWall);
-  addBox(shell, [0.04, 2.3, 2], [-1.82, 1.15, 0], wall);
-  addBox(shell, [0.04, 2.3, 0.6], [1.82, 1.15, 0.7], wall);
-  addBox(shell, [0.04, 2.3, 0.6], [1.82, 1.15, -0.7], wall);
-  addBox(shell, [0.04, 0.3, 0.8], [1.82, 2.15, 0], wall);
+  const endWalls = new Group();
+  endWalls.name = END_WALLS_NAME;
+  addBox(endWalls, [0.04, 2.3, 2], [-1.82, 1.15, 0], wall);
+  addBox(endWalls, [0.04, 2.3, 0.6], [1.82, 1.15, 0.7], wall);
+  addBox(endWalls, [0.04, 2.3, 0.6], [1.82, 1.15, -0.7], wall);
+  addBox(endWalls, [0.04, 0.3, 0.8], [1.82, 2.15, 0], wall);
+  shell.add(endWalls);
 
   const salesWall = new Group();
   salesWall.name = SALES_WALL_NAME;
   addBox(salesWall, [3.6, 0.76, 0.04], [0, 0.38, 1.02], wall);
   addBox(salesWall, [3.62, 0.035, 0.055], [0, 0.79, 1.025], trim);
-  addBox(
-    salesWall,
-    [(WHEEL_ARCH_END_CM - WHEEL_ARCH_START_CM) / 100, WHEEL_ARCH_HEIGHT, WHEEL_ARCH_DEPTH],
-    [centimetersToWorldX((WHEEL_ARCH_START_CM + WHEEL_ARCH_END_CM) / 2), WHEEL_ARCH_HEIGHT / 2, 1 - WHEEL_ARCH_DEPTH / 2],
-    trim,
-  );
   shell.add(salesWall);
   return shell;
 }
@@ -469,6 +448,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
     if (!container) return;
     let disposed = false;
     let frameId = 0;
+    let trailerModel: Group | null = null;
     let interiorShell: Group | null = null;
     let standardModels: Group | null = null;
     let closedWallEquipment: Group | null = null;
@@ -503,10 +483,14 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
     const applyViewVisibility = (currentView: ConfiguratorView) => {
       const hideCustomerSide = currentView === "front";
       const hideSellerSide = currentView === "rear";
+      if (trailerModel) applyConfiguratorViewVisibility(trailerModel, currentView);
+      if (interiorShell) interiorShell.visible = currentView === "top" || currentView === "rear";
       const closedWall = interiorShell?.getObjectByName(CLOSED_WALL_NAME);
       const salesWall = interiorShell?.getObjectByName(SALES_WALL_NAME);
+      const endWalls = interiorShell?.getObjectByName(END_WALLS_NAME);
       if (closedWall) closedWall.visible = !hideSellerSide;
       if (salesWall) salesWall.visible = !hideCustomerSide;
+      if (endWalls) endWalls.visible = currentView === "top";
       if (closedWallEquipment) closedWallEquipment.visible = !hideSellerSide;
       if (salesWallEquipment) salesWallEquipment.visible = !hideCustomerSide;
       if (closedFurniture) closedFurniture.visible = !hideSellerSide;
@@ -632,8 +616,8 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
 
     async function loadConfiguration() {
       try {
-        const [floorTexture, doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet] = await Promise.all([
-          new TextureLoader().loadAsync("/configurator-textures/floor/grey-oak-vinyl.png"),
+        const [trailer, doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet] = await Promise.all([
+          loadConfiguratorModel(trailerConfiguration.modelPath),
           loadConfiguratorModel("/configurator-models/interieur/kochen/Doppelfriteuse.glb"),
           loadConfiguratorModel("/configurator-models/interieur/hygiene/Hygienebereich.glb"),
           loadConfiguratorModel("/configurator-models/interieur/kuehlung/Kuehlschrank_Unterbau.glb"),
@@ -652,14 +636,10 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
           loadOptional("/configurator-models/interieur/moebel/Haengeschrank.glb"),
         ]);
         if (disposed) return;
-        floorTexture.colorSpace = SRGBColorSpace;
-        floorTexture.wrapS = RepeatWrapping;
-        floorTexture.wrapT = RepeatWrapping;
-        floorTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-        floorTexture.needsUpdate = true;
         assets = { doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet };
-        interiorShell = createInteriorShell(floorTexture);
-        scene.add(interiorShell);
+        trailerModel = prepareTrailerModel(trailer.scene);
+        interiorShell = createInteriorShell();
+        scene.add(trailerModel, interiorShell);
         standardModels = new Group();
         closedWallEquipment = new Group();
         salesWallEquipment = new Group();
@@ -672,6 +652,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
         standardModels.add(closedWallEquipment, salesWallEquipment);
         scene.add(standardModels);
         applyConfiguration(equipmentStateRef.current);
+        applyViewVisibility(viewRef.current);
         highlightEquipment(selectedEquipmentId);
         setStatus("ready");
       } catch (error) {
@@ -687,6 +668,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
       resizeObserver.disconnect();
       controls.dispose();
       studioEnvironment.dispose();
+      if (trailerModel) disposeGroup(trailerModel);
       if (interiorShell) disposeGroup(interiorShell);
       if (standardModels) disposeGroup(standardModels);
       renderer.dispose();
