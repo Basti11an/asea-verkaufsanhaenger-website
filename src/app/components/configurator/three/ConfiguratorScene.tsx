@@ -155,7 +155,8 @@ function createFixedSalesFront() {
   const front = new Group();
   front.name = SALES_WALL_NAME;
   const panel = new MeshStandardMaterial({ color: 0x4b4b48, roughness: 0.82, metalness: 0.04 });
-  addBox(front, [3.6, 0.81, 0.03], [0, 0.405, 1.015], panel);
+  const panelHeight = 0.81 - WHEEL_ARCH_HEIGHT;
+  addBox(front, [1.1, panelHeight, 0.03], [0, WHEEL_ARCH_HEIGHT + panelHeight / 2, 1.015], panel);
   return front;
 }
 
