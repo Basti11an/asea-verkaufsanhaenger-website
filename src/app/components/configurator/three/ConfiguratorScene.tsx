@@ -135,7 +135,6 @@ function createInteriorShell() {
   const shell = new Group();
   shell.name = "ASEA_InteriorShell";
   const wall = new MeshStandardMaterial({ color: 0xe7e7e3, roughness: 0.74, metalness: 0.05 });
-  const trim = new MeshStandardMaterial({ color: 0x30322f, roughness: 0.58, metalness: 0.3 });
 
   const closedWall = new Group();
   closedWall.name = CLOSED_WALL_NAME;
@@ -149,12 +148,15 @@ function createInteriorShell() {
   addBox(endWalls, [0.04, 0.3, 0.8], [1.82, 2.15, 0], wall);
   shell.add(endWalls);
 
-  const salesWall = new Group();
-  salesWall.name = SALES_WALL_NAME;
-  addBox(salesWall, [3.6, 0.76, 0.04], [0, 0.38, 1.02], wall);
-  addBox(salesWall, [3.62, 0.035, 0.055], [0, 0.79, 1.025], trim);
-  shell.add(salesWall);
   return shell;
+}
+
+function createFixedSalesFront() {
+  const front = new Group();
+  front.name = SALES_WALL_NAME;
+  const panel = new MeshStandardMaterial({ color: 0x4b4b48, roughness: 0.82, metalness: 0.04 });
+  addBox(front, [3.6, 0.81, 0.03], [0, 0.405, 1.015], panel);
+  return front;
 }
 
 function prepareModel(model: Group, rotationY: number, placement: Placement) {
@@ -443,6 +445,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
     let frameId = 0;
     let trailerModel: Group | null = null;
     let interiorShell: Group | null = null;
+    let fixedSalesFront: Group | null = null;
     let standardModels: Group | null = null;
     let closedWallEquipment: Group | null = null;
     let salesWallEquipment: Group | null = null;
@@ -479,10 +482,9 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
       if (trailerModel) applyConfiguratorViewVisibility(trailerModel, currentView);
       if (interiorShell) interiorShell.visible = currentView === "top" || currentView === "rear";
       const closedWall = interiorShell?.getObjectByName(CLOSED_WALL_NAME);
-      const salesWall = interiorShell?.getObjectByName(SALES_WALL_NAME);
       const endWalls = interiorShell?.getObjectByName(END_WALLS_NAME);
       if (closedWall) closedWall.visible = !hideSellerSide;
-      if (salesWall) salesWall.visible = !hideCustomerSide;
+      if (fixedSalesFront) fixedSalesFront.visible = !hideCustomerSide;
       if (endWalls) endWalls.visible = currentView === "top";
       if (closedWallEquipment) closedWallEquipment.visible = !hideSellerSide;
       if (salesWallEquipment) salesWallEquipment.visible = !hideCustomerSide;
@@ -632,7 +634,8 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
         assets = { doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet };
         trailerModel = prepareTrailerModel(trailer.scene, trailer.animations);
         interiorShell = createInteriorShell();
-        scene.add(trailerModel, interiorShell);
+        fixedSalesFront = createFixedSalesFront();
+        scene.add(trailerModel, interiorShell, fixedSalesFront);
         standardModels = new Group();
         closedWallEquipment = new Group();
         salesWallEquipment = new Group();
@@ -663,6 +666,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
       studioEnvironment.dispose();
       if (trailerModel) disposeGroup(trailerModel);
       if (interiorShell) disposeGroup(interiorShell);
+      if (fixedSalesFront) disposeGroup(fixedSalesFront);
       if (standardModels) disposeGroup(standardModels);
       renderer.dispose();
       renderer.domElement.remove();
