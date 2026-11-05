@@ -32,10 +32,25 @@ describe("configurable equipment rules", () => {
   });
 
   it("uses the real installation widths for collision checks", () => {
+    expect(equipmentPlacementDefinitions["gas-griddle"].widthCm).toBe(100);
+    expect(equipmentPlacementDefinitions["gas-griddle"].countertopCutoutWidthCm).toBe(72.05);
     expect(equipmentPlacementDefinitions["electric-griddle"].widthCm).toBe(66);
     expect(equipmentPlacementDefinitions.induction.widthCm).toBe(33);
     expect(equipmentPlacementDefinitions["double-sink"].widthCm).toBe(100);
     expect(equipmentPlacementDefinitions["wall-cabinet"].widthCm).toBe(60);
+  });
+
+  it("keeps the complete gas griddle unit inside the trailer", () => {
+    const state = createDefaultEquipmentConfiguration();
+    const gasGriddle = state.items.find((item) => item.productId === "gas-griddle")!;
+
+    const movedLeft = moveEquipment(state, gasGriddle.id, 0);
+    expect(movedLeft.collisionWith).toBeNull();
+    expect(movedLeft.state.items.find((item) => item.id === gasGriddle.id)?.centerCm).toBe(50);
+
+    const movedRight = moveEquipment(state, gasGriddle.id, 360);
+    expect(movedRight.collisionWith).toBeNull();
+    expect(movedRight.state.items.find((item) => item.id === gasGriddle.id)?.centerCm).toBe(310);
   });
 
   it("allows multiple independent splash guards and wall cabinets", () => {

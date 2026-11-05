@@ -6,10 +6,11 @@ describe("configuration summary", () => {
   const state = createDefaultEquipmentConfiguration();
 
   it("derives the actual free work surfaces from the same equipment state", () => {
-    expect(getCountertopIntervals(state, "sales-hatch")).toEqual([
-      { startCm: 0, endCm: 141.5 },
-      { startCm: 218.5, endCm: 360 },
-    ]);
+    const salesIntervals = getCountertopIntervals(state, "sales-hatch");
+    expect(salesIntervals[0].startCm).toBe(0);
+    expect(salesIntervals[0].endCm).toBeCloseTo(143.975);
+    expect(salesIntervals[1].startCm).toBeCloseTo(216.025);
+    expect(salesIntervals[1].endCm).toBe(360);
     expect(getCountertopIntervals(state, "closed-wall")).toEqual([
       { startCm: 130.5, endCm: 195 },
       { startCm: 295, endCm: 360 },

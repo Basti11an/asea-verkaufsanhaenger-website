@@ -2,7 +2,7 @@ import type { EquipmentSide } from "../types";
 import {
   equipmentPlacementDefinitions,
   fixedGasCabinet,
-  getEquipmentInterval,
+  getCountertopCutoutInterval,
   type EquipmentConfigurationState,
 } from "./equipmentConfiguration";
 import { productById } from "./products";
@@ -44,7 +44,7 @@ export function getCountertopIntervals(
 ) {
   const blocked = state.items
     .filter((item) => item.side === side && equipmentPlacementDefinitions[item.productId].blocksCountertop)
-    .map((item) => getEquipmentInterval(item));
+    .map((item) => getCountertopCutoutInterval(item));
 
   if (side === fixedGasCabinet.side) {
     blocked.push({ startCm: fixedGasCabinet.startCm, endCm: fixedGasCabinet.endCm });

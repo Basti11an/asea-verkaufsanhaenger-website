@@ -75,7 +75,6 @@ const WHEEL_ARCH_HEIGHT = WHEEL_ARCH.heightEnd / 100;
 const WHEEL_ARCH_DEPTH = (WHEEL_ARCH.depthEnd - WHEEL_ARCH.depthStart) / 100;
 const GAS_GRIDDLE_HALF_WIDTH = 0.33025;
 const GAS_GRIDDLE_NICHE_HALF_WIDTH = GAS_GRIDDLE_HALF_WIDTH + 0.03;
-const GAS_GRIDDLE_PLAN_HALF_WIDTH = 0.55;
 const CLOSED_WALL_NAME = "ASEA_ClosedWall";
 const SALES_WALL_NAME = "ASEA_SalesWall";
 const END_WALLS_NAME = "ASEA_EndWalls";
@@ -126,17 +125,6 @@ function addGasGriddleNiche(parent: Group, side: EquipmentSide) {
   addBox(parent, [nicheWidth, 0.03, 0.6], [0, 0.585, centerZ], steel);
   addBox(parent, [0.03, 0.33, 0.6], [-GAS_GRIDDLE_NICHE_HALF_WIDTH + 0.015, 0.685, centerZ], steel);
   addBox(parent, [0.03, 0.33, 0.6], [GAS_GRIDDLE_NICHE_HALF_WIDTH - 0.015, 0.685, centerZ], steel);
-
-  // Close the customer-facing front below the gas griddles across the full
-  // planned 110 cm section. The panel sits just inside the sales-hatch edge.
-  const frontZ = side === "closed-wall" ? -0.985 : 0.985;
-  addBox(parent, [GAS_GRIDDLE_PLAN_HALF_WIDTH * 2, 0.585, 0.03], [0, 0.2925, frontZ], steel);
-
-  // Close the two planned side gaps between the 110 cm gas-brater section
-  // and the actual 66 cm appliance, while keeping the braters themselves free.
-  const sideGap = GAS_GRIDDLE_PLAN_HALF_WIDTH - GAS_GRIDDLE_HALF_WIDTH;
-  addBox(parent, [sideGap, 0.04, 0.6], [-(GAS_GRIDDLE_HALF_WIDTH + sideGap / 2), 0.83, centerZ], steel);
-  addBox(parent, [sideGap, 0.04, 0.6], [GAS_GRIDDLE_HALF_WIDTH + sideGap / 2, 0.83, centerZ], steel);
 }
 
 function centimetersToWorldX(valueCm: number) {

@@ -39,6 +39,7 @@ export type EquipmentPlacementDefinition = {
   minCenterCm: number;
   maxCenterCm: number;
   widthCm: number;
+  countertopCutoutWidthCm?: number;
   collisionChannels: readonly CollisionChannel[];
   blocksCountertop: boolean;
   avoidsWheelArch: boolean;
@@ -85,9 +86,10 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     productId: "gas-griddle",
     allowedSides: allSides,
     defaultCenterCm: { "closed-wall": 180, "sales-hatch": 180 },
-    minCenterCm: 39,
-    maxCenterCm: 321,
-    widthCm: 77,
+    minCenterCm: 50,
+    maxCenterCm: 310,
+    widthCm: 100,
+    countertopCutoutWidthCm: 72.05,
     collisionChannels: ["floor", "counter", "backsplash"],
     blocksCountertop: true,
     avoidsWheelArch: false,
@@ -373,4 +375,9 @@ export function removeEquipment(state: EquipmentConfigurationState, id: string) 
 
 export function getEquipmentInterval(item: EquipmentPlacement) {
   return interval(item.centerCm, equipmentPlacementDefinitions[item.productId].widthCm);
+}
+
+export function getCountertopCutoutInterval(item: EquipmentPlacement) {
+  const definition = equipmentPlacementDefinitions[item.productId];
+  return interval(item.centerCm, definition.countertopCutoutWidthCm ?? definition.widthCm);
 }
