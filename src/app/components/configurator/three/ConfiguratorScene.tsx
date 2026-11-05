@@ -76,7 +76,6 @@ const WHEEL_ARCH_DEPTH = (WHEEL_ARCH.depthEnd - WHEEL_ARCH.depthStart) / 100;
 const GAS_GRIDDLE_HALF_WIDTH = 0.33025;
 const GAS_GRIDDLE_NICHE_HALF_WIDTH = GAS_GRIDDLE_HALF_WIDTH + 0.03;
 const CLOSED_WALL_NAME = "ASEA_ClosedWall";
-const SALES_WALL_NAME = "ASEA_SalesWall";
 const END_WALLS_NAME = "ASEA_EndWalls";
 type ModelAsset = { scene: Group };
 type ModelAssets = Partial<Record<string, ModelAsset>>;
@@ -149,15 +148,6 @@ function createInteriorShell() {
   shell.add(endWalls);
 
   return shell;
-}
-
-function createFixedSalesFront() {
-  const front = new Group();
-  front.name = SALES_WALL_NAME;
-  const panel = new MeshStandardMaterial({ color: 0x4b4b48, roughness: 0.82, metalness: 0.04 });
-  const panelHeight = 0.81 - WHEEL_ARCH_HEIGHT;
-  addBox(front, [1.1, panelHeight, 0.03], [0, WHEEL_ARCH_HEIGHT + panelHeight / 2, 1.015], panel);
-  return front;
 }
 
 function prepareModel(model: Group, rotationY: number, placement: Placement) {
@@ -446,7 +436,6 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
     let frameId = 0;
     let trailerModel: Group | null = null;
     let interiorShell: Group | null = null;
-    let fixedSalesFront: Group | null = null;
     let standardModels: Group | null = null;
     let closedWallEquipment: Group | null = null;
     let salesWallEquipment: Group | null = null;
@@ -485,7 +474,6 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
       const closedWall = interiorShell?.getObjectByName(CLOSED_WALL_NAME);
       const endWalls = interiorShell?.getObjectByName(END_WALLS_NAME);
       if (closedWall) closedWall.visible = !hideSellerSide;
-      if (fixedSalesFront) fixedSalesFront.visible = !hideCustomerSide;
       if (endWalls) endWalls.visible = currentView === "top";
       if (closedWallEquipment) closedWallEquipment.visible = !hideSellerSide;
       if (salesWallEquipment) salesWallEquipment.visible = !hideCustomerSide;
@@ -635,8 +623,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
         assets = { doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet };
         trailerModel = prepareTrailerModel(trailer.scene, trailer.animations);
         interiorShell = createInteriorShell();
-        fixedSalesFront = createFixedSalesFront();
-        scene.add(trailerModel, interiorShell, fixedSalesFront);
+        scene.add(trailerModel, interiorShell);
         standardModels = new Group();
         closedWallEquipment = new Group();
         salesWallEquipment = new Group();
@@ -667,7 +654,6 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
       studioEnvironment.dispose();
       if (trailerModel) disposeGroup(trailerModel);
       if (interiorShell) disposeGroup(interiorShell);
-      if (fixedSalesFront) disposeGroup(fixedSalesFront);
       if (standardModels) disposeGroup(standardModels);
       renderer.dispose();
       renderer.domElement.remove();
