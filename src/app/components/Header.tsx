@@ -3,6 +3,7 @@ import { useState, type MouseEvent } from 'react';
 import { Button } from './ui/button';
 import { availableLanguages, useLanguage, type Lang } from '../context/LanguageContext';
 import { AseaWordmark } from './AseaWordmark';
+import { getLocalizedPath } from '../lib/siteRoutes';
 
 interface HeaderProps {
   currentPage: string;
@@ -72,13 +73,13 @@ function LanguageDropdown() {
 
 export function Header({ currentPage, onNavigate }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   const navItems = [
-    { id: 'home', label: t('nav_home'), href: '/' },
-    { id: 'models', label: t('nav_models'), href: '/modelle' },
-    { id: 'about', label: t('nav_about'), href: '/ueber-uns' },
-    { id: 'contact', label: t('nav_contact'), href: '/kontakt' },
+    { id: 'home', label: t('nav_home'), href: getLocalizedPath('home', lang) ?? '/' },
+    { id: 'models', label: t('nav_models'), href: getLocalizedPath('models', lang) ?? '/modelle' },
+    { id: 'about', label: t('nav_about'), href: getLocalizedPath('about', lang) ?? '/ueber-uns' },
+    { id: 'contact', label: t('nav_contact'), href: getLocalizedPath('contact', lang) ?? '/kontakt' },
   ];
 
   const handleNavigate = (page: string) => {
@@ -102,7 +103,7 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
           {/* Wordmark */}
           <div className="flex flex-col items-center justify-center gap-1">
             <a
-              href="/"
+              href={getLocalizedPath('home', lang) ?? '/'}
               onClick={(event) => handleLinkNavigate(event, 'home')}
               className="outline-none transition-opacity duration-200 hover:opacity-80"
             >
@@ -146,7 +147,7 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
               asChild
               className="h-[50px] rounded-[2px] bg-[#b08a57] px-8 text-[13px] uppercase tracking-[0.15em] text-white transition-colors duration-200 hover:bg-[#9a7749]"
             >
-              <a href="/kontakt" onClick={(event) => handleLinkNavigate(event, 'contact')}>
+              <a href={getLocalizedPath('contact', lang) ?? '/kontakt'} onClick={(event) => handleLinkNavigate(event, 'contact')}>
                 {t('nav_cta')}
               </a>
             </Button>
@@ -189,7 +190,7 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
                   asChild
                   className="w-full bg-[#b08a57] text-white hover:bg-[#9a7749] text-[13px] uppercase tracking-[0.15em] h-[52px] rounded-[2px] transition-all duration-500 flex items-center justify-center gap-2.5"
                 >
-                  <a href="/kontakt" onClick={(event) => handleLinkNavigate(event, 'contact')}>
+                  <a href={getLocalizedPath('contact', lang) ?? '/kontakt'} onClick={(event) => handleLinkNavigate(event, 'contact')}>
                     {t('nav_cta')}
                   </a>
                 </Button>

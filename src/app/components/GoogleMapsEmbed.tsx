@@ -3,6 +3,7 @@ import { MapPin } from 'lucide-react';
 import { Button } from './ui/button';
 import { useLanguage } from '../context/LanguageContext';
 import { hasGoogleServicesConsent, saveGoogleServicesConsent } from '../lib/privacyConsent';
+import { getLocalizedPath } from '../lib/siteRoutes';
 
 interface GoogleMapsEmbedProps {
   className?: string;
@@ -83,7 +84,7 @@ export function GoogleMapsEmbed({ className = '', title }: GoogleMapsEmbedProps)
         >
           {copy.button}
         </Button>
-        <a href="/datenschutz" className="mt-3 block text-xs text-[#9a7445] underline underline-offset-4">
+        <a href={getLocalizedPath('privacy', lang) ?? '/datenschutz'} className="mt-3 block text-xs text-[#9a7445] underline underline-offset-4">
           {copy.privacy}
         </a>
       </div>

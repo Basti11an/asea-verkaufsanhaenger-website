@@ -1,7 +1,8 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
 import { de } from '../translations/de';
 import { en } from '../translations/en';
 import { sk } from '../translations/sk';
+import { getLanguageFromPath } from '../lib/siteRoutes';
 
 export type Lang = 'de' | 'en' | 'sk';
 export type TranslationKey = keyof typeof de;
@@ -24,6 +25,9 @@ const LanguageContext = createContext<LanguageContextType>({
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => {
+    const pathLanguage = getLanguageFromPath(window.location.pathname);
+    if (pathLanguage) return pathLanguage;
+
     try {
       const saved = localStorage.getItem('asea-lang') as Lang;
       return availableLanguages.includes(saved) ? saved : 'de';
@@ -32,12 +36,16 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
   });
 
-  const setLang = (newLang: Lang) => {
+  useEffect(() => {
+    document.documentElement.lang = lang === 'de' ? 'de-AT' : lang === 'en' ? 'en' : 'sk';
+  }, [lang]);
+
+  const setLang = useCallback((newLang: Lang) => {
     setLangState(newLang);
     try {
       localStorage.setItem('asea-lang', newLang);
     } catch {}
-  };
+  }, []);
 
   const t = (key: TranslationKey): string => {
     const dict = translations[lang] as Record<string, string>;

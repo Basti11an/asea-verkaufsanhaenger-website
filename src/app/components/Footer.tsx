@@ -2,6 +2,7 @@ import { Mail, Phone, MapPin, MessageCircle } from 'lucide-react';
 import type { MouseEvent } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { AseaWordmark } from './AseaWordmark';
+import { getLocalizedPath } from '../lib/siteRoutes';
 
 interface FooterProps {
   onNavigate: (page: string, data?: any) => void;
@@ -9,7 +10,7 @@ interface FooterProps {
 }
 
 export function Footer({ onNavigate, onOpenPrivacySettings }: FooterProps) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   const handleNavigate = (page: string) => {
     onNavigate(page);
@@ -25,13 +26,13 @@ export function Footer({ onNavigate, onOpenPrivacySettings }: FooterProps) {
   };
 
   const navigationItems = [
-    { page: 'home', href: '/', label: t('nav_home') },
-    { page: 'models', href: '/modelle', label: t('nav_models') },
-    { page: 'equipment', href: '/ausstattung', label: t('equip_hero_title') },
-    { page: 'configurator', href: '/konfigurator', label: t('configurator_page_title') },
-    { page: 'reviews', href: '/bewertungen', label: t('reviews_page_title') },
-    { page: 'about', href: '/ueber-uns', label: t('nav_about') },
-    { page: 'contact', href: '/kontakt', label: t('nav_contact') },
+    { page: 'home', href: getLocalizedPath('home', lang) ?? '/', label: t('nav_home') },
+    { page: 'models', href: getLocalizedPath('models', lang) ?? '/modelle', label: t('nav_models') },
+    { page: 'equipment', href: getLocalizedPath('equipment', lang) ?? '/ausstattung', label: t('equip_hero_title') },
+    { page: 'configurator', href: getLocalizedPath('configurator', lang) ?? '/konfigurator', label: t('configurator_page_title') },
+    { page: 'reviews', href: getLocalizedPath('reviews', lang) ?? '/bewertungen', label: t('reviews_page_title') },
+    { page: 'about', href: getLocalizedPath('about', lang) ?? '/ueber-uns', label: t('nav_about') },
+    { page: 'contact', href: getLocalizedPath('contact', lang) ?? '/kontakt', label: t('nav_contact') },
   ];
 
   return (
@@ -131,14 +132,14 @@ export function Footer({ onNavigate, onOpenPrivacySettings }: FooterProps) {
           <p className="text-[#77756f]">{t('footer_copyright')}</p>
           <div className="flex gap-6">
             <a
-              href="/impressum"
+              href={getLocalizedPath('imprint', lang) ?? '/impressum'}
               onClick={(event) => handleLinkNavigate(event, 'imprint')}
               className="text-[#77756f] hover:text-[#b08a57] transition-all duration-300 hover:underline"
             >
               {t('footer_imprint')}
             </a>
             <a
-              href="/datenschutz"
+              href={getLocalizedPath('privacy', lang) ?? '/datenschutz'}
               onClick={(event) => handleLinkNavigate(event, 'privacy')}
               className="text-[#77756f] hover:text-[#b08a57] transition-all duration-300 hover:underline"
             >

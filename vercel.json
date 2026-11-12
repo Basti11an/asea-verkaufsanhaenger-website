@@ -57,23 +57,48 @@
       ]
     }
   ],
+  "redirects": [
+    { "source": "/about", "destination": "/ueber-uns", "permanent": true },
+    { "source": "/models", "destination": "/modelle", "permanent": true },
+    { "source": "/equipment", "destination": "/ausstattung", "permanent": true },
+    { "source": "/contact", "destination": "/kontakt", "permanent": true },
+    { "source": "/reviews", "destination": "/bewertungen", "permanent": true },
+    { "source": "/configurator", "destination": "/konfigurator", "permanent": true },
+    { "source": "/imprint", "destination": "/impressum", "permanent": true },
+    { "source": "/privacy", "destination": "/datenschutz", "permanent": true }
+  ],
   "rewrites": [
-    {
-      "source": "/ausstattung",
-      "destination": "/seo/ausstattung.html"
-    },
-    {
-      "source": "/kontakt",
-      "destination": "/seo/kontakt.html"
-    },
-    {
-      "source": "/konfigurator",
-      "destination": "/seo/konfigurator.html"
-    },
-    {
-      "source": "/bewertungen",
-      "destination": "/seo/bewertungen.html"
-    },
+    { "source": "/modelle", "destination": "/seo/de/models.html" },
+    { "source": "/ausstattung", "destination": "/seo/de/equipment.html" },
+    { "source": "/ueber-uns", "destination": "/seo/de/about.html" },
+    { "source": "/kontakt", "destination": "/seo/de/contact.html" },
+    { "source": "/bewertungen", "destination": "/seo/de/reviews.html" },
+    { "source": "/konfigurator", "destination": "/seo/de/configurator.html" },
+    { "source": "/impressum", "destination": "/seo/de/imprint.html" },
+    { "source": "/datenschutz", "destination": "/seo/de/privacy.html" },
+    { "source": "/en", "destination": "/seo/en/home.html" },
+    { "source": "/en/modelle", "destination": "/seo/en/models.html" },
+    { "source": "/en/ausstattung", "destination": "/seo/en/equipment.html" },
+    { "source": "/en/ueber-uns", "destination": "/seo/en/about.html" },
+    { "source": "/en/kontakt", "destination": "/seo/en/contact.html" },
+    { "source": "/en/bewertungen", "destination": "/seo/en/reviews.html" },
+    { "source": "/en/konfigurator", "destination": "/seo/en/configurator.html" },
+    { "source": "/en/impressum", "destination": "/seo/en/imprint.html" },
+    { "source": "/en/datenschutz", "destination": "/seo/en/privacy.html" },
+    { "source": "/sk", "destination": "/seo/sk/home.html" },
+    { "source": "/sk/modelle", "destination": "/seo/sk/models.html" },
+    { "source": "/sk/ausstattung", "destination": "/seo/sk/equipment.html" },
+    { "source": "/sk/ueber-uns", "destination": "/seo/sk/about.html" },
+    { "source": "/sk/kontakt", "destination": "/seo/sk/contact.html" },
+    { "source": "/sk/bewertungen", "destination": "/seo/sk/reviews.html" },
+    { "source": "/sk/konfigurator", "destination": "/seo/sk/configurator.html" },
+    { "source": "/sk/impressum", "destination": "/seo/sk/imprint.html" },
+    { "source": "/sk/datenschutz", "destination": "/seo/sk/privacy.html" },
+    { "source": "/admin", "destination": "/seo/private/admin.html" },
+    { "source": "/bewertung", "destination": "/seo/private/review.html" },
+    { "source": "/review", "destination": "/seo/private/review.html" },
+    { "source": "/bewertung-abmelden", "destination": "/seo/private/review-unsubscribe.html" },
+    { "source": "/review-unsubscribe", "destination": "/seo/private/review-unsubscribe.html" },
     {
       "source": "/robots.txt",
       "destination": "/robots.txt"

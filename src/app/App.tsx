@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useState } fro
 import { Analytics as VercelAnalytics, type BeforeSendEvent } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { AdminDataProvider } from './context/AdminDataContext';
-import { LanguageProvider } from './context/LanguageContext';
+import { LanguageProvider, useLanguage, type Lang } from './context/LanguageContext';
 import { Header } from './components/Header';
 import { AdminHeader } from './components/AdminHeader';
 import { Footer } from './components/Footer';
@@ -24,6 +24,7 @@ import { PrivacyConsentBanner } from './components/PrivacyConsentBanner';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
 import { hasStatisticsConsent } from './lib/privacyConsent';
 import { getAdminAccess, type AdminAccessStatus } from './lib/adminAuth';
+import { getLanguageFromPath, getLocalizedPath, stripLanguagePrefix } from './lib/siteRoutes';
 
 const ConfiguratorPage = lazy(() =>
   import('./components/pages/ConfiguratorPage').then((module) => ({
@@ -48,7 +49,7 @@ const PAGE_PATHS: Record<string, string> = {
 };
 
 const SITE_ORIGIN = 'https://asea-anhaenger.com';
-const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/asea-og-image.png`;
+const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/images/asea-startseite-verkaufsanhaenger.jpg`;
 
 type SeoConfig = {
   title: string;
@@ -60,7 +61,7 @@ type SeoConfig = {
 const SEO_CONFIG: Record<string, SeoConfig> = {
   home: {
     title: 'Verkaufsanhänger kaufen | ASEA Oberösterreich',
-    description: 'Verkaufsanhänger kaufen bei ASEA aus Oberösterreich. Persönliche Beratung, direkter Kontakt sowie Unterstützung bei Gasprüfung, Abnahme und Zulassung.',
+    description: 'Hochwertige Verkaufsanhänger, Kühlanhänger und Messeanhänger von ASEA. Individuelle Ausstattung, persönliche Beratung und umfassender Service. Jetzt entdecken!',
     path: '/',
   },
   models: {
@@ -79,17 +80,17 @@ const SEO_CONFIG: Record<string, SeoConfig> = {
     path: '/ausstattung',
   },
   about: {
-    title: 'Über ASEA | Familienbetrieb aus Oberösterreich',
-    description: 'ASEA ist ein Familienbetrieb aus Oberösterreich. Seit 2021 begleiten wir Kunden persönlich rund um Verkaufsanhänger.',
+    title: 'Über ASEA | Verkaufsanhänger aus Oberösterreich',
+    description: 'Lernen Sie ASEA aus Waldburg in Oberösterreich kennen. Persönliche Beratung und direkte Begleitung rund um Ihren Verkaufsanhänger seit 2021.',
     path: '/ueber-uns',
   },
   contact: {
-    title: 'Kontakt & persönliche Beratung | ASEA',
+    title: 'Kontakt & Beratung | ASEA Verkaufsanhänger',
     description: 'Kontaktieren Sie ASEA über Kontaktformular, Telefon, E-Mail oder WhatsApp. Persönliche Beratung und Antwort in der Regel innerhalb von 24 Stunden.',
     path: '/kontakt',
   },
   reviews: {
-    title: 'Kundenbewertungen | ASEA',
+    title: 'Kundenbewertungen & Erfahrungen | ASEA',
     description: 'Lesen Sie freigegebene Kundenbewertungen und Erfahrungen mit Verkaufsanhänger ASEA aus Oberösterreich.',
     path: '/bewertungen',
   },
@@ -134,6 +135,93 @@ const SEO_CONFIG: Record<string, SeoConfig> = {
   },
 };
 
+const LOCALIZED_SEO: Record<Exclude<Lang, 'de'>, Record<string, Pick<SeoConfig, 'title' | 'description'>>> = {
+  en: {
+    home: {
+      title: 'Sales trailers | ASEA Upper Austria',
+      description: 'Discover sales trailers, refrigerated trailers and exhibition trailers from ASEA with personal advice, individual equipment and comprehensive service.',
+    },
+    models: {
+      title: 'Sales trailers & models | ASEA',
+      description: 'Explore ASEA sales trailers, refrigerated trailers and exhibition trailers. We provide personal advice and coordinate suitable solutions directly with you.',
+    },
+    'model-detail': {
+      title: 'Sales trailers & models | ASEA',
+      description: 'Explore ASEA sales trailers, refrigerated trailers and exhibition trailers with personal advice and directly coordinated equipment.',
+    },
+    equipment: {
+      title: 'Equipment for sales trailers | ASEA',
+      description: 'Discover equipment options and individual solutions for your ASEA sales trailer, coordinated personally for your intended use.',
+    },
+    about: {
+      title: 'About ASEA | Sales trailers from Austria',
+      description: 'Meet ASEA from Waldburg in Upper Austria. Since 2021, we have provided personal advice and direct support for sales trailer projects.',
+    },
+    contact: {
+      title: 'Contact & advice | ASEA sales trailers',
+      description: 'Contact ASEA by form, phone, email or WhatsApp for personal advice about sales trailers, equipment and your individual project.',
+    },
+    reviews: {
+      title: 'Customer reviews & experiences | ASEA',
+      description: 'Read approved customer reviews and experiences with ASEA sales trailers and our personal service from Upper Austria.',
+    },
+    configurator: {
+      title: 'Configure a sales trailer | ASEA',
+      description: 'Plan the interior equipment of your ASEA sales trailer in the interactive 3D configurator and view your configuration from different perspectives.',
+    },
+    imprint: {
+      title: 'Legal notice | ASEA',
+      description: 'Legal notice and company information for ASEA sales trailers in Waldburg, Upper Austria.',
+    },
+    privacy: {
+      title: 'Privacy policy | ASEA',
+      description: 'Privacy information for the ASEA sales trailer website and its online services.',
+    },
+  },
+  sk: {
+    home: {
+      title: 'Predajné prívesy | ASEA Horné Rakúsko',
+      description: 'Objavte predajné, chladiace a výstavné prívesy ASEA s osobným poradenstvom, individuálnym vybavením a komplexným servisom.',
+    },
+    models: {
+      title: 'Predajné prívesy a modely | ASEA',
+      description: 'Prezrite si predajné, chladiace a výstavné prívesy ASEA. Vhodné riešenie a vybavenie s vami osobne dohodneme.',
+    },
+    'model-detail': {
+      title: 'Predajné prívesy a modely | ASEA',
+      description: 'Prezrite si predajné, chladiace a výstavné prívesy ASEA s osobným poradenstvom a individuálne dohodnutým vybavením.',
+    },
+    equipment: {
+      title: 'Vybavenie predajných prívesov | ASEA',
+      description: 'Objavte možnosti vybavenia a individuálne riešenia pre predajný príves ASEA podľa plánovaného použitia.',
+    },
+    about: {
+      title: 'O spoločnosti ASEA | Predajné prívesy z Rakúska',
+      description: 'Spoznajte spoločnosť ASEA z Waldburgu v Hornom Rakúsku. Od roku 2021 poskytujeme osobné poradenstvo pri predajných prívesoch.',
+    },
+    contact: {
+      title: 'Kontakt a poradenstvo | ASEA',
+      description: 'Kontaktujte ASEA formulárom, telefonicky, e-mailom alebo cez WhatsApp a získajte osobné poradenstvo k predajnému prívesu.',
+    },
+    reviews: {
+      title: 'Hodnotenia a skúsenosti zákazníkov | ASEA',
+      description: 'Prečítajte si schválené hodnotenia a skúsenosti zákazníkov s predajnými prívesmi ASEA a naším osobným servisom.',
+    },
+    configurator: {
+      title: 'Konfigurátor predajného prívesu | ASEA',
+      description: 'Naplánujte vnútorné vybavenie prívesu ASEA v interaktívnom 3D konfigurátore a prezrite si zostavu z rôznych pohľadov.',
+    },
+    imprint: {
+      title: 'Tiráž | ASEA',
+      description: 'Tiráž a firemné informácie spoločnosti ASEA z Waldburgu v Hornom Rakúsku.',
+    },
+    privacy: {
+      title: 'Ochrana osobných údajov | ASEA',
+      description: 'Informácie o ochrane osobných údajov na webovej stránke predajných prívesov ASEA.',
+    },
+  },
+};
+
 const PATH_PAGES: Record<string, string> = {
   '/': 'home',
   '/ueber-uns': 'about',
@@ -162,7 +250,7 @@ const PATH_PAGES: Record<string, string> = {
 function getPageFromLocation() {
   if (typeof window === 'undefined') return 'home';
 
-  const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/';
+  const normalizedPath = stripLanguagePrefix(window.location.pathname).replace(/\/+$/, '') || '/';
   return PATH_PAGES[normalizedPath] ?? 'notFound';
 }
 
@@ -229,6 +317,34 @@ function upsertCanonical(href: string) {
   link.href = href;
 }
 
+function updateLanguageAlternates(page: string, enabled: boolean) {
+  document.head.querySelectorAll('link[data-asea-hreflang]').forEach((link) => link.remove());
+  if (!enabled) return;
+
+  const alternates: Array<[string, Lang]> = [['de-AT', 'de'], ['en', 'en'], ['sk', 'sk']];
+  for (const [hreflang, lang] of alternates) {
+    const path = getLocalizedPath(page, lang);
+    if (!path) continue;
+
+    const link = document.createElement('link');
+    link.rel = 'alternate';
+    link.hreflang = hreflang;
+    link.href = `${SITE_ORIGIN}${path}`;
+    link.dataset.aseaHreflang = hreflang;
+    document.head.appendChild(link);
+  }
+
+  const fallbackPath = getLocalizedPath(page, 'de');
+  if (fallbackPath) {
+    const fallback = document.createElement('link');
+    fallback.rel = 'alternate';
+    fallback.hreflang = 'x-default';
+    fallback.href = `${SITE_ORIGIN}${fallbackPath}`;
+    fallback.dataset.aseaHreflang = 'x-default';
+    document.head.appendChild(fallback);
+  }
+}
+
 function upsertJsonLd(id: string, data: unknown) {
   let script = document.head.querySelector<HTMLScriptElement>(`script[type="application/ld+json"][data-asea-schema="${id}"]`);
 
@@ -242,8 +358,8 @@ function upsertJsonLd(id: string, data: unknown) {
   script.textContent = JSON.stringify(data);
 }
 
-function getSeoForPage(page: string, navData?: any): SeoConfig {
-  if (page === 'model-detail' && navData?.model?.name) {
+function getSeoForPage(page: string, lang: Lang, navData?: any): SeoConfig {
+  if (lang === 'de' && page === 'model-detail' && navData?.model?.name) {
     const modelName = String(navData.model.name).toLowerCase();
 
     if (modelName.includes('kühl') || modelName.includes('kuehl')) {
@@ -269,51 +385,55 @@ function getSeoForPage(page: string, navData?: any): SeoConfig {
     };
   }
 
-  return SEO_CONFIG[page] ?? SEO_CONFIG.home;
+  const base = SEO_CONFIG[page] ?? SEO_CONFIG.home;
+  const localized = lang === 'de' ? null : LOCALIZED_SEO[lang][page];
+  const localizedPath = getLocalizedPath(page, lang) ?? base.path;
+
+  return {
+    ...base,
+    ...localized,
+    path: localizedPath,
+  };
 }
 
-function getBreadcrumbName(page: string, navData?: any) {
+function getBreadcrumbName(page: string, lang: Lang, navData?: any) {
   if (page === 'model-detail' && navData?.model?.name) {
     return String(navData.model.name);
   }
 
-  const names: Record<string, string> = {
-    home: 'Startseite',
-    models: 'Modelle',
-    equipment: 'Ausstattung',
-    about: 'Über uns',
-    contact: 'Kontakt',
-    reviews: 'Bewertungen',
-    configurator: 'Konfigurator',
-    imprint: 'Impressum',
-    privacy: 'Datenschutz',
+  const names: Record<Lang, Record<string, string>> = {
+    de: { home: 'Startseite', models: 'Modelle', equipment: 'Ausstattung', about: 'Über uns', contact: 'Kontakt', reviews: 'Bewertungen', configurator: 'Konfigurator', imprint: 'Impressum', privacy: 'Datenschutz' },
+    en: { home: 'Home', models: 'Models', equipment: 'Equipment', about: 'About us', contact: 'Contact', reviews: 'Reviews', configurator: 'Configurator', imprint: 'Legal notice', privacy: 'Privacy policy' },
+    sk: { home: 'Domov', models: 'Modely', equipment: 'Vybavenie', about: 'O nás', contact: 'Kontakt', reviews: 'Hodnotenia', configurator: 'Konfigurátor', imprint: 'Tiráž', privacy: 'Ochrana údajov' },
   };
 
-  return names[page] ?? 'Seite';
+  return names[lang][page] ?? names[lang].home;
 }
 
-function buildStructuredData(page: string, seo: SeoConfig, canonicalUrl: string, navData?: any) {
+function buildStructuredData(page: string, seo: SeoConfig, canonicalUrl: string, lang: Lang, navData?: any) {
   const organizationId = `${SITE_ORIGIN}/#organization`;
   const websiteId = `${SITE_ORIGIN}/#website`;
-  const currentPageName = getBreadcrumbName(page, navData);
+  const currentPageName = getBreadcrumbName(page, lang, navData);
+  const languageCode = lang === 'de' ? 'de-AT' : lang;
 
   const graph: unknown[] = [
     {
       '@type': 'WebSite',
       '@id': websiteId,
-      url: SITE_ORIGIN,
+      url: `${SITE_ORIGIN}/`,
       name: 'ASEA Verkaufsanhänger',
+      alternateName: ['ASEA', 'asea-anhaenger.com'],
       publisher: {
         '@id': organizationId,
       },
-      inLanguage: 'de-AT',
+      inLanguage: languageCode,
     },
     {
       '@type': ['Organization', 'LocalBusiness'],
       '@id': organizationId,
-      name: 'Verkaufsanhänger ASEA',
-      url: SITE_ORIGIN,
-      logo: `${SITE_ORIGIN}/asea-logo.png`,
+      name: 'ASEA Verkaufsanhänger',
+      url: `${SITE_ORIGIN}/`,
+      logo: `${SITE_ORIGIN}/android-chrome-512x512.png`,
       image: DEFAULT_OG_IMAGE,
       telephone: '+43 664 410 5 007',
       email: 'office@verkaufsanhaenger-asea.at',
@@ -329,6 +449,17 @@ function buildStructuredData(page: string, seo: SeoConfig, canonicalUrl: string,
       ],
     },
   ];
+
+  graph.push({
+    '@type': 'WebPage',
+    '@id': `${canonicalUrl}#webpage`,
+    url: canonicalUrl,
+    name: seo.title,
+    description: seo.description,
+    inLanguage: languageCode,
+    isPartOf: { '@id': websiteId },
+    about: { '@id': organizationId },
+  });
 
   if (!seo.robots?.includes('noindex')) {
     const itemListElement = [
@@ -361,8 +492,8 @@ function buildStructuredData(page: string, seo: SeoConfig, canonicalUrl: string,
   };
 }
 
-function applySeoForPage(page: string, navData?: any) {
-  const seo = getSeoForPage(page, navData);
+function applySeoForPage(page: string, lang: Lang, navData?: any) {
+  const seo = getSeoForPage(page, lang, navData);
   const canonicalUrl = `${SITE_ORIGIN}${seo.path}`;
   const robots = seo.robots ?? 'index,follow';
 
@@ -370,16 +501,22 @@ function applySeoForPage(page: string, navData?: any) {
   upsertMetaByName('description', seo.description);
   upsertMetaByName('robots', robots);
   upsertCanonical(canonicalUrl);
+  updateLanguageAlternates(page, !robots.includes('noindex') && Boolean(getLocalizedPath(page, lang)));
   upsertMetaByProperty('og:title', seo.title);
   upsertMetaByProperty('og:description', seo.description);
   upsertMetaByProperty('og:url', canonicalUrl);
   upsertMetaByProperty('og:type', 'website');
+  upsertMetaByProperty('og:site_name', 'ASEA Verkaufsanhänger');
+  upsertMetaByProperty('og:locale', lang === 'de' ? 'de_AT' : lang === 'en' ? 'en_GB' : 'sk_SK');
   upsertMetaByProperty('og:image', DEFAULT_OG_IMAGE);
+  upsertMetaByProperty('og:image:width', '3361');
+  upsertMetaByProperty('og:image:height', '1911');
+  upsertMetaByProperty('og:image:alt', 'ASEA Verkaufsanhänger vor dem Firmenstandort in Waldburg');
   upsertMetaByName('twitter:card', 'summary_large_image');
   upsertMetaByName('twitter:title', seo.title);
   upsertMetaByName('twitter:description', seo.description);
   upsertMetaByName('twitter:image', DEFAULT_OG_IMAGE);
-  upsertJsonLd('main', buildStructuredData(page, seo, canonicalUrl, navData));
+  upsertJsonLd('main', buildStructuredData(page, seo, canonicalUrl, lang, navData));
 }
 
 function AdminAccessLoading() {
@@ -429,6 +566,7 @@ function scrollPageToTop() {
 }
 
 function AppInner() {
+  const { lang, setLang } = useLanguage();
   const [currentPage, setCurrentPage] = useState<string>(getPageFromLocation);
   const [navData, setNavData] = useState<any>(null);
   const [adminAccessStatus, setAdminAccessStatus] = useState<AdminAccessStatus>('guest');
@@ -442,7 +580,8 @@ function AppInner() {
     setNavData(data ?? null);
     setNavigationTick((tick) => tick + 1);
 
-    const path = PAGE_PATHS[page === 'model-detail' ? 'models' : page];
+    const targetPage = page === 'model-detail' ? 'models' : page;
+    const path = getLocalizedPath(targetPage, lang) ?? PAGE_PATHS[targetPage];
 
     if (path && canUseCleanBrowserUrls() && window.location.pathname !== path) {
       try {
@@ -507,6 +646,8 @@ function AppInner() {
 
   useEffect(() => {
     const handlePopState = () => {
+      const pathLanguage = getLanguageFromPath(window.location.pathname);
+      setLang(pathLanguage ?? 'de');
       setNavData(null);
       setNavigationTick((tick) => tick + 1);
       setCurrentPage(getPageFromLocation());
@@ -514,11 +655,18 @@ function AppInner() {
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  }, [setLang]);
 
   useEffect(() => {
-    applySeoForPage(currentPage, navData);
-  }, [currentPage, navData]);
+    const localizedPath = getLocalizedPath(currentPage === 'model-detail' ? 'models' : currentPage, lang);
+    if (!localizedPath || !canUseCleanBrowserUrls() || window.location.pathname === localizedPath) return;
+
+    window.history.replaceState({}, '', `${localizedPath}${window.location.search}${window.location.hash}`);
+  }, [currentPage, lang]);
+
+  useEffect(() => {
+    applySeoForPage(currentPage, lang, navData);
+  }, [currentPage, lang, navData]);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {

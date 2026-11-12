@@ -143,11 +143,11 @@ describe('central review system', () => {
     expect(index).toContain('property="og:url" content="https://asea-anhaenger.com/"');
     expect(app).toContain('const SEO_CONFIG');
     expect(app).toContain("models: {\n    title: 'Verkaufsanhänger & Modelle | ASEA'");
-    expect(app).toContain("reviews: {\n    title: 'Kundenbewertungen | ASEA'");
+    expect(app).toContain("reviews: {\n    title: 'Kundenbewertungen & Erfahrungen | ASEA'");
     expect(app).toContain("robots: 'noindex,nofollow'");
     expect(app).toContain("upsertCanonical(canonicalUrl)");
     expect(app).toContain("upsertMetaByProperty('og:url', canonicalUrl)");
-    expect(app).toContain("getSeoForPage(page: string, navData?: any)");
+    expect(app).toContain("getSeoForPage(page: string, lang: Lang, navData?: any)");
     expect(app).toContain("title: 'Kühlanhänger | ASEA'");
     expect(app).toContain("title: 'Messe- & Präsentationsanhänger | ASEA'");
     expect(app).toContain("function upsertJsonLd");
@@ -164,11 +164,19 @@ describe('central review system', () => {
     const vercel = read('vercel.json');
 
     expect(packageJson).toContain('vite build && node scripts/generate-seo-pages.mjs');
-    for (const route of ['ausstattung', 'kontakt', 'konfigurator', 'bewertungen']) {
-      expect(generator).toContain(`slug: '${route}'`);
+    for (const [route, output] of [
+      ['ausstattung', 'equipment'],
+      ['kontakt', 'contact'],
+      ['konfigurator', 'configurator'],
+      ['bewertungen', 'reviews'],
+    ]) {
+      expect(generator).toContain(`${output}: [`);
       expect(vercel).toContain(`"source": "/${route}"`);
-      expect(vercel).toContain(`"destination": "/seo/${route}.html"`);
+      expect(vercel).toContain(`"destination": "/seo/de/${output}.html"`);
     }
+    expect(generator).toContain("const languageCodes = { de: 'de-AT', en: 'en', sk: 'sk' }");
+    expect(vercel).toContain('"source": "/en/ausstattung"');
+    expect(vercel).toContain('"source": "/sk/ausstattung"');
     expect(generator).toContain('<div id="root"><main');
     expect(generator).toContain('rel="canonical"');
   });
@@ -177,11 +185,11 @@ describe('central review system', () => {
     const header = read('src/app/components/Header.tsx');
     const footer = read('src/app/components/Footer.tsx');
 
-    expect(header).toContain("href: '/kontakt'");
+    expect(header).toContain("getLocalizedPath('contact', lang)");
     expect(header).toContain('href={item.href}');
-    expect(footer).toContain("href: '/ausstattung'");
-    expect(footer).toContain("href: '/konfigurator'");
-    expect(footer).toContain("href: '/bewertungen'");
+    expect(footer).toContain("getLocalizedPath('equipment', lang)");
+    expect(footer).toContain("getLocalizedPath('configurator', lang)");
+    expect(footer).toContain("getLocalizedPath('reviews', lang)");
     expect(footer).toContain('href={item.href}');
   });
 

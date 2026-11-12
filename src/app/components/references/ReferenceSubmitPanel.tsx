@@ -3,6 +3,7 @@ import { ChevronDown } from 'lucide-react';
 import { useAdminData } from '../../context/AdminDataContext';
 import { useLanguage, type TranslationKey } from '../../context/LanguageContext';
 import { getMaxReferenceImages, getReferenceImageUrls, serializeReferenceImageUrls } from '../../lib/referenceImages';
+import { getLocalizedPath } from '../../lib/siteRoutes';
 import { ReviewForm } from '../reviews/ReviewForm';
 import { ImageUploadField } from '../ImageUploadField';
 
@@ -47,7 +48,7 @@ export function ReferenceSubmitPanel({
   initiallyOpen = false,
 }: ReferenceSubmitPanelProps) {
   const { submitReference } = useAdminData();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [isOpen, setIsOpen] = useState(initiallyOpen);
   const [form, setForm] = useState(INITIAL_FORM);
   const [companyWebsite, setCompanyWebsite] = useState('');
@@ -248,7 +249,7 @@ export function ReferenceSubmitPanel({
 
                 <p className="mt-4 text-sm text-[#77756f]">
                   {t('reference_privacy_notice')}{' '}
-                  <a href="/datenschutz" className="font-medium text-[#9a7445] underline underline-offset-4">
+                  <a href={getLocalizedPath('privacy', lang) ?? '/datenschutz'} className="font-medium text-[#9a7445] underline underline-offset-4">
                     {t('footer_privacy')}
                   </a>
                 </p>
