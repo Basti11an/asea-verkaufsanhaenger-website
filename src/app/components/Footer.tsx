@@ -1,4 +1,5 @@
 import { Mail, Phone, MapPin, MessageCircle } from 'lucide-react';
+import type { MouseEvent } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { AseaWordmark } from './AseaWordmark';
 
@@ -13,6 +14,25 @@ export function Footer({ onNavigate, onOpenPrivacySettings }: FooterProps) {
   const handleNavigate = (page: string) => {
     onNavigate(page);
   };
+
+  const handleLinkNavigate = (event: MouseEvent<HTMLAnchorElement>, page: string) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return;
+    }
+
+    event.preventDefault();
+    handleNavigate(page);
+  };
+
+  const navigationItems = [
+    { page: 'home', href: '/', label: t('nav_home') },
+    { page: 'models', href: '/modelle', label: t('nav_models') },
+    { page: 'equipment', href: '/ausstattung', label: t('equip_hero_title') },
+    { page: 'configurator', href: '/konfigurator', label: t('configurator_page_title') },
+    { page: 'reviews', href: '/bewertungen', label: t('reviews_page_title') },
+    { page: 'about', href: '/ueber-uns', label: t('nav_about') },
+    { page: 'contact', href: '/kontakt', label: t('nav_contact') },
+  ];
 
   return (
     <footer className="bg-[#1c1c1a] text-white relative overflow-hidden">
@@ -37,38 +57,17 @@ export function Footer({ onNavigate, onOpenPrivacySettings }: FooterProps) {
           <div>
             <h3 className="text-white mb-4 font-semibold">{t('footer_navigation')}</h3>
             <ul className="space-y-2 text-sm">
-              <li>
-                <button
-                  onClick={() => handleNavigate('home')}
-                  className="text-[#77756f] hover:text-[#b08a57] transition-all duration-300 hover:translate-x-1 inline-block"
-                >
-                  {t('nav_home')}
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => handleNavigate('models')}
-                  className="text-[#77756f] hover:text-[#b08a57] transition-all duration-300 hover:translate-x-1 inline-block"
-                >
-                  {t('nav_models')}
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => handleNavigate('about')}
-                  className="text-[#77756f] hover:text-[#b08a57] transition-all duration-300 hover:translate-x-1 inline-block"
-                >
-                  {t('nav_about')}
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => handleNavigate('contact')}
-                  className="text-[#77756f] hover:text-[#b08a57] transition-all duration-300 hover:translate-x-1 inline-block"
-                >
-                  {t('nav_contact')}
-                </button>
-              </li>
+              {navigationItems.map((item) => (
+                <li key={item.page}>
+                  <a
+                    href={item.href}
+                    onClick={(event) => handleLinkNavigate(event, item.page)}
+                    className="text-[#77756f] hover:text-[#b08a57] transition-all duration-300 hover:translate-x-1 inline-block"
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -131,18 +130,20 @@ export function Footer({ onNavigate, onOpenPrivacySettings }: FooterProps) {
         <div className="border-t border-[#77756f]/20 mt-8 md:mt-12 pt-6 md:pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
           <p className="text-[#77756f]">{t('footer_copyright')}</p>
           <div className="flex gap-6">
-            <button
-              onClick={() => handleNavigate('imprint')}
+            <a
+              href="/impressum"
+              onClick={(event) => handleLinkNavigate(event, 'imprint')}
               className="text-[#77756f] hover:text-[#b08a57] transition-all duration-300 hover:underline"
             >
               {t('footer_imprint')}
-            </button>
-            <button
-              onClick={() => handleNavigate('privacy')}
+            </a>
+            <a
+              href="/datenschutz"
+              onClick={(event) => handleLinkNavigate(event, 'privacy')}
               className="text-[#77756f] hover:text-[#b08a57] transition-all duration-300 hover:underline"
             >
               {t('footer_privacy')}
-            </button>
+            </a>
             {onOpenPrivacySettings && (
               <button
                 onClick={onOpenPrivacySettings}

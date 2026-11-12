@@ -158,6 +158,33 @@ describe('central review system', () => {
     expect(app).toContain("streetAddress: 'Lahrndorf 34'");
   });
 
+  it('generates crawlable HTML entry pages for the priority public routes', () => {
+    const packageJson = read('package.json');
+    const generator = read('scripts/generate-seo-pages.mjs');
+    const vercel = read('vercel.json');
+
+    expect(packageJson).toContain('vite build && node scripts/generate-seo-pages.mjs');
+    for (const route of ['ausstattung', 'kontakt', 'konfigurator', 'bewertungen']) {
+      expect(generator).toContain(`slug: '${route}'`);
+      expect(vercel).toContain(`"source": "/${route}"`);
+      expect(vercel).toContain(`"destination": "/seo/${route}.html"`);
+    }
+    expect(generator).toContain('<div id="root"><main');
+    expect(generator).toContain('rel="canonical"');
+  });
+
+  it('uses crawlable href links for the public site navigation', () => {
+    const header = read('src/app/components/Header.tsx');
+    const footer = read('src/app/components/Footer.tsx');
+
+    expect(header).toContain("href: '/kontakt'");
+    expect(header).toContain('href={item.href}');
+    expect(footer).toContain("href: '/ausstattung'");
+    expect(footer).toContain("href: '/konfigurator'");
+    expect(footer).toContain("href: '/bewertungen'");
+    expect(footer).toContain('href={item.href}');
+  });
+
   it('shows a noindex client 404 for unknown SPA routes instead of silently rendering home', () => {
     const app = read('src/app/App.tsx');
     const notFound = read('src/app/components/pages/NotFoundPage.tsx');

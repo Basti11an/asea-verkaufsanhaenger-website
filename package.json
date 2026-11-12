@@ -6,7 +6,7 @@
   "description": "React/Vite website for ASEA Verkaufsanhaenger, rebuilt from the Figma Make export.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/generate-seo-pages.mjs",
     "test": "vitest run",
     "preview": "vite preview",
     "start": "vite"

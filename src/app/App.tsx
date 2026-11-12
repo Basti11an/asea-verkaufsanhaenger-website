@@ -90,12 +90,12 @@ const SEO_CONFIG: Record<string, SeoConfig> = {
   },
   reviews: {
     title: 'Kundenbewertungen | ASEA',
-    description: 'Erfahrungen von Kunden mit ASEA. Veröffentlicht werden nur Bewertungen, die für die öffentliche Anzeige freigegeben wurden.',
+    description: 'Lesen Sie freigegebene Kundenbewertungen und Erfahrungen mit Verkaufsanhänger ASEA aus Oberösterreich.',
     path: '/bewertungen',
   },
   configurator: {
     title: 'Verkaufsanhänger konfigurieren | ASEA',
-    description: 'Der neue ASEA-Innenraum-Konfigurator befindet sich derzeit in Arbeit.',
+    description: 'Planen Sie die Innenausstattung Ihres ASEA-Verkaufsanhängers im interaktiven 3D-Konfigurator und erhalten Sie einen anschaulichen Einblick in Ihre Konfiguration.',
     path: '/konfigurator',
   },
   imprint: {

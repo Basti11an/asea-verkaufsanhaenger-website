@@ -1,5 +1,5 @@
 import { Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type MouseEvent } from 'react';
 import { Button } from './ui/button';
 import { availableLanguages, useLanguage, type Lang } from '../context/LanguageContext';
 import { AseaWordmark } from './AseaWordmark';
@@ -75,15 +75,24 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
   const { t } = useLanguage();
 
   const navItems = [
-    { id: 'home', label: t('nav_home') },
-    { id: 'models', label: t('nav_models') },
-    { id: 'about', label: t('nav_about') },
-    { id: 'contact', label: t('nav_contact') },
+    { id: 'home', label: t('nav_home'), href: '/' },
+    { id: 'models', label: t('nav_models'), href: '/modelle' },
+    { id: 'about', label: t('nav_about'), href: '/ueber-uns' },
+    { id: 'contact', label: t('nav_contact'), href: '/kontakt' },
   ];
 
   const handleNavigate = (page: string) => {
     onNavigate(page);
     setMobileMenuOpen(false);
+  };
+
+  const handleLinkNavigate = (event: MouseEvent<HTMLAnchorElement>, page: string) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return;
+    }
+
+    event.preventDefault();
+    handleNavigate(page);
   };
 
   return (
@@ -92,12 +101,13 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
         <div className="relative flex h-[92px] items-center justify-between lg:grid lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-12 xl:gap-16 2xl:gap-20">
           {/* Wordmark */}
           <div className="flex flex-col items-center justify-center gap-1">
-            <button
-              onClick={() => handleNavigate('home')}
+            <a
+              href="/"
+              onClick={(event) => handleLinkNavigate(event, 'home')}
               className="outline-none transition-opacity duration-200 hover:opacity-80"
             >
               <AseaWordmark size="header" />
-            </button>
+            </a>
             <a
               href="tel:+436644105007"
               className="whitespace-nowrap text-[10px] font-medium tracking-[0.05em] text-[#9a7445] transition-colors duration-200 hover:text-[#2f2f2d] sm:text-[11px]"
@@ -110,9 +120,10 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
           {/* Desktop Navigation */}
           <nav className="hidden min-w-0 items-center justify-center gap-12 lg:flex xl:gap-16 2xl:gap-20">
             {navItems.map((item) => (
-              <button
+              <a
                 key={item.id}
-                onClick={() => handleNavigate(item.id)}
+                href={item.href}
+                onClick={(event) => handleLinkNavigate(event, item.id)}
                 className={`group relative py-2 text-[13px] uppercase tracking-[0.15em] outline-none transition-colors duration-200 xl:text-[14px] ${
                   currentPage === item.id
                     ? 'text-[#b08a57]'
@@ -125,17 +136,19 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
                     currentPage === item.id ? 'w-6 opacity-100' : 'w-0 opacity-0 group-hover:w-6 group-hover:opacity-50'
                   }`}
                 />
-              </button>
+              </a>
             ))}
           </nav>
 
           {/* Desktop Right: CTA + Language */}
           <div className="hidden items-center gap-4 lg:flex xl:gap-5">
             <Button
-              onClick={() => handleNavigate('contact')}
+              asChild
               className="h-[50px] rounded-[2px] bg-[#b08a57] px-8 text-[13px] uppercase tracking-[0.15em] text-white transition-colors duration-200 hover:bg-[#9a7749]"
             >
-              {t('nav_cta')}
+              <a href="/kontakt" onClick={(event) => handleLinkNavigate(event, 'contact')}>
+                {t('nav_cta')}
+              </a>
             </Button>
             <LanguageDropdown />
           </div>
@@ -158,9 +171,10 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
           <nav className="lg:hidden absolute top-[92px] left-0 right-0 bg-[#f8f7f3] border-b border-[#161615]/10 p-6 animate-in fade-in slide-in-from-top-4 duration-500 shadow-xl">
             <div className="flex flex-col gap-1">
               {navItems.map((item) => (
-                <button
+                <a
                   key={item.id}
-                  onClick={() => handleNavigate(item.id)}
+                  href={item.href}
+                  onClick={(event) => handleLinkNavigate(event, item.id)}
                   className={`block w-full text-center px-4 py-4 transition-all duration-500 text-[14px] uppercase tracking-[0.15em] rounded-[2px] ${
                     currentPage === item.id
                       ? 'text-[#b08a57] bg-[#b08a57]/[0.06]'
@@ -168,14 +182,16 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
                   }`}
                 >
                   {item.label}
-                </button>
+                </a>
               ))}
               <div className="pt-6 mt-2 border-t border-[#161615]/10">
                 <Button
-                  onClick={() => handleNavigate('contact')}
+                  asChild
                   className="w-full bg-[#b08a57] text-white hover:bg-[#9a7749] text-[13px] uppercase tracking-[0.15em] h-[52px] rounded-[2px] transition-all duration-500 flex items-center justify-center gap-2.5"
                 >
-                  {t('nav_cta')}
+                  <a href="/kontakt" onClick={(event) => handleLinkNavigate(event, 'contact')}>
+                    {t('nav_cta')}
+                  </a>
                 </Button>
               </div>
             </div>

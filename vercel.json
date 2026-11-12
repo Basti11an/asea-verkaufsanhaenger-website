@@ -59,6 +59,22 @@
   ],
   "rewrites": [
     {
+      "source": "/ausstattung",
+      "destination": "/seo/ausstattung.html"
+    },
+    {
+      "source": "/kontakt",
+      "destination": "/seo/kontakt.html"
+    },
+    {
+      "source": "/konfigurator",
+      "destination": "/seo/konfigurator.html"
+    },
+    {
+      "source": "/bewertungen",
+      "destination": "/seo/bewertungen.html"
+    },
+    {
       "source": "/robots.txt",
       "destination": "/robots.txt"
     },
