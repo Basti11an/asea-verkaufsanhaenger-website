@@ -27,6 +27,7 @@ import { cameraPresets } from "./cameraPresets";
 import { loadConfiguratorModel } from "./ModelLoader";
 import { installStudioEnvironment } from "./StudioEnvironment";
 import { prepareTrailerModel } from "./TrailerModel";
+import { createSalesHatchFrontPanel } from "./SalesHatchFrontPanel";
 import {
   captureConfigurationScreenshots,
   type ConfigurationScreenshots,
@@ -633,6 +634,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
         closedWallEquipment.name = "ASEA_ClosedWallEquipment";
         salesWallEquipment.name = "ASEA_SalesWallEquipment";
         closedWallEquipment.add(createGasCabinetBoardUnit());
+        salesWallEquipment.add(createSalesHatchFrontPanel());
         standardModels.add(closedWallEquipment, salesWallEquipment);
         scene.add(standardModels);
         applyConfiguration(equipmentStateRef.current);
