@@ -15,11 +15,12 @@ function loadOnce(path: string) {
   return request;
 }
 
-export async function loadConfiguratorModel(path: string) {
+export async function loadConfiguratorModel(path: string, sceneNodeName: string | null = null) {
   const gltf = await loadOnce(path);
+  const scene = selectModelVariant(clone(gltf.scene), sceneNodeName);
 
   return {
-    scene: clone(gltf.scene),
+    scene,
     animations: gltf.animations,
   };
 }

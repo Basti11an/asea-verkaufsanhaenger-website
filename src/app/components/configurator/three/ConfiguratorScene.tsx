@@ -247,7 +247,7 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
       break;
     case "gas-griddle":
       addGasGriddleNiche(group, side);
-      addPart(group, assets.gasGriddle, [66, 25, 60], rotation, sidePlacement(side, 0.6, 0.6605));
+      addPart(group, assets.gasGriddle, [66, 27.9, 60], rotation, sidePlacement(side, 0.571, 0.6605));
       addPart(group, assets.splashGuard, [100, 40, 7], rotation, sidePlacement(side, 0.85, 1));
       break;
     case "contact-grill":
@@ -375,9 +375,9 @@ function disposeGroup(group: Group) {
   });
 }
 
-async function loadOptional(path: string) {
+async function loadOptional(path: string, sceneNodeName: string | null = null) {
   try {
-    return await loadConfiguratorModel(path);
+    return await loadConfiguratorModel(path, sceneNodeName);
   } catch (error) {
     console.warn(`Configurator model unavailable: ${path}`, error);
     return undefined;
@@ -602,22 +602,22 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
       try {
         const [trailer, doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet] = await Promise.all([
           loadConfiguratorModel(trailerConfiguration.modelPath),
-          loadConfiguratorModel("/configurator-models/interieur/kochen/Doppelfriteuse.glb"),
+          loadConfiguratorModel("/configurator-models/interieur/kochen/Doppelfriteuse.glb", "Fritteuse_IMBISS_II"),
           loadConfiguratorModel("/configurator-models/interieur/hygiene/Hygienebereich.glb"),
-          loadConfiguratorModel("/configurator-models/interieur/kuehlung/Kuehlschrank_Unterbau.glb"),
-          loadConfiguratorModel("/configurator-models/interieur/kochen/Gasbraeter.glb"),
-          loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb"),
-          loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Spritzschutz_700.glb"),
-          loadConfiguratorModel("/configurator-models/interieur/arbeitsflaechen/Arbeitsplatten_Staender.glb"),
-          loadOptional("/configurator-models/interieur/kochen/Friteuse.glb"),
-          loadOptional("/configurator-models/interieur/kochen/Kontaktgrill.glb"),
-          loadOptional("/configurator-models/interieur/kochen/Griddleplatte_Elektro.glb"),
-          loadOptional("/configurator-models/interieur/kochen/Induktionskocher.glb"),
-          loadOptional("/configurator-models/interieur/kuehlung/Flaschenkuehlschrank_gross.glb"),
-          loadOptional("/configurator-models/interieur/kuehlung/Kuehlaufsatz.glb"),
-          loadOptional("/configurator-models/interieur/hygiene/Doppelwaschbecken.glb"),
-          loadOptional("/configurator-models/interieur/moebel/Arbeitstisch_1200.glb"),
-          loadOptional("/configurator-models/interieur/moebel/Haengeschrank.glb"),
+          loadConfiguratorModel("/configurator-models/interieur/kuehlung/Kuehlschrank_Unterbau.glb", "Kuehlschrank_Unterbau_600x600x850"),
+          loadConfiguratorModel("/configurator-models/interieur/kochen/Gasbraeter.glb", "Gasbraeter_gross_3fl"),
+          loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb", "Dunstabzug_Flachhaube_600x700x220"),
+          loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Spritzschutz_700.glb", "Spritzschutz_Glas_700x400"),
+          loadConfiguratorModel("/configurator-models/interieur/arbeitsflaechen/Arbeitsplatten_Staender.glb", "Arbeitsplatten_Staender"),
+          loadOptional("/configurator-models/interieur/kochen/Friteuse.glb", "Fritteuse_IMBISS_I"),
+          loadOptional("/configurator-models/interieur/kochen/Kontaktgrill.glb", "Kontaktgrill_Panini-MDI_1GR_410x400x200"),
+          loadOptional("/configurator-models/interieur/kochen/Griddleplatte_Elektro.glb", "Griddleplatte_Elektro_660x580x310_glatt"),
+          loadOptional("/configurator-models/interieur/kochen/Induktionskocher.glb", "Induktionskocher_IK30T-1_Glas_330x420x105"),
+          loadOptional("/configurator-models/interieur/kuehlung/Flaschenkuehlschrank_gross.glb", "Flaschenkuehlschrank_350L_600x600x1730"),
+          loadOptional("/configurator-models/interieur/kuehlung/Kuehlaufsatz.glb", "Kuehlaufsatz_GL4-1201_1200x335x459"),
+          loadOptional("/configurator-models/interieur/hygiene/Doppelwaschbecken.glb", "Doppelwaschbecken_1000x600x850"),
+          loadOptional("/configurator-models/interieur/moebel/Arbeitstisch_1200.glb", "Arbeitstisch_1200x600x850"),
+          loadOptional("/configurator-models/interieur/moebel/Haengeschrank.glb", "Haengeschrank_1000x400x660"),
         ]);
         if (disposed) return;
         assets = { doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet };
