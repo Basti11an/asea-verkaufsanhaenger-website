@@ -238,7 +238,7 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
   group.name = item.id;
   group.userData.equipmentSide = item.side;
   const definition = equipmentPlacementDefinitions[item.productId];
-  const configuredRotation = definition.placementType === "cross"
+  const configuredRotation = item.placementKey === "trailer-end"
     ? definition.crossPlacement?.rotationDeg
     : definition.placementType === "fixed"
       ? definition.fixedPlacement?.rotationDeg
@@ -292,8 +292,8 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
         assets.coolingTop,
         [120, 46, 40],
         rotation,
-        definition.placementType === "cross"
-          ? { minY: 0.85, centerZ: 0, width: 0.4, depth: 1.2 }
+        item.placementKey === "trailer-end"
+          ? { minY: 0.85, centerZ: 0, width: 0.4, depth: 2 }
           : sidePlacement(side, 0.85, 1.2),
       );
       break;

@@ -18,6 +18,7 @@ import {
   moveEquipment,
   moveEquipmentCorner,
   moveEquipmentSide,
+  moveEquipmentToCrossPlacement,
   removeEquipment,
   type EquipmentConfigurationState,
   type EquipmentCorner,
@@ -32,6 +33,7 @@ export function ConfiguratorLayout() {
   const [started, setStarted] = useState(false);
   const [selectedEquipmentId, setSelectedEquipmentId] = useState<string | null>(null);
   const [equipmentState, setEquipmentState] = useState<EquipmentConfigurationState>(createDefaultEquipmentConfiguration);
+  const [worktopMaterial, setWorktopMaterial] = useState<"stainless" | "gray">("stainless");
   const [finishModalOpen, setFinishModalOpen] = useState(false);
 
   const showNotice = (message: string, id?: string) => toast(message, { duration: 3200, id });
@@ -102,6 +104,15 @@ export function ConfiguratorLayout() {
     setEquipmentState(result.state);
   }
 
+  function handleEquipmentCrossPositionChange(equipmentId: string) {
+    const result = moveEquipmentToCrossPlacement(equipmentState, equipmentId);
+    if (result.collisionWith) {
+      showNotice(text("noSpaceNotice"));
+      return;
+    }
+    setEquipmentState(result.state);
+  }
+
   async function handleFinishSubmit(customer: ConfigurationCustomer) {
     const scene = sceneRef.current;
     if (!scene) throw new Error("Configurator scene is not ready.");
@@ -141,6 +152,7 @@ export function ConfiguratorLayout() {
               onEquipmentCenterChange={handleEquipmentCenterChange}
               onEquipmentSideChange={handleEquipmentSideChange}
               onEquipmentCornerChange={handleEquipmentCornerChange}
+              onEquipmentCrossPositionChange={handleEquipmentCrossPositionChange}
               onEquipmentRemove={handleEquipmentRemove}
               onCancel={() => setSelectedEquipmentId(null)}
               onConfirm={() => setSelectedEquipmentId(null)}
@@ -157,7 +169,12 @@ export function ConfiguratorLayout() {
             />
           )}
         </div>
-        <ProductBar onProductClick={handleProductClick} editing={Boolean(selectedEquipmentId)} />
+        <ProductBar
+          onProductClick={handleProductClick}
+          editing={Boolean(selectedEquipmentId)}
+          worktopMaterial={worktopMaterial}
+          onWorktopMaterialChange={setWorktopMaterial}
+        />
       </div>
       <ConfiguratorFinishModal
         open={finishModalOpen}

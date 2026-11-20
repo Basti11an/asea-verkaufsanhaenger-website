@@ -15,6 +15,7 @@ type EquipmentEditorProps = {
   onEquipmentCenterChange: (equipmentId: string, value: number, notifyCollision?: boolean) => void;
   onEquipmentSideChange: (equipmentId: string, side: EquipmentSide) => void;
   onEquipmentCornerChange: (equipmentId: string, corner: EquipmentCorner) => void;
+  onEquipmentCrossPositionChange: (equipmentId: string) => void;
   onEquipmentRemove: (equipmentId: string) => void;
   onCancel: () => void;
   onConfirm: () => void;
@@ -32,6 +33,7 @@ export function EquipmentEditor({
   onEquipmentCenterChange,
   onEquipmentSideChange,
   onEquipmentCornerChange,
+  onEquipmentCrossPositionChange,
   onEquipmentRemove,
   onCancel,
   onConfirm,
@@ -57,6 +59,9 @@ export function EquipmentEditor({
     ? text("crossTrailerEnd")
     : text("rearRightCorner");
   const automaticAccessories = definition.automaticAccessories?.[placement.side] ?? [];
+  const supportsCrossPlacement = Boolean(definition.crossPlacement);
+  const isCrossPlacement = placement.placementKey === "trailer-end";
+  const canMoveAlongSide = definition.placementType === "side" && !isCrossPlacement;
 
   return (
     <section className="asea-equipment-editor" aria-label={text("editEquipment")}>
@@ -72,7 +77,27 @@ export function EquipmentEditor({
           {text(accessory === "splash-guard" ? "automaticSplashGuard" : "automaticExtractorHood")}
         </div>
       ))}
-      {definition.placementType === "side" && (
+      {supportsCrossPlacement ? (
+        <>
+          <div className="asea-editor-field-label">{text("position")}</div>
+          <div className="asea-editor-side" role="group" aria-label={text("position")}>
+            <button
+              type="button"
+              aria-pressed={!isCrossPlacement}
+              onClick={() => onEquipmentSideChange(placement.id, "sales-hatch")}
+            >
+              {text("salesHatch")}
+            </button>
+            <button
+              type="button"
+              aria-pressed={isCrossPlacement}
+              onClick={() => onEquipmentCrossPositionChange(placement.id)}
+            >
+              {text("crossTrailerEnd")}
+            </button>
+          </div>
+        </>
+      ) : definition.placementType === "side" && (
         <>
           <div className="asea-editor-field-label">{text("position")}</div>
           <div className="asea-editor-side" role="group" aria-label={text("position")}>
@@ -114,7 +139,7 @@ export function EquipmentEditor({
       )}
       <div className="asea-editor-field-label">{text("equipmentWidth")}</div>
       <div className="asea-editor-readonly-value">{definition.displayWidthCm ?? definition.widthCm} cm</div>
-      {definition.placementType === "side" && (
+      {canMoveAlongSide && (
         <>
           <div className="asea-editor-field-label">{text("centerFromLeft")}</div>
           <label className="asea-editor-slider" htmlFor="equipment-position">
@@ -178,7 +203,7 @@ export function EquipmentEditor({
         </>
       )}
       <div className="asea-editor-actions">
-        {definition.placementType === "side" && (
+        {canMoveAlongSide && (
           <button
             type="button"
             className="asea-reset-position"

@@ -7,6 +7,8 @@ import { useConfiguratorCopy } from "./copy";
 type ProductBarProps = {
   onProductClick: (product: ProductDefinition) => void;
   editing: boolean;
+  worktopMaterial: "stainless" | "gray";
+  onWorktopMaterialChange: (material: "stainless" | "gray") => void;
 };
 
 const categories: readonly { id: ProductCategory; label: "categoryCooking" | "categoryCooling" | "categoryHygiene" | "categoryWorktops" | "categoryCabinets"; icon: typeof ChefHat }[] = [
@@ -17,12 +19,13 @@ const categories: readonly { id: ProductCategory; label: "categoryCooking" | "ca
   { id: "cabinets", label: "categoryCabinets", icon: Warehouse },
 ];
 
-export function ProductBar({ onProductClick, editing }: ProductBarProps) {
+export function ProductBar({ onProductClick, editing, worktopMaterial, onWorktopMaterialChange }: ProductBarProps) {
   const { text, name } = useConfiguratorCopy();
   const stripRef = useRef<HTMLDivElement>(null);
   const [activeCategory, setActiveCategory] = useState<ProductCategory>("cooking");
   const [hoverInfo, setHoverInfo] = useState<{ name: string; left: number; top: number } | null>(null);
   const visibleProducts = products.filter((product) => product.active && product.category === activeCategory);
+  const isWorktopMaterialCategory = activeCategory === "worktops";
   const scroll = (direction: -1 | 1) => {
     if (!stripRef.current) return;
     stripRef.current.scrollLeft += direction * 520;
@@ -54,35 +57,60 @@ export function ProductBar({ onProductClick, editing }: ProductBarProps) {
           </button>
         ))}
       </div>
-      <button type="button" className="asea-strip-arrow" onClick={() => scroll(-1)} aria-label={text("scrollProductsLeft")}><ChevronLeft size={17} /></button>
-      <div className="asea-product-strip" ref={stripRef}>
-        {visibleProducts.map((product) => {
-          const productName = name(product.name);
-          return (
-            <button
-              key={product.id}
-              type="button"
-              className={`asea-product-card is-${product.category}`}
-              title={productName}
-              onClick={() => onProductClick(product)}
-              onMouseEnter={(event) => {
-                const rect = event.currentTarget.getBoundingClientRect();
-                const popoverWidth = 210;
-                setHoverInfo({
-                  name: productName,
-                  left: Math.min(Math.max(rect.left + rect.width / 2 - popoverWidth / 2, 8), window.innerWidth - popoverWidth - 8),
-                  top: rect.top - 8,
-                });
-              }}
-              onMouseLeave={() => setHoverInfo(null)}
-            >
-              <span className="asea-product-image-space" aria-hidden="true" />
-              <span className="asea-product-name">{productName}</span>
-            </button>
-          );
-        })}
-      </div>
-      <button type="button" className="asea-strip-arrow" onClick={() => scroll(1)} aria-label={text("scrollProductsRight")}><ChevronRight size={17} /></button>
+      {isWorktopMaterialCategory ? (
+        <div className="asea-worktop-materials" role="group" aria-label={text("categoryWorktops")}>
+          <button
+            type="button"
+            className={worktopMaterial === "stainless" ? "is-selected" : undefined}
+            aria-pressed={worktopMaterial === "stainless"}
+            onClick={() => onWorktopMaterialChange("stainless")}
+          >
+            <span className="asea-worktop-swatch is-stainless" aria-hidden="true" />
+            {text("worktopMaterialStainless")}
+          </button>
+          <button
+            type="button"
+            className={worktopMaterial === "gray" ? "is-selected" : undefined}
+            aria-pressed={worktopMaterial === "gray"}
+            onClick={() => onWorktopMaterialChange("gray")}
+          >
+            <span className="asea-worktop-swatch is-gray" aria-hidden="true" />
+            {text("worktopMaterialGray")}
+          </button>
+        </div>
+      ) : (
+        <>
+          <button type="button" className="asea-strip-arrow" onClick={() => scroll(-1)} aria-label={text("scrollProductsLeft")}><ChevronLeft size={17} /></button>
+          <div className="asea-product-strip" ref={stripRef}>
+            {visibleProducts.map((product) => {
+              const productName = name(product.name);
+              return (
+                <button
+                  key={product.id}
+                  type="button"
+                  className={`asea-product-card is-${product.category}`}
+                  title={productName}
+                  onClick={() => onProductClick(product)}
+                  onMouseEnter={(event) => {
+                    const rect = event.currentTarget.getBoundingClientRect();
+                    const popoverWidth = 210;
+                    setHoverInfo({
+                      name: productName,
+                      left: Math.min(Math.max(rect.left + rect.width / 2 - popoverWidth / 2, 8), window.innerWidth - popoverWidth - 8),
+                      top: rect.top - 8,
+                    });
+                  }}
+                  onMouseLeave={() => setHoverInfo(null)}
+                >
+                  <span className="asea-product-image-space" aria-hidden="true" />
+                  <span className="asea-product-name">{productName}</span>
+                </button>
+              );
+            })}
+          </div>
+          <button type="button" className="asea-strip-arrow" onClick={() => scroll(1)} aria-label={text("scrollProductsRight")}><ChevronRight size={17} /></button>
+        </>
+      )}
       {hoverInfo && (
         <div
           className="asea-product-popover"

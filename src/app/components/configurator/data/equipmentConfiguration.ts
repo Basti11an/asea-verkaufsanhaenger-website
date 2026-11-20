@@ -31,7 +31,7 @@ export type EquipmentPlacementAnchor = {
 
 type AutomaticAccessoryId = "splash-guard" | "extractor-hood";
 
-type CollisionChannel = "floor" | "counter" | "wall" | "backsplash";
+type CollisionChannel = "floor" | "counter" | "wall" | "wall-mounted" | "backsplash";
 
 export type EquipmentPlacement = {
   id: string;
@@ -203,12 +203,12 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
   },
   "cooling-top": {
     productId: "cooling-top",
-    placementType: "cross",
-    allowedSides: allSides,
+    placementType: "side",
+    allowedSides: frontOnly,
     crossPlacement: { id: "trailer-end", side: "closed-wall", centerCm: 340, rotationDeg: -90 },
-    defaultCenterCm: { "closed-wall": 340, "sales-hatch": 340 },
-    minCenterCm: 340,
-    maxCenterCm: 340,
+    defaultCenterCm: { "closed-wall": 180, "sales-hatch": 180 },
+    minCenterCm: 60,
+    maxCenterCm: 300,
     widthCm: 40,
     displayWidthCm: 120,
     collisionChannels: ["counter"],
@@ -274,8 +274,7 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     minCenterCm: 50,
     maxCenterCm: 310,
     widthCm: 100,
-    maxInstances: 1,
-    collisionChannels: ["wall"],
+    collisionChannels: ["wall-mounted"],
     blocksCountertop: false,
     avoidsWheelArch: false,
   },
@@ -379,8 +378,8 @@ function overlapsWheelArch(centerCm: number, widthCm: number) {
   return wheelArchIntervals.some((arch) => intervalsOverlap(itemInterval.startCm, itemInterval.endCm, arch.startCm, arch.endCm));
 }
 
-function occupiedSides(definition: EquipmentPlacementDefinition, side: EquipmentSide) {
-  return definition.placementType === "cross" ? allSides : [side];
+function occupiedSides(item: EquipmentPlacement, definition: EquipmentPlacementDefinition, side: EquipmentSide) {
+  return definition.placementType === "cross" || item.placementKey === "trailer-end" ? allSides : [side];
 }
 
 export function findConfigurationCollision(
@@ -393,7 +392,7 @@ export function findConfigurationCollision(
   const definition = equipmentPlacementDefinitions[item.productId];
   const centerCm = clampEquipmentCenter(item.productId, requestedCenterCm);
   const itemInterval = interval(centerCm, definition.widthCm);
-  const requestedSides = occupiedSides(definition, requestedSide);
+  const requestedSides = occupiedSides(item, definition, requestedSide);
 
   if (definition.avoidsWheelArch && overlapsWheelArch(centerCm, definition.widthCm)) return "wheel-arch";
 
@@ -406,7 +405,7 @@ export function findConfigurationCollision(
   return state.items.find((other) => {
     if (other.id === item.id || other.automaticAccessory) return false;
     const otherDefinition = equipmentPlacementDefinitions[other.productId];
-    const otherSides = occupiedSides(otherDefinition, other.side);
+    const otherSides = occupiedSides(other, otherDefinition, other.side);
     if (!requestedSides.some((side) => otherSides.includes(side))) return false;
     if (!channelsOverlap(definition.collisionChannels, otherDefinition.collisionChannels)) return false;
     const otherInterval = interval(other.centerCm, otherDefinition.widthCm);
@@ -511,7 +510,7 @@ export function moveEquipment(
   const item = state.items.find((entry) => entry.id === id);
   if (!item) return { state, collisionWith: "missing" };
   if (item.automaticAccessory) return { state, collisionWith: "position-locked" };
-  if (equipmentPlacementDefinitions[item.productId].placementType !== "side") {
+  if (item.placementKey === "trailer-end" || equipmentPlacementDefinitions[item.productId].placementType !== "side") {
     return { state, collisionWith: "position-locked" };
   }
   const centerCm = clampEquipmentCenter(item.productId, requestedCenterCm);
@@ -533,7 +532,27 @@ export function moveEquipmentSide(state: EquipmentConfigurationState, id: string
   const centerCm = findFreeEquipmentCenter(state, item.productId, side);
   if (centerCm === null) return { state, collisionWith: "no-space" };
   return {
-    state: synchronizeAutomaticAccessories({ items: state.items.map((entry) => entry.id === id ? { ...entry, side, centerCm } : entry) }),
+    state: synchronizeAutomaticAccessories({ items: state.items.map((entry) => entry.id === id ? { ...entry, side, centerCm, placementKey: undefined } : entry) }),
+    collisionWith: null,
+  };
+}
+
+export function moveEquipmentToCrossPlacement(state: EquipmentConfigurationState, id: string) {
+  const item = state.items.find((entry) => entry.id === id);
+  if (!item) return { state, collisionWith: "missing" };
+  const definition = equipmentPlacementDefinitions[item.productId];
+  const crossPlacement = definition.crossPlacement;
+  if (!crossPlacement) return { state, collisionWith: "side-not-allowed" };
+  const candidate: EquipmentPlacement = {
+    ...item,
+    side: crossPlacement.side,
+    centerCm: crossPlacement.centerCm,
+    placementKey: crossPlacement.id,
+  };
+  const collisionWith = findConfigurationCollision(state, candidate, candidate.centerCm, candidate.side);
+  if (collisionWith) return { state, collisionWith };
+  return {
+    state: synchronizeAutomaticAccessories({ items: state.items.map((entry) => entry.id === id ? candidate : entry) }),
     collisionWith: null,
   };
 }

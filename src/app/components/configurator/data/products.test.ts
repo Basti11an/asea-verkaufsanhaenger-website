@@ -50,8 +50,8 @@ describe("configurator products", () => {
       "kebab-spit",
     ]);
     expect(idsByCategory("cooling")).toEqual(["bottle-fridge", "cooling-top", "undercounter-fridge"]);
-    expect(idsByCategory("hygiene")).toEqual(["double-sink", "hygiene-area"]);
-    expect(idsByCategory("worktops")).toEqual(["worktable"]);
+    expect(idsByCategory("hygiene")).toEqual(["hygiene-area"]);
+    expect(idsByCategory("worktops")).toEqual([]);
     expect(idsByCategory("cabinets")).toEqual(["wall-cabinet"]);
   });
 });
