@@ -18,6 +18,7 @@ describe("configurable equipment rules", () => {
       { productId: "double-fryer", side: "closed-wall", centerCm: 100.5 },
       { productId: "extractor-hood", side: "closed-wall", centerCm: 100.5 },
       { productId: "hygiene-area", side: "closed-wall", centerCm: 245 },
+      { productId: "wall-cabinet", side: "closed-wall", centerCm: 245 },
       { productId: "gas-griddle", side: "sales-hatch", centerCm: 180 },
       { productId: "undercounter-fridge", side: "closed-wall", centerCm: 330 },
     ]);
@@ -32,13 +33,22 @@ describe("configurable equipment rules", () => {
     expect(equipmentPlacementDefinitions["extractor-hood"].blocksCountertop).toBe(false);
   });
 
+  it("uses the top installation and wall-distance constraints for the extractor hood", () => {
+    expect(equipmentPlacementDefinitions["extractor-hood"].placementConstraints).toEqual({
+      vertical: "top",
+      topMinYCm: 202,
+      maxDistanceToLeftWallCm: 28,
+      maxDistanceToRightWallCm: 28,
+    });
+  });
+
   it("uses the real installation widths for collision checks", () => {
     expect(equipmentPlacementDefinitions["gas-griddle"].widthCm).toBe(100);
     expect(equipmentPlacementDefinitions["gas-griddle"].countertopCutoutWidthCm).toBe(72.05);
     expect(equipmentPlacementDefinitions["electric-griddle"].widthCm).toBe(66);
     expect(equipmentPlacementDefinitions.induction.widthCm).toBe(33);
     expect(equipmentPlacementDefinitions["double-sink"].widthCm).toBe(100);
-    expect(equipmentPlacementDefinitions["wall-cabinet"].widthCm).toBe(60);
+    expect(equipmentPlacementDefinitions["wall-cabinet"].widthCm).toBe(100);
   });
 
   it("keeps the complete gas griddle unit inside the trailer", () => {
@@ -54,7 +64,7 @@ describe("configurable equipment rules", () => {
     expect(movedRight.state.items.find((item) => item.id === gasGriddle.id)?.centerCm).toBe(310);
   });
 
-  it("allows multiple independent splash guards and wall cabinets", () => {
+  it("allows multiple splash guards but keeps only one one-metre wall cabinet", () => {
     let state = createDefaultEquipmentConfiguration();
     const firstSplash = addEquipment(state, "splash-guard", "sales-hatch");
     expect(firstSplash.item).not.toBeNull();
@@ -63,10 +73,8 @@ describe("configurable equipment rules", () => {
     expect(secondSplash.item).not.toBeNull();
     expect(secondSplash.state.items.filter((item) => item.productId === "splash-guard")).toHaveLength(2);
 
-    const firstCabinet = addEquipment(state, "wall-cabinet", "closed-wall");
-    expect(firstCabinet.item).not.toBeNull();
-    const secondCabinet = addEquipment(firstCabinet.state, "wall-cabinet", "closed-wall");
-    expect(secondCabinet.item).not.toBeNull();
+    const anotherCabinet = addEquipment(state, "wall-cabinet", "closed-wall");
+    expect(anotherCabinet.item).toBeNull();
   });
 
   it("keeps hygiene and wall cabinet on the rear side", () => {

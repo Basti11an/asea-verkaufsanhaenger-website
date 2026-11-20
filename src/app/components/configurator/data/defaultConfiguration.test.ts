@@ -3,10 +3,11 @@ import { sidebarEquipmentIds, standardEquipment, trailerConfiguration } from "./
 
 describe("default configurator configuration", () => {
   it("contains the complete standard equipment from the plan", () => {
-    expect(standardEquipment).toHaveLength(9);
-    expect(sidebarEquipmentIds).toHaveLength(8);
+    expect(standardEquipment).toHaveLength(10);
+    expect(sidebarEquipmentIds).toHaveLength(9);
     expect(sidebarEquipmentIds).not.toContain("standard-splash-guard");
     expect(sidebarEquipmentIds).toContain("standard-hood");
+    expect(sidebarEquipmentIds).toContain("standard-wall-cabinet");
     expect(standardEquipment.every((item) => item.placementStatus === "confirmed")).toBe(true);
   });
 
@@ -50,5 +51,16 @@ describe("default configurator configuration", () => {
 
     expect(fridge?.positionCm).toEqual({ longitudinal: 300, height: 0, depth: 0 });
     expect(fridge?.dimensionsCm).toMatchObject({ width: 60, height: 81, depth: 60 });
+  });
+
+  it("defines the independent one-metre wall cabinet at the former hygiene-cabinet position", () => {
+    const cabinet = standardEquipment.find((item) => item.id === "standard-wall-cabinet");
+
+    expect(cabinet).toMatchObject({
+      productId: "wall-cabinet",
+      name: ["Hängeschrank 1 m", "Wall cabinet 1 m", "Závesná skrinka 1 m"],
+      positionCm: { longitudinal: 195, height: 145, depth: 0 },
+      planFootprintCm: { longitudinalStart: 195, longitudinalEnd: 295, depthStart: 0, depthEnd: 40 },
+    });
   });
 });

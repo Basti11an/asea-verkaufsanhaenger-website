@@ -196,7 +196,7 @@ const productEntries: readonly ProductEntry[] = [
   },
   {
     id: "wall-cabinet",
-    name: ["Hängeschrank", "Wall cabinet", "Závesná skrinka"],
+    name: ["Hängeschrank 1 m", "Wall cabinet 1 m", "Závesná skrinka 1 m"],
     category: "cabinets",
     preferredView: "front",
     modelPath: "/configurator-models/interieur/moebel/Haengeschrank.glb",

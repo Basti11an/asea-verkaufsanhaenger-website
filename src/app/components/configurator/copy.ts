@@ -87,9 +87,9 @@ const copy = {
     "Vybrané zariadenie sa presúva ako jeden celok.",
   ],
   hygieneMoveHelp: [
-    "Hängeschrank, Spüle und Wasserhahn bewegen sich gemeinsam.",
-    "Wall cabinet, sink and tap move together.",
-    "Nástenná skrinka, drez a batéria sa pohybujú spolu.",
+    "Spüle und Wasserhahn bewegen sich gemeinsam.",
+    "Sink and tap move together.",
+    "Drez a batéria sa pohybujú spolu.",
   ],
   fryerMoveHelp: [
     "Fritteuse und Dunstabzug werden getrennt voneinander verschoben.",

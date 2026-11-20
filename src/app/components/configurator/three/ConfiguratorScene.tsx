@@ -29,6 +29,7 @@ import { loadConfiguratorModel } from "./ModelLoader";
 import { installStudioEnvironment } from "./StudioEnvironment";
 import { prepareTrailerModel } from "./TrailerModel";
 import { createSalesHatchFrontPanel } from "./SalesHatchFrontPanel";
+import { removeHygieneWallCabinet } from "./hygieneArea";
 import {
   captureConfigurationScreenshots,
   type ConfigurationScreenshots,
@@ -257,7 +258,17 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
       addPart(group, assets.doubleFryer, [59, 41, 60], rotation, sidePlacement(side, 0.5328, 0.59));
       break;
     case "extractor-hood":
-      addPart(group, assets.hood, [60, 88, 60], rotation, sidePlacement(side, 1.36, 0.6));
+      addPart(
+        group,
+        assets.hood,
+        [60, 28, 70],
+        rotation,
+        sidePlacement(
+          side,
+          (definition.placementConstraints?.topMinYCm ?? 136) / 100,
+          0.6,
+        ),
+      );
       break;
     case "gas-griddle":
       addGasGriddleNiche(group, side);
@@ -294,14 +305,24 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
       addPart(group, assets.doubleSink, [100, 136, 62], rotation, sidePlacement(side, 0, 1));
       break;
     case "hygiene-area":
-      addPart(group, assets.hygieneArea, [100, 211, 60], rotation, sidePlacement(side, 0, 1));
+      if (assets.hygieneArea) {
+        group.add(
+          prepareModel(
+            removeHygieneWallCabinet(assets.hygieneArea.scene.clone(true)),
+            rotation,
+            sidePlacement(side, 0, 1),
+          ),
+        );
+      } else {
+        addPart(group, undefined, [100, 145, 60], rotation, sidePlacement(side, 0, 1));
+      }
       break;
     case "worktable":
       addPart(group, assets.worktable, [120, 85, 60], rotation, sidePlacement(side, 0, 1.2));
       break;
     case "wall-cabinet":
-      addPart(group, assets.wallCabinet, [60, 66, 40], rotation, {
-        ...sidePlacement(side, 1.36, 0.6, 0.66),
+      addPart(group, assets.wallCabinet, [100, 66, 40], rotation, {
+        ...sidePlacement(side, 1.45, 1, 0.66),
         depth: 0.4,
       });
       break;

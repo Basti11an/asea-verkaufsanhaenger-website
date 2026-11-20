@@ -58,6 +58,13 @@ export type EquipmentPlacementDefinition = {
   maxCenterCm: number;
   widthCm: number;
   displayWidthCm?: number;
+  maxInstances?: number;
+  placementConstraints?: {
+    vertical?: "top";
+    topMinYCm?: number;
+    maxDistanceToLeftWallCm?: number;
+    maxDistanceToRightWallCm?: number;
+  };
   countertopCutoutWidthCm?: number;
   collisionChannels: readonly CollisionChannel[];
   blocksCountertop: boolean;
@@ -106,6 +113,12 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     minCenterCm: 30,
     maxCenterCm: 330,
     widthCm: 60,
+    placementConstraints: {
+      vertical: "top",
+      topMinYCm: trailerConfiguration.planReference.interiorHeightCm - 28,
+      maxDistanceToLeftWallCm: 28,
+      maxDistanceToRightWallCm: 28,
+    },
     collisionChannels: ["wall"],
     blocksCountertop: false,
     avoidsWheelArch: false,
@@ -221,7 +234,7 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     minCenterCm: 50,
     maxCenterCm: 310,
     widthCm: 100,
-    collisionChannels: ["floor", "counter", "wall"],
+    collisionChannels: ["floor", "counter"],
     blocksCountertop: true,
     avoidsWheelArch: false,
   },
@@ -241,10 +254,11 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     productId: "wall-cabinet",
     placementType: "side",
     allowedSides: rearOnly,
-    defaultCenterCm: { "closed-wall": 330, "sales-hatch": 330 },
-    minCenterCm: 30,
-    maxCenterCm: 330,
-    widthCm: 60,
+    defaultCenterCm: { "closed-wall": 245, "sales-hatch": 245 },
+    minCenterCm: 50,
+    maxCenterCm: 310,
+    widthCm: 100,
+    maxInstances: 1,
     collisionChannels: ["wall"],
     blocksCountertop: false,
     avoidsWheelArch: false,
@@ -298,6 +312,7 @@ export function createDefaultEquipmentConfiguration(): EquipmentConfigurationSta
       { id: "standard-double-fryer", productId: "double-fryer", side: "closed-wall", centerCm: 100.5, standard: true },
       { id: "standard-hood", productId: "extractor-hood", side: "closed-wall", centerCm: 100.5, standard: true },
       { id: "standard-hygiene", productId: "hygiene-area", side: "closed-wall", centerCm: 245, standard: true },
+      { id: "standard-wall-cabinet", productId: "wall-cabinet", side: "closed-wall", centerCm: 245, standard: true },
       { id: "standard-gas-griddles", productId: "gas-griddle", side: "sales-hatch", centerCm: 180, standard: true },
       { id: "standard-undercounter-fridge", productId: "undercounter-fridge", side: "closed-wall", centerCm: 330, placementKey: "rear-right", standard: true },
     ],
@@ -392,6 +407,10 @@ export function addEquipment(
   preferredSide?: EquipmentSide,
 ) {
   const definition = equipmentPlacementDefinitions[productId];
+  if (definition.maxInstances !== undefined
+    && state.items.filter((item) => item.productId === productId).length >= definition.maxInstances) {
+    return { state, item: null, collisionWith: "no-space" };
+  }
 
   if (definition.placementType === "corner") {
     const defaultCorner = definition.defaultCorner;
