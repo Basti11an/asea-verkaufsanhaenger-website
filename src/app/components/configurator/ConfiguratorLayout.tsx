@@ -16,9 +16,11 @@ import {
   addEquipment,
   createDefaultEquipmentConfiguration,
   moveEquipment,
+  moveEquipmentCorner,
   moveEquipmentSide,
   removeEquipment,
   type EquipmentConfigurationState,
+  type EquipmentCorner,
 } from "./data/equipmentConfiguration";
 import { isConfigurableProductId } from "./data/productPlacement";
 import "./configurator.css";
@@ -91,6 +93,15 @@ export function ConfiguratorLayout() {
     setEquipmentState(result.state);
   }
 
+  function handleEquipmentCornerChange(equipmentId: string, corner: EquipmentCorner) {
+    const result = moveEquipmentCorner(equipmentState, equipmentId, corner);
+    if (result.collisionWith) {
+      showNotice(text("noSpaceNotice"));
+      return;
+    }
+    setEquipmentState(result.state);
+  }
+
   async function handleFinishSubmit(customer: ConfigurationCustomer) {
     const scene = sceneRef.current;
     if (!scene) throw new Error("Configurator scene is not ready.");
@@ -129,6 +140,7 @@ export function ConfiguratorLayout() {
               equipmentState={equipmentState}
               onEquipmentCenterChange={handleEquipmentCenterChange}
               onEquipmentSideChange={handleEquipmentSideChange}
+              onEquipmentCornerChange={handleEquipmentCornerChange}
               onEquipmentRemove={handleEquipmentRemove}
               onCancel={() => setSelectedEquipmentId(null)}
               onConfirm={() => setSelectedEquipmentId(null)}

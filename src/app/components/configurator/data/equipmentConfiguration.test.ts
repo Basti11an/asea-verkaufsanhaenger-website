@@ -5,6 +5,7 @@ import {
   equipmentPlacementDefinitions,
   findConfigurationCollision,
   moveEquipment,
+  moveEquipmentCorner,
   moveEquipmentSide,
   type EquipmentPlacement,
 } from "./equipmentConfiguration";
@@ -76,7 +77,7 @@ describe("configurable equipment rules", () => {
     expect(equipmentPlacementDefinitions["double-sink"].allowedSides).toEqual(["closed-wall"]);
   });
 
-  it("blocks refrigerators from the wheel arch interval", () => {
+  it("keeps refrigerator wheel-arch detection while locking its fixed position", () => {
     const state = { items: [] };
     const fridge: EquipmentPlacement = {
       id: "fridge",
@@ -85,7 +86,7 @@ describe("configurable equipment rules", () => {
       centerCm: 180,
     };
     expect(findConfigurationCollision(state, fridge)).toBe("wheel-arch");
-    expect(moveEquipment({ items: [fridge] }, "fridge", 180).collisionWith).toBe("wheel-arch");
+    expect(moveEquipment({ items: [fridge] }, "fridge", 180).collisionWith).toBe("position-locked");
     expect(findConfigurationCollision(state, fridge, 111.5)).toBeNull();
     expect(findConfigurationCollision(state, fridge, 248.5)).toBeNull();
   });
@@ -97,5 +98,58 @@ describe("configurable equipment rules", () => {
     const moved = moveEquipmentSide(added.state, added.item!.id, "sales-hatch");
     expect(moved.collisionWith).toBeNull();
     expect(moved.state.items[0].side).toBe("sales-hatch");
+  });
+
+  it("stores the requested side placement rules centrally", () => {
+    expect(equipmentPlacementDefinitions.fryer.allowedSides).toEqual(["closed-wall"]);
+    expect(equipmentPlacementDefinitions["double-fryer"].allowedSides).toEqual(["closed-wall"]);
+    expect(equipmentPlacementDefinitions["extractor-hood"].allowedSides).toEqual(["closed-wall"]);
+    expect(equipmentPlacementDefinitions["gas-griddle"].allowedSides).toEqual(["closed-wall", "sales-hatch"]);
+    expect(equipmentPlacementDefinitions["contact-grill"].allowedSides).toEqual(["closed-wall", "sales-hatch"]);
+    expect(equipmentPlacementDefinitions["electric-griddle"].allowedSides).toEqual(["sales-hatch"]);
+    expect(equipmentPlacementDefinitions.induction.allowedSides).toEqual(["closed-wall", "sales-hatch"]);
+    expect(equipmentPlacementDefinitions["double-sink"].allowedSides).toEqual(["closed-wall"]);
+    expect(equipmentPlacementDefinitions["hygiene-area"].allowedSides).toEqual(["closed-wall"]);
+    expect(equipmentPlacementDefinitions["wall-cabinet"].allowedSides).toEqual(["closed-wall"]);
+    expect(equipmentPlacementDefinitions["splash-guard"].allowedSides).toEqual(["sales-hatch"]);
+    expect(equipmentPlacementDefinitions["kebab-spit"].allowedSides).toEqual(["closed-wall"]);
+  });
+
+  it("uses fixed, cross and corner placement types for special products", () => {
+    expect(equipmentPlacementDefinitions["bottle-fridge"]).toMatchObject({
+      placementType: "fixed",
+      fixedPlacement: { id: "rear-right", side: "closed-wall", centerCm: 329 },
+    });
+    expect(equipmentPlacementDefinitions["cooling-top"]).toMatchObject({
+      placementType: "cross",
+      widthCm: 40,
+      displayWidthCm: 120,
+      crossPlacement: { id: "trailer-end", centerCm: 340, rotationDeg: -90 },
+    });
+    expect(equipmentPlacementDefinitions["undercounter-fridge"]).toMatchObject({
+      placementType: "corner",
+      allowedCorners: ["front-left", "front-right", "rear-right"],
+    });
+    expect(equipmentPlacementDefinitions["undercounter-fridge"].allowedCorners).not.toContain("rear-left");
+  });
+
+  it("places the cooling top across the trailer end and locks free movement", () => {
+    const added = addEquipment({ items: [] }, "cooling-top");
+    expect(added.item).toMatchObject({
+      side: "closed-wall",
+      centerCm: 340,
+      placementKey: "trailer-end",
+    });
+    expect(moveEquipment(added.state, added.item!.id, 250).collisionWith).toBe("position-locked");
+  });
+
+  it("moves an undercounter fridge only between configured corners", () => {
+    const added = addEquipment({ items: [] }, "undercounter-fridge");
+    expect(added.item).toMatchObject({ side: "closed-wall", centerCm: 330, placementKey: "rear-right" });
+
+    const moved = moveEquipmentCorner(added.state, added.item!.id, "front-left");
+    expect(moved.collisionWith).toBeNull();
+    expect(moved.state.items[0]).toMatchObject({ side: "sales-hatch", centerCm: 30, placementKey: "front-left" });
+    expect(moveEquipment(moved.state, added.item!.id, 100).collisionWith).toBe("position-locked");
   });
 });

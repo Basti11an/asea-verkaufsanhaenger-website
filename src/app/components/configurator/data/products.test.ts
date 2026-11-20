@@ -48,6 +48,7 @@ describe("configurator products", () => {
       "electric-griddle",
       "induction",
       "splash-guard",
+      "kebab-spit",
     ]);
     expect(idsByCategory("cooling")).toEqual(["bottle-fridge", "cooling-top", "undercounter-fridge"]);
     expect(idsByCategory("hygiene")).toEqual(["double-sink", "hygiene-area"]);

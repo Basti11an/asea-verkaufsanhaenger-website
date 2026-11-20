@@ -220,6 +220,19 @@ const productEntries: readonly ProductEntry[] = [
     active: true,
     rules: createEmptyRules(),
   },
+  {
+    id: "kebab-spit",
+    name: ["Kebabspieß", "Kebab rotisserie", "Kebabový gril"],
+    category: "cooking",
+    preferredView: "front",
+    modelPath: "/configurator-models/interieur/kochen/Kebapspiess.glb",
+    sourceModelPath: "",
+    sceneNodeName: null,
+    dimensionsCm: null,
+    measuredGlbBoundsCm: { width: 60.5, height: 116, depth: 70 },
+    active: true,
+    rules: createEmptyRules(),
+  },
 ];
 
 export const products: readonly ProductDefinition[] = productEntries.map((product) => ({

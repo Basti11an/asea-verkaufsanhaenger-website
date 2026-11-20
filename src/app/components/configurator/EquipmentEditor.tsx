@@ -4,6 +4,7 @@ import { useConfiguratorCopy } from "./copy";
 import { productById } from "./data/products";
 import {
   equipmentPlacementDefinitions,
+  type EquipmentCorner,
   type EquipmentConfigurationState,
 } from "./data/equipmentConfiguration";
 import type { EquipmentSide } from "./types";
@@ -13,9 +14,16 @@ type EquipmentEditorProps = {
   equipmentState: EquipmentConfigurationState;
   onEquipmentCenterChange: (equipmentId: string, value: number, notifyCollision?: boolean) => void;
   onEquipmentSideChange: (equipmentId: string, side: EquipmentSide) => void;
+  onEquipmentCornerChange: (equipmentId: string, corner: EquipmentCorner) => void;
   onEquipmentRemove: (equipmentId: string) => void;
   onCancel: () => void;
   onConfirm: () => void;
+};
+
+const cornerLabels: Record<EquipmentCorner, "frontLeftCorner" | "frontRightCorner" | "rearRightCorner"> = {
+  "front-left": "frontLeftCorner",
+  "front-right": "frontRightCorner",
+  "rear-right": "rearRightCorner",
 };
 
 export function EquipmentEditor({
@@ -23,6 +31,7 @@ export function EquipmentEditor({
   equipmentState,
   onEquipmentCenterChange,
   onEquipmentSideChange,
+  onEquipmentCornerChange,
   onEquipmentRemove,
   onCancel,
   onConfirm,
@@ -44,6 +53,9 @@ export function EquipmentEditor({
         ? text("fryerMoveHelp")
         : text("equipmentMoveHelp");
   const defaultCenter = definition.defaultCenterCm[placement.side];
+  const fixedPositionLabel = definition.placementType === "cross"
+    ? text("crossTrailerEnd")
+    : text("rearRightCorner");
 
   return (
     <section className="asea-equipment-editor" aria-label={text("editEquipment")}>
@@ -54,23 +66,52 @@ export function EquipmentEditor({
           <span>{help}</span>
         </div>
       </div>
-      <div className="asea-editor-field-label">{text("allowedSide")}</div>
-      <div className="asea-editor-side" role="group" aria-label={text("allowedSide")}>
-        {definition.allowedSides.map((side) => (
-          <button
-            key={side}
-            type="button"
-            aria-pressed={placement.side === side}
-            onClick={() => onEquipmentSideChange(placement.id, side)}
-          >
-            {text(side === "closed-wall" ? "closedWall" : "salesHatch")}
-          </button>
-        ))}
-      </div>
+      {definition.placementType === "side" && (
+        <>
+          <div className="asea-editor-field-label">{text("position")}</div>
+          <div className="asea-editor-side" role="group" aria-label={text("position")}>
+            {definition.allowedSides.map((side) => (
+              <button
+                key={side}
+                type="button"
+                aria-pressed={placement.side === side}
+                onClick={() => onEquipmentSideChange(placement.id, side)}
+              >
+                {text(side === "closed-wall" ? "closedWall" : "salesHatch")}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+      {definition.placementType === "corner" && (
+        <>
+          <div className="asea-editor-field-label">{text("installationPosition")}</div>
+          <div className="asea-editor-side" role="group" aria-label={text("installationPosition")}>
+            {definition.allowedCorners?.map((corner) => (
+              <button
+                key={corner}
+                type="button"
+                aria-pressed={placement.placementKey === corner}
+                onClick={() => onEquipmentCornerChange(placement.id, corner)}
+              >
+                {text(cornerLabels[corner])}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+      {(definition.placementType === "cross" || definition.placementType === "fixed") && (
+        <>
+          <div className="asea-editor-field-label">{text("position")}</div>
+          <div className="asea-editor-readonly-value">{fixedPositionLabel}</div>
+        </>
+      )}
       <div className="asea-editor-field-label">{text("equipmentWidth")}</div>
-      <div className="asea-editor-readonly-value">{definition.widthCm} cm</div>
-      <div className="asea-editor-field-label">{text("centerFromLeft")}</div>
-      <label className="asea-editor-slider" htmlFor="equipment-position">
+      <div className="asea-editor-readonly-value">{definition.displayWidthCm ?? definition.widthCm} cm</div>
+      {definition.placementType === "side" && (
+        <>
+          <div className="asea-editor-field-label">{text("centerFromLeft")}</div>
+          <label className="asea-editor-slider" htmlFor="equipment-position">
         <span>{text("centerFromLeft")}</span>
         <input
           id="equipment-position"
@@ -95,8 +136,8 @@ export function EquipmentEditor({
             pendingRangeValue.current = null;
           }}
         />
-      </label>
-      <div className="asea-centimeter-control">
+          </label>
+          <div className="asea-centimeter-control">
         <button
           type="button"
           title={text("moveLeft")}
@@ -127,18 +168,22 @@ export function EquipmentEditor({
         >
           <ChevronRight size={18} aria-hidden="true" />
         </button>
-      </div>
+          </div>
+        </>
+      )}
       <div className="asea-editor-actions">
-        <button
-          type="button"
-          className="asea-reset-position"
-          title={text("resetPosition")}
-          aria-label={text("resetPosition")}
-          disabled={placement.centerCm === defaultCenter}
-          onClick={() => onEquipmentCenterChange(placement.id, defaultCenter)}
-        >
-          <RotateCcw size={17} aria-hidden="true" />
-        </button>
+        {definition.placementType === "side" && (
+          <button
+            type="button"
+            className="asea-reset-position"
+            title={text("resetPosition")}
+            aria-label={text("resetPosition")}
+            disabled={placement.centerCm === defaultCenter}
+            onClick={() => onEquipmentCenterChange(placement.id, defaultCenter)}
+          >
+            <RotateCcw size={17} aria-hidden="true" />
+          </button>
+        )}
         <button
           type="button"
           className="asea-remove-equipment"

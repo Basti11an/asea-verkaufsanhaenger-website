@@ -16,6 +16,7 @@ export const configurableProductIds: readonly ConfigurableProductId[] = [
   "worktable",
   "wall-cabinet",
   "splash-guard",
+  "kebab-spit",
 ];
 
 export function isConfigurableProductId(id: string): id is ConfigurableProductId {

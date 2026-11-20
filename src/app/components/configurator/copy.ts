@@ -69,8 +69,13 @@ const copy = {
   position: ["Position", "Position", "Poloha"],
   centerFromLeft: ["Mittelpunkt von links", "Centre from the left", "Stred zľava"],
   allowedSide: ["Erlaubte Seite", "Allowed side", "Povolená strana"],
+  installationPosition: ["Einbauposition", "Installation position", "Montážna poloha"],
   closedWall: ["Hinten", "Rear", "Vzadu"],
   salesHatch: ["Vorne", "Front", "Vpredu"],
+  frontLeftCorner: ["Vorne links", "Front left", "Vpredu vľavo"],
+  frontRightCorner: ["Vorne rechts", "Front right", "Vpredu vpravo"],
+  rearRightCorner: ["Hinten rechts", "Rear right", "Vzadu vpravo"],
+  crossTrailerEnd: ["Quer am Anhängerende", "Across the trailer end", "Naprieč na konci prívesu"],
   gasGriddleMoveHelp: [
     "Gasbräter, Unterbau und Spritzschutz bewegen sich gemeinsam.",
     "Gas griddles, base and splash guard move together.",

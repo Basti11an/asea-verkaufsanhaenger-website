@@ -16,7 +16,18 @@ export type ConfigurableProductId =
   | "hygiene-area"
   | "worktable"
   | "wall-cabinet"
-  | "splash-guard";
+  | "splash-guard"
+  | "kebab-spit";
+
+export type EquipmentPlacementType = "side" | "corner" | "cross" | "fixed";
+export type EquipmentCorner = "front-left" | "front-right" | "rear-right";
+export type EquipmentSpecialPosition = "trailer-end" | "rear-right";
+
+export type EquipmentPlacementAnchor = {
+  side: EquipmentSide;
+  centerCm: number;
+  rotationDeg: number;
+};
 
 type CollisionChannel = "floor" | "counter" | "wall" | "backsplash";
 
@@ -25,6 +36,7 @@ export type EquipmentPlacement = {
   productId: ConfigurableProductId;
   side: EquipmentSide;
   centerCm: number;
+  placementKey?: EquipmentCorner | EquipmentSpecialPosition;
   standard?: boolean;
 };
 
@@ -34,11 +46,18 @@ export type EquipmentConfigurationState = {
 
 export type EquipmentPlacementDefinition = {
   productId: ConfigurableProductId;
+  placementType: EquipmentPlacementType;
   allowedSides: readonly EquipmentSide[];
+  allowedCorners?: readonly EquipmentCorner[];
+  cornerPlacements?: Readonly<Record<EquipmentCorner, EquipmentPlacementAnchor>>;
+  defaultCorner?: EquipmentCorner;
+  fixedPlacement?: EquipmentPlacementAnchor & { id: EquipmentSpecialPosition };
+  crossPlacement?: EquipmentPlacementAnchor & { id: EquipmentSpecialPosition };
   defaultCenterCm: Readonly<Record<EquipmentSide, number>>;
   minCenterCm: number;
   maxCenterCm: number;
   widthCm: number;
+  displayWidthCm?: number;
   countertopCutoutWidthCm?: number;
   collisionChannels: readonly CollisionChannel[];
   blocksCountertop: boolean;
@@ -47,11 +66,18 @@ export type EquipmentPlacementDefinition = {
 
 const allSides: readonly EquipmentSide[] = ["closed-wall", "sales-hatch"];
 const rearOnly: readonly EquipmentSide[] = ["closed-wall"];
+const frontOnly: readonly EquipmentSide[] = ["sales-hatch"];
+const undercounterCorners: Readonly<Record<EquipmentCorner, EquipmentPlacementAnchor>> = {
+  "front-left": { side: "sales-hatch", centerCm: 30, rotationDeg: 90 },
+  "front-right": { side: "sales-hatch", centerCm: 330, rotationDeg: 90 },
+  "rear-right": { side: "closed-wall", centerCm: 330, rotationDeg: -90 },
+};
 
 export const equipmentPlacementDefinitions: Record<ConfigurableProductId, EquipmentPlacementDefinition> = {
   fryer: {
     productId: "fryer",
-    allowedSides: allSides,
+    placementType: "side",
+    allowedSides: rearOnly,
     defaultCenterCm: { "closed-wall": 155, "sales-hatch": 155 },
     minCenterCm: 15,
     maxCenterCm: 345,
@@ -62,7 +88,8 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
   },
   "double-fryer": {
     productId: "double-fryer",
-    allowedSides: allSides,
+    placementType: "side",
+    allowedSides: rearOnly,
     defaultCenterCm: { "closed-wall": 100.5, "sales-hatch": 100.5 },
     minCenterCm: 30,
     maxCenterCm: 330,
@@ -73,7 +100,8 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
   },
   "extractor-hood": {
     productId: "extractor-hood",
-    allowedSides: allSides,
+    placementType: "side",
+    allowedSides: rearOnly,
     defaultCenterCm: { "closed-wall": 100.5, "sales-hatch": 100.5 },
     minCenterCm: 30,
     maxCenterCm: 330,
@@ -84,6 +112,7 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
   },
   "gas-griddle": {
     productId: "gas-griddle",
+    placementType: "side",
     allowedSides: allSides,
     defaultCenterCm: { "closed-wall": 180, "sales-hatch": 180 },
     minCenterCm: 50,
@@ -96,6 +125,7 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
   },
   "contact-grill": {
     productId: "contact-grill",
+    placementType: "side",
     allowedSides: allSides,
     defaultCenterCm: { "closed-wall": 180, "sales-hatch": 180 },
     minCenterCm: 21,
@@ -107,7 +137,8 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
   },
   "electric-griddle": {
     productId: "electric-griddle",
-    allowedSides: allSides,
+    placementType: "side",
+    allowedSides: frontOnly,
     defaultCenterCm: { "closed-wall": 180, "sales-hatch": 180 },
     minCenterCm: 33,
     maxCenterCm: 327,
@@ -118,6 +149,7 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
   },
   induction: {
     productId: "induction",
+    placementType: "side",
     allowedSides: allSides,
     defaultCenterCm: { "closed-wall": 180, "sales-hatch": 180 },
     minCenterCm: 16.5,
@@ -129,7 +161,9 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
   },
   "bottle-fridge": {
     productId: "bottle-fridge",
-    allowedSides: allSides,
+    placementType: "fixed",
+    allowedSides: rearOnly,
+    fixedPlacement: { id: "rear-right", side: "closed-wall", centerCm: 329, rotationDeg: -90 },
     defaultCenterCm: { "closed-wall": 330, "sales-hatch": 330 },
     minCenterCm: 31,
     maxCenterCm: 329,
@@ -140,18 +174,25 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
   },
   "cooling-top": {
     productId: "cooling-top",
+    placementType: "cross",
     allowedSides: allSides,
-    defaultCenterCm: { "closed-wall": 180, "sales-hatch": 180 },
-    minCenterCm: 60,
-    maxCenterCm: 300,
-    widthCm: 120,
+    crossPlacement: { id: "trailer-end", side: "closed-wall", centerCm: 340, rotationDeg: -90 },
+    defaultCenterCm: { "closed-wall": 340, "sales-hatch": 340 },
+    minCenterCm: 340,
+    maxCenterCm: 340,
+    widthCm: 40,
+    displayWidthCm: 120,
     collisionChannels: ["counter"],
     blocksCountertop: false,
     avoidsWheelArch: false,
   },
   "undercounter-fridge": {
     productId: "undercounter-fridge",
+    placementType: "corner",
     allowedSides: allSides,
+    allowedCorners: ["front-left", "front-right", "rear-right"],
+    cornerPlacements: undercounterCorners,
+    defaultCorner: "rear-right",
     defaultCenterCm: { "closed-wall": 330, "sales-hatch": 330 },
     minCenterCm: 30,
     maxCenterCm: 330,
@@ -162,6 +203,7 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
   },
   "double-sink": {
     productId: "double-sink",
+    placementType: "side",
     allowedSides: rearOnly,
     defaultCenterCm: { "closed-wall": 245, "sales-hatch": 245 },
     minCenterCm: 50,
@@ -173,6 +215,7 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
   },
   "hygiene-area": {
     productId: "hygiene-area",
+    placementType: "side",
     allowedSides: rearOnly,
     defaultCenterCm: { "closed-wall": 245, "sales-hatch": 245 },
     minCenterCm: 50,
@@ -184,6 +227,7 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
   },
   worktable: {
     productId: "worktable",
+    placementType: "side",
     allowedSides: allSides,
     defaultCenterCm: { "closed-wall": 180, "sales-hatch": 180 },
     minCenterCm: 60,
@@ -195,6 +239,7 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
   },
   "wall-cabinet": {
     productId: "wall-cabinet",
+    placementType: "side",
     allowedSides: rearOnly,
     defaultCenterCm: { "closed-wall": 330, "sales-hatch": 330 },
     minCenterCm: 30,
@@ -206,12 +251,25 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
   },
   "splash-guard": {
     productId: "splash-guard",
-    allowedSides: allSides,
+    placementType: "side",
+    allowedSides: frontOnly,
     defaultCenterCm: { "closed-wall": 180, "sales-hatch": 180 },
     minCenterCm: 39,
     maxCenterCm: 321,
     widthCm: 77,
     collisionChannels: ["backsplash"],
+    blocksCountertop: false,
+    avoidsWheelArch: false,
+  },
+  "kebab-spit": {
+    productId: "kebab-spit",
+    placementType: "side",
+    allowedSides: rearOnly,
+    defaultCenterCm: { "closed-wall": 165, "sales-hatch": 165 },
+    minCenterCm: 30.5,
+    maxCenterCm: 329.5,
+    widthCm: 61,
+    collisionChannels: ["counter"],
     blocksCountertop: false,
     avoidsWheelArch: false,
   },
@@ -223,6 +281,7 @@ const wheelArchIntervals = trailerConfiguration.wheelArchesFromModelCm.map((arch
 }));
 
 export const fixedGasCabinet = {
+  placementType: "fixed" as const,
   side: "closed-wall" as const,
   startCm: 0,
   endCm: 71,
@@ -240,7 +299,7 @@ export function createDefaultEquipmentConfiguration(): EquipmentConfigurationSta
       { id: "standard-hood", productId: "extractor-hood", side: "closed-wall", centerCm: 100.5, standard: true },
       { id: "standard-hygiene", productId: "hygiene-area", side: "closed-wall", centerCm: 245, standard: true },
       { id: "standard-gas-griddles", productId: "gas-griddle", side: "sales-hatch", centerCm: 180, standard: true },
-      { id: "standard-undercounter-fridge", productId: "undercounter-fridge", side: "closed-wall", centerCm: 330, standard: true },
+      { id: "standard-undercounter-fridge", productId: "undercounter-fridge", side: "closed-wall", centerCm: 330, placementKey: "rear-right", standard: true },
     ],
   };
 }
@@ -269,6 +328,10 @@ function overlapsWheelArch(centerCm: number, widthCm: number) {
   return wheelArchIntervals.some((arch) => intervalsOverlap(itemInterval.startCm, itemInterval.endCm, arch.startCm, arch.endCm));
 }
 
+function occupiedSides(definition: EquipmentPlacementDefinition, side: EquipmentSide) {
+  return definition.placementType === "cross" ? allSides : [side];
+}
+
 export function findConfigurationCollision(
   state: EquipmentConfigurationState,
   item: EquipmentPlacement,
@@ -278,18 +341,21 @@ export function findConfigurationCollision(
   const definition = equipmentPlacementDefinitions[item.productId];
   const centerCm = clampEquipmentCenter(item.productId, requestedCenterCm);
   const itemInterval = interval(centerCm, definition.widthCm);
+  const requestedSides = occupiedSides(definition, requestedSide);
 
   if (definition.avoidsWheelArch && overlapsWheelArch(centerCm, definition.widthCm)) return "wheel-arch";
 
-  if (requestedSide === fixedGasCabinet.side
+  if (requestedSides.includes(fixedGasCabinet.side)
     && channelsOverlap(definition.collisionChannels, fixedGasCabinet.collisionChannels)
     && intervalsOverlap(itemInterval.startCm, itemInterval.endCm, fixedGasCabinet.startCm, fixedGasCabinet.endCm)) {
     return "fixed-gas-cabinet";
   }
 
   return state.items.find((other) => {
-    if (other.id === item.id || other.side !== requestedSide) return false;
+    if (other.id === item.id) return false;
     const otherDefinition = equipmentPlacementDefinitions[other.productId];
+    const otherSides = occupiedSides(otherDefinition, other.side);
+    if (!requestedSides.some((side) => otherSides.includes(side))) return false;
     if (!channelsOverlap(definition.collisionChannels, otherDefinition.collisionChannels)) return false;
     const otherInterval = interval(other.centerCm, otherDefinition.widthCm);
     return intervalsOverlap(itemInterval.startCm, itemInterval.endCm, otherInterval.startCm, otherInterval.endCm);
@@ -326,6 +392,47 @@ export function addEquipment(
   preferredSide?: EquipmentSide,
 ) {
   const definition = equipmentPlacementDefinitions[productId];
+
+  if (definition.placementType === "corner") {
+    const defaultCorner = definition.defaultCorner;
+    const corners = definition.allowedCorners ?? [];
+    const orderedCorners = defaultCorner
+      ? [defaultCorner, ...corners.filter((corner) => corner !== defaultCorner)]
+      : [...corners];
+    for (const corner of orderedCorners) {
+      const anchor = definition.cornerPlacements?.[corner];
+      if (!anchor) continue;
+      const item: EquipmentPlacement = {
+        id: makeId(productId),
+        productId,
+        side: anchor.side,
+        centerCm: anchor.centerCm,
+        placementKey: corner,
+      };
+      if (!findConfigurationCollision(state, item)) {
+        return { state: { items: [...state.items, item] }, item, collisionWith: null };
+      }
+    }
+    return { state, item: null, collisionWith: "no-space" };
+  }
+
+  const anchoredPlacement = definition.placementType === "cross"
+    ? definition.crossPlacement
+    : definition.placementType === "fixed"
+      ? definition.fixedPlacement
+      : null;
+  if (anchoredPlacement) {
+    const item: EquipmentPlacement = {
+      id: makeId(productId),
+      productId,
+      side: anchoredPlacement.side,
+      centerCm: anchoredPlacement.centerCm,
+      placementKey: anchoredPlacement.id,
+    };
+    if (findConfigurationCollision(state, item)) return { state, item: null, collisionWith: "no-space" };
+    return { state: { items: [...state.items, item] }, item, collisionWith: null };
+  }
+
   const sides = preferredSide && definition.allowedSides.includes(preferredSide)
     ? [preferredSide, ...definition.allowedSides.filter((side) => side !== preferredSide)]
     : [...definition.allowedSides];
@@ -347,6 +454,9 @@ export function moveEquipment(
 ) {
   const item = state.items.find((entry) => entry.id === id);
   if (!item) return { state, collisionWith: "missing" };
+  if (equipmentPlacementDefinitions[item.productId].placementType !== "side") {
+    return { state, collisionWith: "position-locked" };
+  }
   const centerCm = clampEquipmentCenter(item.productId, requestedCenterCm);
   const collisionWith = findConfigurationCollision(state, item, centerCm, item.side);
   if (collisionWith) return { state, collisionWith };
@@ -360,11 +470,39 @@ export function moveEquipmentSide(state: EquipmentConfigurationState, id: string
   const item = state.items.find((entry) => entry.id === id);
   if (!item) return { state, collisionWith: "missing" };
   const definition = equipmentPlacementDefinitions[item.productId];
+  if (definition.placementType !== "side") return { state, collisionWith: "side-not-allowed" };
   if (!definition.allowedSides.includes(side)) return { state, collisionWith: "side-not-allowed" };
   const centerCm = findFreeEquipmentCenter(state, item.productId, side);
   if (centerCm === null) return { state, collisionWith: "no-space" };
   return {
     state: { items: state.items.map((entry) => entry.id === id ? { ...entry, side, centerCm } : entry) },
+    collisionWith: null,
+  };
+}
+
+export function moveEquipmentCorner(
+  state: EquipmentConfigurationState,
+  id: string,
+  corner: EquipmentCorner,
+) {
+  const item = state.items.find((entry) => entry.id === id);
+  if (!item) return { state, collisionWith: "missing" };
+  const definition = equipmentPlacementDefinitions[item.productId];
+  if (definition.placementType !== "corner" || !definition.allowedCorners?.includes(corner)) {
+    return { state, collisionWith: "corner-not-allowed" };
+  }
+  const anchor = definition.cornerPlacements?.[corner];
+  if (!anchor) return { state, collisionWith: "corner-not-allowed" };
+  const candidate: EquipmentPlacement = {
+    ...item,
+    side: anchor.side,
+    centerCm: anchor.centerCm,
+    placementKey: corner,
+  };
+  const collisionWith = findConfigurationCollision(state, candidate, anchor.centerCm, anchor.side);
+  if (collisionWith) return { state, collisionWith };
+  return {
+    state: { items: state.items.map((entry) => entry.id === id ? candidate : entry) },
     collisionWith: null,
   };
 }

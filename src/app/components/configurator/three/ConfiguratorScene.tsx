@@ -17,6 +17,7 @@ import { WatermarkOverlay } from "../WatermarkOverlay";
 import { useConfiguratorCopy } from "../copy";
 import {
   equipmentPlacementDefinitions,
+  type EquipmentCorner,
   type EquipmentConfigurationState,
   type EquipmentPlacement,
 } from "../data/equipmentConfiguration";
@@ -235,7 +236,17 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
   const group = new Group();
   group.name = item.id;
   group.userData.equipmentSide = item.side;
-  const rotation = item.side === "closed-wall" ? -Math.PI / 2 : Math.PI / 2;
+  const definition = equipmentPlacementDefinitions[item.productId];
+  const configuredRotation = definition.placementType === "cross"
+    ? definition.crossPlacement?.rotationDeg
+    : definition.placementType === "fixed"
+      ? definition.fixedPlacement?.rotationDeg
+      : definition.placementType === "corner" && item.placementKey
+        ? definition.cornerPlacements?.[item.placementKey as EquipmentCorner]?.rotationDeg
+        : undefined;
+  const rotation = configuredRotation !== undefined
+    ? configuredRotation * Math.PI / 180
+    : item.side === "closed-wall" ? -Math.PI / 2 : Math.PI / 2;
   const side = item.side;
 
   switch (item.productId) {
@@ -266,7 +277,15 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
       addPart(group, assets.bottleFridge, [61, 173, 64], rotation, sidePlacement(side, 0, 0.61, 1.73));
       break;
     case "cooling-top":
-      addPart(group, assets.coolingTop, [120, 46, 40], rotation, sidePlacement(side, 0.85, 1.2));
+      addPart(
+        group,
+        assets.coolingTop,
+        [120, 46, 40],
+        rotation,
+        definition.placementType === "cross"
+          ? { minY: 0.85, centerZ: 0, width: 0.4, depth: 1.2 }
+          : sidePlacement(side, 0.85, 1.2),
+      );
       break;
     case "undercounter-fridge":
       addPart(group, assets.undercounterFridge, [60, 81, 60], rotation, sidePlacement(side, 0, 0.6, 0.81));
@@ -288,6 +307,9 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
       break;
     case "splash-guard":
       addPart(group, assets.splashGuard, [77, 40, 7], rotation, sidePlacement(side, 0.85, 0.77));
+      break;
+    case "kebab-spit":
+      addPart(group, assets.kebabSpit, [61, 116, 70], rotation, sidePlacement(side, 0.85, 0.61));
       break;
   }
   return group;
@@ -603,7 +625,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
 
     async function loadConfiguration() {
       try {
-        const [trailer, doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet] = await Promise.all([
+        const [trailer, doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet, kebabSpit] = await Promise.all([
           loadConfiguratorModel(trailerConfiguration.modelPath),
           loadConfiguratorModel("/configurator-models/interieur/kochen/Doppelfriteuse.glb", "Fritteuse_IMBISS_II"),
           loadConfiguratorModel("/configurator-models/interieur/hygiene/Hygienebereich.glb"),
@@ -621,9 +643,10 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
           loadOptional("/configurator-models/interieur/hygiene/Doppelwaschbecken.glb", "Doppelwaschbecken_1000x600x850"),
           loadOptional("/configurator-models/interieur/moebel/Arbeitstisch_1200.glb", "Arbeitstisch_1200x600x850"),
           loadOptional("/configurator-models/interieur/moebel/Haengeschrank.glb", "Haengeschrank_1000x400x660"),
+          loadOptional("/configurator-models/interieur/kochen/Kebapspiess.glb"),
         ]);
         if (disposed) return;
-        assets = { doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet };
+        assets = { doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet, kebabSpit };
         trailerModel = prepareTrailerModel(trailer.scene, trailer.animations);
         interiorShell = createInteriorShell();
         scene.add(trailerModel, interiorShell);
