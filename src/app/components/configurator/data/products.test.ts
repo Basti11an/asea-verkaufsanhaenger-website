@@ -23,15 +23,16 @@ describe("configurator products", () => {
     expect(products[0].rules.allowedSides).not.toBe(products[1].rules.allowedSides);
   });
 
-  it("offers the double fryer and extractor hood as separate products", () => {
+  it("keeps automatic accessory models available without offering them manually", () => {
     expect(productById.get("double-fryer")).toMatchObject({
       active: true,
       name: ["Doppelfritteuse", "Double fryer", "Dvojitá fritéza"],
     });
     expect(productById.get("extractor-hood")).toMatchObject({
-      active: true,
+      active: false,
       name: ["Dunstabzug", "Extractor hood", "Odsávač pár"],
     });
+    expect(productById.get("splash-guard")?.active).toBe(false);
   });
 
   it("assigns every active product to the intended configurator category", () => {
@@ -42,12 +43,10 @@ describe("configurator products", () => {
     expect(idsByCategory("cooking")).toEqual([
       "fryer",
       "double-fryer",
-      "extractor-hood",
       "gas-griddle",
       "contact-grill",
       "electric-griddle",
       "induction",
-      "splash-guard",
       "kebab-spit",
     ]);
     expect(idsByCategory("cooling")).toEqual(["bottle-fridge", "cooling-top", "undercounter-fridge"]);

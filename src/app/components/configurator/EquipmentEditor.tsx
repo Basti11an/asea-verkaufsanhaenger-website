@@ -56,6 +56,7 @@ export function EquipmentEditor({
   const fixedPositionLabel = definition.placementType === "cross"
     ? text("crossTrailerEnd")
     : text("rearRightCorner");
+  const automaticAccessories = definition.automaticAccessories?.[placement.side] ?? [];
 
   return (
     <section className="asea-equipment-editor" aria-label={text("editEquipment")}>
@@ -66,6 +67,11 @@ export function EquipmentEditor({
           <span>{help}</span>
         </div>
       </div>
+      {automaticAccessories.map((accessory) => (
+        <div key={accessory} className="asea-editor-readonly-value">
+          {text(accessory === "splash-guard" ? "automaticSplashGuard" : "automaticExtractorHood")}
+        </div>
+      ))}
       {definition.placementType === "side" && (
         <>
           <div className="asea-editor-field-label">{text("position")}</div>

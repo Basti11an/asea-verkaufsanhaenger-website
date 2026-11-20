@@ -29,6 +29,8 @@ export type EquipmentPlacementAnchor = {
   rotationDeg: number;
 };
 
+type AutomaticAccessoryId = "splash-guard" | "extractor-hood";
+
 type CollisionChannel = "floor" | "counter" | "wall" | "backsplash";
 
 export type EquipmentPlacement = {
@@ -37,6 +39,8 @@ export type EquipmentPlacement = {
   side: EquipmentSide;
   centerCm: number;
   placementKey?: EquipmentCorner | EquipmentSpecialPosition;
+  parentEquipmentId?: string;
+  automaticAccessory?: AutomaticAccessoryId;
   standard?: boolean;
 };
 
@@ -65,6 +69,7 @@ export type EquipmentPlacementDefinition = {
     maxDistanceToLeftWallCm?: number;
     maxDistanceToRightWallCm?: number;
   };
+  automaticAccessories?: Partial<Record<EquipmentSide, readonly AutomaticAccessoryId[]>>;
   countertopCutoutWidthCm?: number;
   collisionChannels: readonly CollisionChannel[];
   blocksCountertop: boolean;
@@ -92,6 +97,7 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     collisionChannels: ["floor", "counter"],
     blocksCountertop: true,
     avoidsWheelArch: false,
+    automaticAccessories: { "closed-wall": ["extractor-hood"] },
   },
   "double-fryer": {
     productId: "double-fryer",
@@ -135,6 +141,10 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     collisionChannels: ["floor", "counter", "backsplash"],
     blocksCountertop: true,
     avoidsWheelArch: false,
+    automaticAccessories: {
+      "sales-hatch": ["splash-guard"],
+      "closed-wall": ["extractor-hood"],
+    },
   },
   "contact-grill": {
     productId: "contact-grill",
@@ -147,6 +157,7 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     collisionChannels: ["counter"],
     blocksCountertop: false,
     avoidsWheelArch: false,
+    automaticAccessories: { "sales-hatch": ["splash-guard"] },
   },
   "electric-griddle": {
     productId: "electric-griddle",
@@ -159,6 +170,7 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     collisionChannels: ["counter"],
     blocksCountertop: false,
     avoidsWheelArch: false,
+    automaticAccessories: { "sales-hatch": ["splash-guard"] },
   },
   induction: {
     productId: "induction",
@@ -171,6 +183,10 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     collisionChannels: ["counter"],
     blocksCountertop: false,
     avoidsWheelArch: false,
+    automaticAccessories: {
+      "sales-hatch": ["splash-guard"],
+      "closed-wall": ["extractor-hood"],
+    },
   },
   "bottle-fridge": {
     productId: "bottle-fridge",
@@ -286,6 +302,7 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     collisionChannels: ["counter"],
     blocksCountertop: false,
     avoidsWheelArch: false,
+    automaticAccessories: { "closed-wall": ["extractor-hood"] },
   },
 };
 
@@ -307,16 +324,35 @@ function makeId(productId: ConfigurableProductId) {
 }
 
 export function createDefaultEquipmentConfiguration(): EquipmentConfigurationState {
-  return {
+  return synchronizeAutomaticAccessories({
     items: [
       { id: "standard-double-fryer", productId: "double-fryer", side: "closed-wall", centerCm: 100.5, standard: true },
-      { id: "standard-hood", productId: "extractor-hood", side: "closed-wall", centerCm: 100.5, standard: true },
       { id: "standard-hygiene", productId: "hygiene-area", side: "closed-wall", centerCm: 245, standard: true },
       { id: "standard-wall-cabinet", productId: "wall-cabinet", side: "closed-wall", centerCm: 245, standard: true },
       { id: "standard-gas-griddles", productId: "gas-griddle", side: "sales-hatch", centerCm: 180, standard: true },
       { id: "standard-undercounter-fridge", productId: "undercounter-fridge", side: "closed-wall", centerCm: 330, placementKey: "rear-right", standard: true },
     ],
-  };
+  });
+}
+
+function automaticAccessoryId(parentId: string, productId: AutomaticAccessoryId) {
+  return `automatic-${parentId}-${productId}`;
+}
+
+export function synchronizeAutomaticAccessories(state: EquipmentConfigurationState): EquipmentConfigurationState {
+  const mainItems = state.items.filter((item) => !item.automaticAccessory);
+  const accessories = mainItems.flatMap((item) => {
+    const requiredAccessories = equipmentPlacementDefinitions[item.productId].automaticAccessories?.[item.side] ?? [];
+    return requiredAccessories.map((productId) => ({
+      id: automaticAccessoryId(item.id, productId),
+      productId,
+      side: item.side,
+      centerCm: item.centerCm,
+      parentEquipmentId: item.id,
+      automaticAccessory: productId,
+    } satisfies EquipmentPlacement));
+  });
+  return { items: [...mainItems, ...accessories] };
 }
 
 export function clampEquipmentCenter(productId: ConfigurableProductId, value: number) {
@@ -353,6 +389,7 @@ export function findConfigurationCollision(
   requestedCenterCm = item.centerCm,
   requestedSide = item.side,
 ) {
+  if (item.automaticAccessory) return null;
   const definition = equipmentPlacementDefinitions[item.productId];
   const centerCm = clampEquipmentCenter(item.productId, requestedCenterCm);
   const itemInterval = interval(centerCm, definition.widthCm);
@@ -367,7 +404,7 @@ export function findConfigurationCollision(
   }
 
   return state.items.find((other) => {
-    if (other.id === item.id) return false;
+    if (other.id === item.id || other.automaticAccessory) return false;
     const otherDefinition = equipmentPlacementDefinitions[other.productId];
     const otherSides = occupiedSides(otherDefinition, other.side);
     if (!requestedSides.some((side) => otherSides.includes(side))) return false;
@@ -429,7 +466,7 @@ export function addEquipment(
         placementKey: corner,
       };
       if (!findConfigurationCollision(state, item)) {
-        return { state: { items: [...state.items, item] }, item, collisionWith: null };
+        return { state: synchronizeAutomaticAccessories({ items: [...state.items, item] }), item, collisionWith: null };
       }
     }
     return { state, item: null, collisionWith: "no-space" };
@@ -449,7 +486,7 @@ export function addEquipment(
       placementKey: anchoredPlacement.id,
     };
     if (findConfigurationCollision(state, item)) return { state, item: null, collisionWith: "no-space" };
-    return { state: { items: [...state.items, item] }, item, collisionWith: null };
+    return { state: synchronizeAutomaticAccessories({ items: [...state.items, item] }), item, collisionWith: null };
   }
 
   const sides = preferredSide && definition.allowedSides.includes(preferredSide)
@@ -460,7 +497,7 @@ export function addEquipment(
     const centerCm = findFreeEquipmentCenter(state, productId, side);
     if (centerCm === null) continue;
     const item: EquipmentPlacement = { id: makeId(productId), productId, side, centerCm };
-    return { state: { items: [...state.items, item] }, item, collisionWith: null };
+    return { state: synchronizeAutomaticAccessories({ items: [...state.items, item] }), item, collisionWith: null };
   }
 
   return { state, item: null, collisionWith: "no-space" };
@@ -473,6 +510,7 @@ export function moveEquipment(
 ) {
   const item = state.items.find((entry) => entry.id === id);
   if (!item) return { state, collisionWith: "missing" };
+  if (item.automaticAccessory) return { state, collisionWith: "position-locked" };
   if (equipmentPlacementDefinitions[item.productId].placementType !== "side") {
     return { state, collisionWith: "position-locked" };
   }
@@ -480,7 +518,7 @@ export function moveEquipment(
   const collisionWith = findConfigurationCollision(state, item, centerCm, item.side);
   if (collisionWith) return { state, collisionWith };
   return {
-    state: { items: state.items.map((entry) => entry.id === id ? { ...entry, centerCm } : entry) },
+    state: synchronizeAutomaticAccessories({ items: state.items.map((entry) => entry.id === id ? { ...entry, centerCm } : entry) }),
     collisionWith: null,
   };
 }
@@ -488,13 +526,14 @@ export function moveEquipment(
 export function moveEquipmentSide(state: EquipmentConfigurationState, id: string, side: EquipmentSide) {
   const item = state.items.find((entry) => entry.id === id);
   if (!item) return { state, collisionWith: "missing" };
+  if (item.automaticAccessory) return { state, collisionWith: "side-not-allowed" };
   const definition = equipmentPlacementDefinitions[item.productId];
   if (definition.placementType !== "side") return { state, collisionWith: "side-not-allowed" };
   if (!definition.allowedSides.includes(side)) return { state, collisionWith: "side-not-allowed" };
   const centerCm = findFreeEquipmentCenter(state, item.productId, side);
   if (centerCm === null) return { state, collisionWith: "no-space" };
   return {
-    state: { items: state.items.map((entry) => entry.id === id ? { ...entry, side, centerCm } : entry) },
+    state: synchronizeAutomaticAccessories({ items: state.items.map((entry) => entry.id === id ? { ...entry, side, centerCm } : entry) }),
     collisionWith: null,
   };
 }
@@ -506,6 +545,7 @@ export function moveEquipmentCorner(
 ) {
   const item = state.items.find((entry) => entry.id === id);
   if (!item) return { state, collisionWith: "missing" };
+  if (item.automaticAccessory) return { state, collisionWith: "corner-not-allowed" };
   const definition = equipmentPlacementDefinitions[item.productId];
   if (definition.placementType !== "corner" || !definition.allowedCorners?.includes(corner)) {
     return { state, collisionWith: "corner-not-allowed" };
@@ -521,13 +561,15 @@ export function moveEquipmentCorner(
   const collisionWith = findConfigurationCollision(state, candidate, anchor.centerCm, anchor.side);
   if (collisionWith) return { state, collisionWith };
   return {
-    state: { items: state.items.map((entry) => entry.id === id ? candidate : entry) },
+    state: synchronizeAutomaticAccessories({ items: state.items.map((entry) => entry.id === id ? candidate : entry) }),
     collisionWith: null,
   };
 }
 
 export function removeEquipment(state: EquipmentConfigurationState, id: string) {
-  return { items: state.items.filter((item) => item.id !== id) };
+  const item = state.items.find((entry) => entry.id === id);
+  if (item?.automaticAccessory) return state;
+  return synchronizeAutomaticAccessories({ items: state.items.filter((entry) => entry.id !== id) });
 }
 
 export function getEquipmentInterval(item: EquipmentPlacement) {

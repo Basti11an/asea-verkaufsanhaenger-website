@@ -273,7 +273,6 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
     case "gas-griddle":
       addGasGriddleNiche(group, side);
       addPart(group, assets.gasGriddle, [66, 27.9, 60], rotation, sidePlacement(side, 0.571, 0.6605));
-      addPart(group, assets.splashGuard, [100, 40, 7], rotation, sidePlacement(side, 0.85, 1));
       break;
     case "contact-grill":
       addPart(group, assets.contactGrill, [41, 20, 46], rotation, sidePlacement(side, 0.85, 0.41));

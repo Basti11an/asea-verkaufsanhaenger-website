@@ -86,6 +86,16 @@ const copy = {
     "The selected appliance moves as one complete unit.",
     "Vybrané zariadenie sa presúva ako jeden celok.",
   ],
+  automaticSplashGuard: [
+    "Spritzschutz wird automatisch hinzugefügt.",
+    "A splash guard is added automatically.",
+    "Ochranné sklo sa pridáva automaticky.",
+  ],
+  automaticExtractorHood: [
+    "Dunstabzug wird automatisch hinzugefügt.",
+    "An extractor hood is added automatically.",
+    "Odsávač pár sa pridáva automaticky.",
+  ],
   hygieneMoveHelp: [
     "Spüle und Wasserhahn bewegen sich gemeinsam.",
     "Sink and tap move together.",

@@ -25,11 +25,11 @@ export function EquipmentSidebar({
         <h2>{text("equipment")}</h2>
       </div>
       <ul className="asea-standard-list">
-        {equipmentState.items.map((item, index) => {
+        {equipmentState.items.filter((item) => !item.automaticAccessory).map((item, index, visibleItems) => {
           const product = productById.get(item.productId);
           if (!product) return null;
           const isSelected = item.id === selectedEquipmentId;
-          const duplicateCount = equipmentState.items
+          const duplicateCount = visibleItems
             .slice(0, index)
             .filter((other) => other.productId === item.productId).length;
           const label = duplicateCount > 0 ? `${name(product.name)} ${duplicateCount + 1}` : name(product.name);

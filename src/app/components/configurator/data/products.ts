@@ -57,7 +57,7 @@ const productEntries: readonly ProductEntry[] = [
     sceneNodeName: null,
     dimensionsCm: null,
     measuredGlbBoundsCm: { width: 60, height: 28, depth: 70 },
-    active: true,
+    active: false,
     rules: createEmptyRules(),
   },
   {
@@ -217,7 +217,7 @@ const productEntries: readonly ProductEntry[] = [
     sceneNodeName: null,
     dimensionsCm: null,
     measuredGlbBoundsCm: { width: 77, height: 40.12, depth: 7 },
-    active: true,
+    active: false,
     rules: createEmptyRules(),
   },
   {

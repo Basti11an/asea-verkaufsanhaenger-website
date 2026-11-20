@@ -3,10 +3,10 @@ import { sidebarEquipmentIds, standardEquipment, trailerConfiguration } from "./
 
 describe("default configurator configuration", () => {
   it("contains the complete standard equipment from the plan", () => {
-    expect(standardEquipment).toHaveLength(10);
-    expect(sidebarEquipmentIds).toHaveLength(9);
+    expect(standardEquipment).toHaveLength(8);
+    expect(sidebarEquipmentIds).toHaveLength(8);
     expect(sidebarEquipmentIds).not.toContain("standard-splash-guard");
-    expect(sidebarEquipmentIds).toContain("standard-hood");
+    expect(sidebarEquipmentIds).not.toContain("standard-hood");
     expect(sidebarEquipmentIds).toContain("standard-wall-cabinet");
     expect(standardEquipment.every((item) => item.placementStatus === "confirmed")).toBe(true);
   });
