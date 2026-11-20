@@ -110,6 +110,7 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     collisionChannels: ["floor", "counter"],
     blocksCountertop: true,
     avoidsWheelArch: false,
+    automaticAccessories: { "closed-wall": ["extractor-hood"] },
   },
   "extractor-hood": {
     productId: "extractor-hood",

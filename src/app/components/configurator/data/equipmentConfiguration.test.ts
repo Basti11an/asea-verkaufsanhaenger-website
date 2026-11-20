@@ -23,6 +23,13 @@ describe("configurable equipment rules", () => {
       { productId: "gas-griddle", side: "sales-hatch", centerCm: 180 },
       { productId: "undercounter-fridge", side: "closed-wall", centerCm: 330 },
       {
+        productId: "extractor-hood",
+        side: "closed-wall",
+        centerCm: 100.5,
+        parentEquipmentId: "standard-double-fryer",
+        automaticAccessory: "extractor-hood",
+      },
+      {
         productId: "splash-guard",
         side: "sales-hatch",
         centerCm: 180,
@@ -34,6 +41,7 @@ describe("configurable equipment rules", () => {
 
   it("creates the required automatic accessories from one central product rule", () => {
     expect(equipmentPlacementDefinitions.fryer.automaticAccessories).toEqual({ "closed-wall": ["extractor-hood"] });
+    expect(equipmentPlacementDefinitions["double-fryer"].automaticAccessories).toEqual({ "closed-wall": ["extractor-hood"] });
     expect(equipmentPlacementDefinitions["gas-griddle"].automaticAccessories).toEqual({
       "sales-hatch": ["splash-guard"],
       "closed-wall": ["extractor-hood"],
