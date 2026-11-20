@@ -1,14 +1,10 @@
 import { BoxGeometry, Group, Mesh, MeshStandardMaterial } from "three";
 
 export const salesHatchFrontPanelGeometry = {
-  minX: -1.78,
-  maxX: 1.78,
-  gasGriddleCutoutHalfWidth: 0.365,
+  width: 3.56,
   height: 0.535,
   depth: 0.02,
-  centerY: 0.5425,
-  centerZ: 0.99,
-  gasGriddleCenterZ: 0.955,
+  center: [0, 0.5425, 0.99] as const,
 };
 
 export function createSalesHatchFrontPanel() {
@@ -21,31 +17,19 @@ export function createSalesHatchFrontPanel() {
     metalness: 0.55,
   });
 
-  const sections = [
-    [salesHatchFrontPanelGeometry.minX, -salesHatchFrontPanelGeometry.gasGriddleCutoutHalfWidth, salesHatchFrontPanelGeometry.centerZ],
-    [-salesHatchFrontPanelGeometry.gasGriddleCutoutHalfWidth, salesHatchFrontPanelGeometry.gasGriddleCutoutHalfWidth, salesHatchFrontPanelGeometry.gasGriddleCenterZ],
-    [salesHatchFrontPanelGeometry.gasGriddleCutoutHalfWidth, salesHatchFrontPanelGeometry.maxX, salesHatchFrontPanelGeometry.centerZ],
-  ] as const;
-
-  sections.forEach(([startX, endX, centerZ], index) => {
-    const mesh = new Mesh(
-      new BoxGeometry(
-        endX - startX,
-        salesHatchFrontPanelGeometry.height,
-        salesHatchFrontPanelGeometry.depth,
-      ),
-      material,
-    );
-    mesh.name = `ASEA_SalesHatchFrontPanel_Mesh_${index + 1}`;
-    mesh.position.set(
-      (startX + endX) / 2,
-      salesHatchFrontPanelGeometry.centerY,
-      centerZ,
-    );
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    panel.add(mesh);
-  });
+  const mesh = new Mesh(
+    new BoxGeometry(
+      salesHatchFrontPanelGeometry.width,
+      salesHatchFrontPanelGeometry.height,
+      salesHatchFrontPanelGeometry.depth,
+    ),
+    material,
+  );
+  mesh.name = "ASEA_SalesHatchFrontPanel_Mesh";
+  mesh.position.set(...salesHatchFrontPanelGeometry.center);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  panel.add(mesh);
 
   return panel;
 }

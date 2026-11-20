@@ -122,9 +122,11 @@ function addGasGriddleNiche(parent: Group, side: EquipmentSide) {
   const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.52, metalness: 0.55 });
   const nicheWidth = GAS_GRIDDLE_NICHE_HALF_WIDTH * 2;
   const centerZ = side === "closed-wall" ? -0.7 : 0.7;
-  addBox(parent, [nicheWidth, 0.03, 0.6], [0, 0.585, centerZ], steel);
-  addBox(parent, [0.03, 0.33, 0.6], [-GAS_GRIDDLE_NICHE_HALF_WIDTH + 0.015, 0.685, centerZ], steel);
-  addBox(parent, [0.03, 0.33, 0.6], [GAS_GRIDDLE_NICHE_HALF_WIDTH - 0.015, 0.685, centerZ], steel);
+  const nicheDepth = side === "sales-hatch" ? 0.52 : 0.6;
+  const nicheCenterZ = side === "sales-hatch" ? centerZ - 0.04 : centerZ;
+  addBox(parent, [nicheWidth, 0.03, nicheDepth], [0, 0.585, nicheCenterZ], steel);
+  addBox(parent, [0.03, 0.33, nicheDepth], [-GAS_GRIDDLE_NICHE_HALF_WIDTH + 0.015, 0.685, nicheCenterZ], steel);
+  addBox(parent, [0.03, 0.33, nicheDepth], [GAS_GRIDDLE_NICHE_HALF_WIDTH - 0.015, 0.685, nicheCenterZ], steel);
 }
 
 function centimetersToWorldX(valueCm: number) {
