@@ -81,8 +81,7 @@ describe("configurable equipment rules", () => {
     expect(equipmentPlacementDefinitions["extractor-hood"].placementConstraints).toEqual({
       vertical: "top",
       topMinYCm: 202,
-      maxDistanceToLeftWallCm: 28,
-      maxDistanceToRightWallCm: 28,
+      maxProjectionFromClosedWallCm: 28,
     });
   });
 

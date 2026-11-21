@@ -46,6 +46,7 @@ type ConfiguratorSceneProps = {
 type SceneRuntime = {
   cameraController: CameraController;
   controls: OrbitControls;
+  requestRender: () => void;
   applyConfiguration: (state: EquipmentConfigurationState) => void;
   applyViewVisibility: (view: ConfiguratorView) => void;
   highlightEquipment: (equipmentId: string | null) => void;
@@ -261,13 +262,12 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
       addPart(
         group,
         assets.hood,
-        [60, 28, 70],
+        [60, 28, 28],
         rotation,
-        sidePlacement(
-          side,
-          (definition.placementConstraints?.topMinYCm ?? 136) / 100,
-          0.6,
-        ),
+        {
+          ...sidePlacement(side, (definition.placementConstraints?.topMinYCm ?? 202) / 100, 0.6),
+          depth: (definition.placementConstraints?.maxProjectionFromClosedWallCm ?? 28) / 100,
+        },
       );
       break;
     case "gas-griddle":
@@ -410,11 +410,10 @@ function createCounterFurniture(
 function disposeGroup(group: Group) {
   group.traverse((object) => {
     if (!(object instanceof Mesh)) return;
-    if (object.userData.sharedModelAsset) return;
-    object.geometry.dispose();
+    if (!object.userData.sharedModelAsset) object.geometry.dispose();
     const materials = Array.isArray(object.material) ? object.material : [object.material];
     materials.forEach((material) => {
-      if (material instanceof MeshStandardMaterial) material.map?.dispose();
+      if (!object.userData.sharedModelAsset && material instanceof MeshStandardMaterial) material.map?.dispose();
       material.dispose();
     });
   });
@@ -456,13 +455,17 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
 
   useEffect(() => {
     startedRef.current = started;
-    if (started) runtimeRef.current?.cameraController.moveTo(cameraPresets.interior, 900);
+    if (started) {
+      runtimeRef.current?.cameraController.moveTo(cameraPresets.interior, 900);
+      runtimeRef.current?.requestRender();
+    }
   }, [started]);
 
   useEffect(() => {
     viewRef.current = view;
     runtimeRef.current?.cameraController.moveTo(cameraPresets[view], 700);
     runtimeRef.current?.applyViewVisibility(view);
+    runtimeRef.current?.requestRender();
   }, [view]);
 
   useEffect(() => {
@@ -486,6 +489,8 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
     let salesWallEquipment: Group | null = null;
     let closedFurniture: Group | null = null;
     let salesFurniture: Group | null = null;
+    let closedFurnitureKey = "";
+    let salesFurnitureKey = "";
     const equipmentGroups = new Map<string, Group>();
     let highlightedGroup: Group | null = null;
     let highlightStartedAt = 0;
@@ -495,7 +500,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
     camera.position.set(...cameraPresets.three.position);
     camera.up.set(...cameraPresets.three.up);
     const renderer = new WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.domElement.setAttribute("aria-label", sceneLabel);
     container.appendChild(renderer.domElement);
     const studioEnvironment = installStudioEnvironment(scene, renderer);
@@ -510,6 +515,10 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
     controls.maxPolarAngle = Math.PI * 0.49;
     controls.update();
     const cameraController = new CameraController(camera, controls);
+    const requestRender = () => {
+      if (!disposed && !frameId) frameId = requestAnimationFrame(render);
+    };
+    controls.addEventListener("change", requestRender);
 
     const applyViewVisibility = (currentView: ConfiguratorView) => {
       const hideCustomerSide = currentView === "front";
@@ -524,6 +533,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
       if (salesWallEquipment) salesWallEquipment.visible = !hideCustomerSide;
       if (closedFurniture) closedFurniture.visible = !hideSellerSide;
       if (salesFurniture) salesFurniture.visible = !hideCustomerSide;
+      requestRender();
     };
 
     const applyConfiguration = (state: EquipmentConfigurationState) => {
@@ -552,20 +562,23 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
         group.position.x = centimetersToWorldX(item.centerCm);
       });
 
-      if (closedFurniture) {
+      const nextClosedKey = JSON.stringify(getCountertopIntervals(state, "closed-wall"));
+      if (nextClosedKey !== closedFurnitureKey) {
         closedFurniture.removeFromParent();
         disposeGroup(closedFurniture);
+        // The rear row uses fixed side panels, not the metal stand model.
+        closedFurniture = createCounterFurniture(state, "closed-wall");
+        closedWallEquipment.add(closedFurniture);
+        closedFurnitureKey = nextClosedKey;
       }
-      if (salesFurniture) {
+      const nextSalesKey = JSON.stringify(getCountertopIntervals(state, "sales-hatch"));
+      if (nextSalesKey !== salesFurnitureKey) {
         salesFurniture.removeFromParent();
         disposeGroup(salesFurniture);
+        salesFurniture = createCounterFurniture(state, "sales-hatch", assets.countertopStand);
+        salesWallEquipment.add(salesFurniture);
+        salesFurnitureKey = nextSalesKey;
       }
-      // Die hintere Reihe besteht ausschliesslich aus festen Seitenplatten.
-      // Das Metallstaender-Modell darf hier bewusst nie uebergeben werden.
-      closedFurniture = createCounterFurniture(state, "closed-wall");
-      salesFurniture = createCounterFurniture(state, "sales-hatch", assets.countertopStand);
-      closedWallEquipment.add(closedFurniture);
-      salesWallEquipment.add(salesFurniture);
       applyViewVisibility(viewRef.current);
     };
     const clearHighlight = () => {
@@ -583,10 +596,11 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
       clearHighlight();
       highlightedGroup = equipmentId ? equipmentGroups.get(equipmentId) ?? null : null;
       highlightStartedAt = highlightedGroup ? performance.now() : 0;
+      requestRender();
     };
     const captureConfigurationViews = () => {
       cameraController.cancel();
-      return captureConfigurationScreenshots({
+      const screenshots = captureConfigurationScreenshots({
         renderer,
         scene,
         camera,
@@ -594,10 +608,13 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
         currentView: viewRef.current,
         applyViewVisibility,
       });
+      requestRender();
+      return screenshots;
     };
     runtimeRef.current = {
       cameraController,
       controls,
+      requestRender,
       applyConfiguration,
       applyViewVisibility,
       highlightEquipment,
@@ -610,16 +627,18 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
+      requestRender();
     };
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(container);
     resize();
     const timer = new Timer();
-    const render = () => {
+    function render() {
+      frameId = 0;
       timer.update();
-      cameraController.update(Math.min(timer.getDelta(), 0.05));
+      const cameraMoving = cameraController.update(Math.min(timer.getDelta(), 0.05));
       controls.enabled = startedRef.current && viewRef.current === "three" && !cameraController.isAnimating;
-      if (controls.enabled) controls.update();
+      const orbitMoving = controls.enabled && controls.update();
       if (highlightedGroup) {
         const elapsed = performance.now() - highlightStartedAt;
         if (elapsed >= 4000 || !highlightedGroup.parent) {
@@ -639,9 +658,9 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
         }
       }
       renderer.render(scene, camera);
-      frameId = requestAnimationFrame(render);
-    };
-    render();
+      if (cameraMoving || orbitMoving || highlightedGroup) requestRender();
+    }
+    requestRender();
 
     async function loadConfiguration() {
       try {
@@ -697,6 +716,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
       disposed = true;
       cancelAnimationFrame(frameId);
       resizeObserver.disconnect();
+      controls.removeEventListener("change", requestRender);
       controls.dispose();
       studioEnvironment.dispose();
       if (trailerModel) disposeGroup(trailerModel);

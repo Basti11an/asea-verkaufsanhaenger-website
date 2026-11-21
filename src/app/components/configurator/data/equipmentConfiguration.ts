@@ -66,8 +66,7 @@ export type EquipmentPlacementDefinition = {
   placementConstraints?: {
     vertical?: "top";
     topMinYCm?: number;
-    maxDistanceToLeftWallCm?: number;
-    maxDistanceToRightWallCm?: number;
+    maxProjectionFromClosedWallCm?: number;
   };
   automaticAccessories?: Partial<Record<EquipmentSide, readonly AutomaticAccessoryId[]>>;
   countertopCutoutWidthCm?: number;
@@ -123,8 +122,7 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     placementConstraints: {
       vertical: "top",
       topMinYCm: trailerConfiguration.planReference.interiorHeightCm - 28,
-      maxDistanceToLeftWallCm: 28,
-      maxDistanceToRightWallCm: 28,
+      maxProjectionFromClosedWallCm: 28,
     },
     collisionChannels: ["wall"],
     blocksCountertop: false,

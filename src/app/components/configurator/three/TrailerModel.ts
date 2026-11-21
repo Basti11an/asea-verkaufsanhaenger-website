@@ -50,6 +50,7 @@ export function prepareTrailerModel(model: Group, animations: readonly Animation
 
   trailer.traverse((object) => {
     if (!(object instanceof Mesh)) return;
+    object.userData.sharedModelAsset = true;
     const sourceMaterials = Array.isArray(object.material) ? object.material : [object.material];
     const materials = sourceMaterials.map((material) => material.clone());
     object.material = Array.isArray(object.material) ? materials : materials[0];
