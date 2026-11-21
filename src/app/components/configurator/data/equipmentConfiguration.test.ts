@@ -9,6 +9,7 @@ import {
   moveEquipmentSide,
   moveEquipmentToCrossPlacement,
   removeEquipment,
+  synchronizeAutomaticAccessories,
   type EquipmentPlacement,
 } from "./equipmentConfiguration";
 
@@ -25,7 +26,7 @@ describe("configurable equipment rules", () => {
       {
         productId: "extractor-hood",
         side: "closed-wall",
-        centerCm: 100.5,
+        centerCm: 180,
         parentEquipmentId: "standard-double-fryer",
         automaticAccessory: "extractor-hood",
       },
@@ -81,8 +82,28 @@ describe("configurable equipment rules", () => {
     expect(equipmentPlacementDefinitions["extractor-hood"].placementConstraints).toEqual({
       vertical: "top",
       topMinYCm: 202,
-      maxProjectionFromClosedWallCm: 28,
+      minDistanceToSideWallsCm: 28,
     });
+    expect(equipmentPlacementDefinitions["extractor-hood"]).toMatchObject({
+      widthCm: 304,
+      minCenterCm: 180,
+      maxCenterCm: 180,
+    });
+  });
+
+  it("keeps automatic hoods 28 cm clear of both rounded end walls", () => {
+    const state = synchronizeAutomaticAccessories({ items: [
+      { id: "left-fryer", productId: "fryer", side: "closed-wall", centerCm: 15 },
+      { id: "right-fryer", productId: "fryer", side: "closed-wall", centerCm: 345 },
+    ] });
+    expect(state.items.find((item) => item.parentEquipmentId === "left-fryer")?.centerCm).toBe(180);
+    expect(state.items.find((item) => item.parentEquipmentId === "right-fryer")?.centerCm).toBe(180);
+
+    const standalone = addEquipment({ items: [] }, "extractor-hood", "closed-wall");
+    expect(moveEquipment(standalone.state, standalone.item!.id, 0).state.items[0].centerCm).toBe(180);
+    expect(moveEquipment(standalone.state, standalone.item!.id, 360).state.items[0].centerCm).toBe(180);
+
+    expect(createDefaultEquipmentConfiguration().items.find((item) => item.productId === "extractor-hood")?.centerCm).toBe(180);
   });
 
   it("uses the real installation widths for collision checks", () => {

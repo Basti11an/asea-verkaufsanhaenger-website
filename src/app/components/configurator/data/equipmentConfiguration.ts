@@ -66,7 +66,7 @@ export type EquipmentPlacementDefinition = {
   placementConstraints?: {
     vertical?: "top";
     topMinYCm?: number;
-    maxProjectionFromClosedWallCm?: number;
+    minDistanceToSideWallsCm?: number;
   };
   automaticAccessories?: Partial<Record<EquipmentSide, readonly AutomaticAccessoryId[]>>;
   countertopCutoutWidthCm?: number;
@@ -78,6 +78,9 @@ export type EquipmentPlacementDefinition = {
 const allSides: readonly EquipmentSide[] = ["closed-wall", "sales-hatch"];
 const rearOnly: readonly EquipmentSide[] = ["closed-wall"];
 const frontOnly: readonly EquipmentSide[] = ["sales-hatch"];
+const extractorHoodSideClearanceCm = 28;
+const extractorHoodWidthCm = trailerConfiguration.planReference.interiorLengthCm - 2 * extractorHoodSideClearanceCm;
+const extractorHoodCenterCm = trailerConfiguration.planReference.interiorLengthCm / 2;
 const undercounterCorners: Readonly<Record<EquipmentCorner, EquipmentPlacementAnchor>> = {
   "front-left": { side: "sales-hatch", centerCm: 30, rotationDeg: 90 },
   "front-right": { side: "sales-hatch", centerCm: 330, rotationDeg: 90 },
@@ -115,14 +118,14 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     productId: "extractor-hood",
     placementType: "side",
     allowedSides: rearOnly,
-    defaultCenterCm: { "closed-wall": 100.5, "sales-hatch": 100.5 },
-    minCenterCm: 30,
-    maxCenterCm: 330,
-    widthCm: 60,
+    defaultCenterCm: { "closed-wall": extractorHoodCenterCm, "sales-hatch": extractorHoodCenterCm },
+    minCenterCm: extractorHoodCenterCm,
+    maxCenterCm: extractorHoodCenterCm,
+    widthCm: extractorHoodWidthCm,
     placementConstraints: {
       vertical: "top",
       topMinYCm: trailerConfiguration.planReference.interiorHeightCm - 28,
-      maxProjectionFromClosedWallCm: 28,
+      minDistanceToSideWallsCm: extractorHoodSideClearanceCm,
     },
     collisionChannels: ["wall"],
     blocksCountertop: false,
@@ -345,7 +348,7 @@ export function synchronizeAutomaticAccessories(state: EquipmentConfigurationSta
       id: automaticAccessoryId(item.id, productId),
       productId,
       side: item.side,
-      centerCm: item.centerCm,
+      centerCm: productId === "extractor-hood" ? clampEquipmentCenter(productId, item.centerCm) : item.centerCm,
       parentEquipmentId: item.id,
       automaticAccessory: productId,
     } satisfies EquipmentPlacement));

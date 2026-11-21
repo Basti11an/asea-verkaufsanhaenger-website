@@ -262,12 +262,9 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
       addPart(
         group,
         assets.hood,
-        [60, 28, 28],
+        [definition.widthCm, 28, 70],
         rotation,
-        {
-          ...sidePlacement(side, (definition.placementConstraints?.topMinYCm ?? 202) / 100, 0.6),
-          depth: (definition.placementConstraints?.maxProjectionFromClosedWallCm ?? 28) / 100,
-        },
+        sidePlacement(side, (definition.placementConstraints?.topMinYCm ?? 202) / 100, definition.widthCm / 100),
       );
       break;
     case "gas-griddle":
@@ -545,7 +542,12 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
         disposeGroup(group);
         equipmentGroups.delete(id);
       });
+      let hoodRendered = false;
       state.items.forEach((item) => {
+        if (item.productId === "extractor-hood") {
+          if (hoodRendered) return;
+          hoodRendered = true;
+        }
         let group = equipmentGroups.get(item.id);
         if (group && group.userData.equipmentSide !== item.side) {
           group.removeFromParent();
@@ -670,7 +672,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
           loadConfiguratorModel("/configurator-models/interieur/hygiene/Hygienebereich.glb"),
           loadConfiguratorModel("/configurator-models/interieur/kuehlung/Kuehlschrank_Unterbau.glb", "Kuehlschrank_Unterbau_600x600x850"),
           loadConfiguratorModel("/configurator-models/interieur/kochen/Gasbraeter.glb", "Gasbraeter_gross_3fl"),
-          loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb", "Dunstabzug_Flachhaube_600x700x220"),
+          loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb", "Dunstabzug_Flachhaube_2000x700x220"),
           loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Spritzschutz_700.glb", "Spritzschutz_Glas_700x400"),
           loadConfiguratorModel("/configurator-models/interieur/arbeitsflaechen/Arbeitsplatten_Staender.glb", "Arbeitsplatten_Staender"),
           loadOptional("/configurator-models/interieur/kochen/Friteuse.glb", "Fritteuse_IMBISS_I"),
