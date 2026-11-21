@@ -258,15 +258,17 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
     case "double-fryer":
       addPart(group, assets.doubleFryer, [59, 41, 60], rotation, sidePlacement(side, 0.5328, 0.59));
       break;
-    case "extractor-hood":
+    case "extractor-hood": {
+      const hoodWidthCm = item.widthCm ?? definition.widthCm;
       addPart(
         group,
-        assets.hood,
-        [definition.widthCm, 28, 70],
+        hoodWidthCm > 75 ? assets.wideHood : assets.hood,
+        [hoodWidthCm, 28, 70],
         rotation,
-        sidePlacement(side, (definition.placementConstraints?.topMinYCm ?? 202) / 100, definition.widthCm / 100),
+        sidePlacement(side, (definition.placementConstraints?.topMinYCm ?? 202) / 100, hoodWidthCm / 100),
       );
       break;
+    }
     case "gas-griddle":
       addGasGriddleNiche(group, side);
       addPart(group, assets.gasGriddle, [66, 27.9, 60], rotation, sidePlacement(side, 0.571, 0.6605));
@@ -542,12 +544,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
         disposeGroup(group);
         equipmentGroups.delete(id);
       });
-      let hoodRendered = false;
       state.items.forEach((item) => {
-        if (item.productId === "extractor-hood") {
-          if (hoodRendered) return;
-          hoodRendered = true;
-        }
         let group = equipmentGroups.get(item.id);
         if (group && group.userData.equipmentSide !== item.side) {
           group.removeFromParent();
@@ -666,13 +663,14 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
 
     async function loadConfiguration() {
       try {
-        const [trailer, doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet, kebabSpit] = await Promise.all([
+        const [trailer, doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, wideHood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet, kebabSpit] = await Promise.all([
           loadConfiguratorModel(trailerConfiguration.modelPath),
           loadConfiguratorModel("/configurator-models/interieur/kochen/Doppelfriteuse.glb", "Fritteuse_IMBISS_II"),
           loadConfiguratorModel("/configurator-models/interieur/hygiene/Hygienebereich.glb"),
           loadConfiguratorModel("/configurator-models/interieur/kuehlung/Kuehlschrank_Unterbau.glb", "Kuehlschrank_Unterbau_600x600x850"),
           loadConfiguratorModel("/configurator-models/interieur/kochen/Gasbraeter.glb", "Gasbraeter_gross_3fl"),
-          loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb", "Dunstabzug_Flachhaube_2000x700x220"),
+          loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb", "Dunstabzug_Flachhaube_600x700x220"),
+          loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb", "Dunstabzug_Flachhaube_1000x700x220"),
           loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Spritzschutz_700.glb", "Spritzschutz_Glas_700x400"),
           loadConfiguratorModel("/configurator-models/interieur/arbeitsflaechen/Arbeitsplatten_Staender.glb", "Arbeitsplatten_Staender"),
           loadOptional("/configurator-models/interieur/kochen/Friteuse.glb", "Fritteuse_IMBISS_I"),
@@ -687,7 +685,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
           loadOptional("/configurator-models/interieur/kochen/Kebapspiess.glb"),
         ]);
         if (disposed) return;
-        assets = { doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet, kebabSpit };
+        assets = { doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, wideHood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet, kebabSpit };
         trailerModel = prepareTrailerModel(trailer.scene, trailer.animations);
         interiorShell = createInteriorShell();
         scene.add(trailerModel, interiorShell);

@@ -75,7 +75,7 @@ export function getConfigurationRows(
       return {
         id: item.id,
         name: product?.name[0] ?? item.productId,
-        widthCm: definition.widthCm,
+        widthCm: item.widthCm ?? definition.widthCm,
         centerCm: item.centerCm,
       };
     });

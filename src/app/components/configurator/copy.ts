@@ -102,9 +102,9 @@ const copy = {
     "Drez a batéria sa pohybujú spolu.",
   ],
   fryerMoveHelp: [
-    "Die Fritteuse kann verschoben werden. Der Dunstabzug bleibt fest über der hinteren Zeile.",
-    "The fryer can be moved. The extractor hood stays fixed above the rear row.",
-    "Fritézu možno presúvať. Odsávač pár zostáva pevne nad zadným radom.",
+    "Die Fritteuse kann verschoben werden. Der Dunstabzug wird passend darüber positioniert.",
+    "The fryer can be moved. The extractor hood is positioned above it.",
+    "Fritézu možno presúvať. Odsávač pár sa umiestni nad ňu.",
   ],
   editEquipment: [
     "Ausgewählte Ausstattung bearbeiten",

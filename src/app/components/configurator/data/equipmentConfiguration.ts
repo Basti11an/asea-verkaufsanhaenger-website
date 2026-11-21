@@ -38,6 +38,7 @@ export type EquipmentPlacement = {
   productId: ConfigurableProductId;
   side: EquipmentSide;
   centerCm: number;
+  widthCm?: number;
   placementKey?: EquipmentCorner | EquipmentSpecialPosition;
   parentEquipmentId?: string;
   automaticAccessory?: AutomaticAccessoryId;
@@ -79,8 +80,7 @@ const allSides: readonly EquipmentSide[] = ["closed-wall", "sales-hatch"];
 const rearOnly: readonly EquipmentSide[] = ["closed-wall"];
 const frontOnly: readonly EquipmentSide[] = ["sales-hatch"];
 const extractorHoodSideClearanceCm = 28;
-const extractorHoodWidthCm = trailerConfiguration.planReference.interiorLengthCm - 2 * extractorHoodSideClearanceCm;
-const extractorHoodCenterCm = trailerConfiguration.planReference.interiorLengthCm / 2;
+const extractorHoodWidthCm = 60;
 const undercounterCorners: Readonly<Record<EquipmentCorner, EquipmentPlacementAnchor>> = {
   "front-left": { side: "sales-hatch", centerCm: 30, rotationDeg: 90 },
   "front-right": { side: "sales-hatch", centerCm: 330, rotationDeg: 90 },
@@ -118,9 +118,9 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     productId: "extractor-hood",
     placementType: "side",
     allowedSides: rearOnly,
-    defaultCenterCm: { "closed-wall": extractorHoodCenterCm, "sales-hatch": extractorHoodCenterCm },
-    minCenterCm: extractorHoodCenterCm,
-    maxCenterCm: extractorHoodCenterCm,
+    defaultCenterCm: { "closed-wall": 100.5, "sales-hatch": 100.5 },
+    minCenterCm: extractorHoodSideClearanceCm + extractorHoodWidthCm / 2,
+    maxCenterCm: trailerConfiguration.planReference.interiorLengthCm - extractorHoodSideClearanceCm - extractorHoodWidthCm / 2,
     widthCm: extractorHoodWidthCm,
     placementConstraints: {
       vertical: "top",
@@ -344,14 +344,24 @@ export function synchronizeAutomaticAccessories(state: EquipmentConfigurationSta
   const mainItems = state.items.filter((item) => !item.automaticAccessory);
   const accessories = mainItems.flatMap((item) => {
     const requiredAccessories = equipmentPlacementDefinitions[item.productId].automaticAccessories?.[item.side] ?? [];
-    return requiredAccessories.map((productId) => ({
-      id: automaticAccessoryId(item.id, productId),
-      productId,
-      side: item.side,
-      centerCm: productId === "extractor-hood" ? clampEquipmentCenter(productId, item.centerCm) : item.centerCm,
-      parentEquipmentId: item.id,
-      automaticAccessory: productId,
-    } satisfies EquipmentPlacement));
+    return requiredAccessories.map((productId) => {
+      const widthCm = productId === "extractor-hood"
+        ? Math.max(extractorHoodWidthCm, equipmentPlacementDefinitions[item.productId].widthCm)
+        : undefined;
+      const minCenterCm = extractorHoodSideClearanceCm + (widthCm ?? 0) / 2;
+      const maxCenterCm = trailerConfiguration.planReference.interiorLengthCm - minCenterCm;
+      return {
+        id: automaticAccessoryId(item.id, productId),
+        productId,
+        side: item.side,
+        centerCm: widthCm === undefined
+          ? item.centerCm
+          : Math.min(maxCenterCm, Math.max(minCenterCm, item.centerCm)),
+        ...(widthCm === undefined ? {} : { widthCm }),
+        parentEquipmentId: item.id,
+        automaticAccessory: productId,
+      } satisfies EquipmentPlacement;
+    });
   });
   return { items: [...mainItems, ...accessories] };
 }

@@ -107,7 +107,8 @@ describe("configurator model structure", () => {
       ["public/configurator-models/interieur/kochen/Gasbraeter.glb", "Gasbraeter_gross_3fl"],
       ["public/configurator-models/interieur/kochen/Griddleplatte_Elektro.glb", "Griddleplatte_Elektro_660x580x310_glatt"],
       ["public/configurator-models/interieur/hygiene/Doppelwaschbecken.glb", "Doppelwaschbecken_1000x600x850"],
-      ["public/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb", "Dunstabzug_Flachhaube_2000x700x220"],
+      ["public/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb", "Dunstabzug_Flachhaube_600x700x220"],
+      ["public/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb", "Dunstabzug_Flachhaube_1000x700x220"],
       ["public/configurator-models/interieur/moebel/Arbeitstisch_1200.glb", "Arbeitstisch_1200x600x850"],
       ["public/configurator-models/interieur/moebel/Haengeschrank.glb", "Haengeschrank_1000x400x660"],
     ] as const;

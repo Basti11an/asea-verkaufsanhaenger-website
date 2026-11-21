@@ -26,7 +26,8 @@ describe("configurable equipment rules", () => {
       {
         productId: "extractor-hood",
         side: "closed-wall",
-        centerCm: 180,
+        centerCm: 100.5,
+        widthCm: 60,
         parentEquipmentId: "standard-double-fryer",
         automaticAccessory: "extractor-hood",
       },
@@ -85,9 +86,9 @@ describe("configurable equipment rules", () => {
       minDistanceToSideWallsCm: 28,
     });
     expect(equipmentPlacementDefinitions["extractor-hood"]).toMatchObject({
-      widthCm: 304,
-      minCenterCm: 180,
-      maxCenterCm: 180,
+      widthCm: 60,
+      minCenterCm: 58,
+      maxCenterCm: 302,
     });
   });
 
@@ -96,14 +97,23 @@ describe("configurable equipment rules", () => {
       { id: "left-fryer", productId: "fryer", side: "closed-wall", centerCm: 15 },
       { id: "right-fryer", productId: "fryer", side: "closed-wall", centerCm: 345 },
     ] });
-    expect(state.items.find((item) => item.parentEquipmentId === "left-fryer")?.centerCm).toBe(180);
-    expect(state.items.find((item) => item.parentEquipmentId === "right-fryer")?.centerCm).toBe(180);
+    expect(state.items.find((item) => item.parentEquipmentId === "left-fryer")?.centerCm).toBe(58);
+    expect(state.items.find((item) => item.parentEquipmentId === "right-fryer")?.centerCm).toBe(302);
 
     const standalone = addEquipment({ items: [] }, "extractor-hood", "closed-wall");
-    expect(moveEquipment(standalone.state, standalone.item!.id, 0).state.items[0].centerCm).toBe(180);
-    expect(moveEquipment(standalone.state, standalone.item!.id, 360).state.items[0].centerCm).toBe(180);
+    expect(moveEquipment(standalone.state, standalone.item!.id, 0).state.items[0].centerCm).toBe(58);
+    expect(moveEquipment(standalone.state, standalone.item!.id, 360).state.items[0].centerCm).toBe(302);
 
-    expect(createDefaultEquipmentConfiguration().items.find((item) => item.productId === "extractor-hood")?.centerCm).toBe(180);
+    expect(createDefaultEquipmentConfiguration().items.find((item) => item.productId === "extractor-hood")?.centerCm).toBe(100.5);
+  });
+
+  it("sizes each rear hood to the appliance below it without spanning the whole wall", () => {
+    const state = synchronizeAutomaticAccessories({ items: [
+      { id: "fryer", productId: "fryer", side: "closed-wall", centerCm: 155 },
+      { id: "griddle", productId: "gas-griddle", side: "closed-wall", centerCm: 310 },
+    ] });
+    expect(state.items.find((item) => item.parentEquipmentId === "fryer")).toMatchObject({ widthCm: 60, centerCm: 155 });
+    expect(state.items.find((item) => item.parentEquipmentId === "griddle")).toMatchObject({ widthCm: 100, centerCm: 282 });
   });
 
   it("uses the real installation widths for collision checks", () => {
