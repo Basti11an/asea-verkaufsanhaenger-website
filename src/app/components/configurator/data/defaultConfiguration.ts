@@ -67,8 +67,10 @@ export const trailerConfiguration = {
     unit: "centimeters" as const,
   },
   wheelArchesFromModelCm: [
-    { longitudinalStart: 142, longitudinalEnd: 218, depthStart: 0, depthEnd: 22, heightEnd: 27.5 },
-    { longitudinalStart: 142, longitudinalEnd: 218, depthStart: 178, depthEnd: 200, heightEnd: 27.5 },
+    // 144 cm from each outer end wall; the interior origin begins 1.5 cm inside
+    // the shell, so the centered 75 cm wheel arch spans 142.5-217.5 cm here.
+    { longitudinalStart: 142.5, longitudinalEnd: 217.5, depthStart: 0, depthEnd: 27, heightEnd: 27.5 },
+    { longitudinalStart: 142.5, longitudinalEnd: 217.5, depthStart: 173, depthEnd: 200, heightEnd: 27.5 },
   ],
   sceneNodes: {
     outerShell: "v2_Aussenhuelle",

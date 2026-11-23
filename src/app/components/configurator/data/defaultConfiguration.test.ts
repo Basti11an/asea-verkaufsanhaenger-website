@@ -20,6 +20,17 @@ describe("default configurator configuration", () => {
     expect(trailerConfiguration.sourceModelPath).toBeNull();
   });
 
+  it("uses the exact wheel-arch dimensions on both sides", () => {
+    expect(trailerConfiguration.wheelArchesFromModelCm).toEqual([
+      { longitudinalStart: 142.5, longitudinalEnd: 217.5, depthStart: 0, depthEnd: 27, heightEnd: 27.5 },
+      { longitudinalStart: 142.5, longitudinalEnd: 217.5, depthStart: 173, depthEnd: 200, heightEnd: 27.5 },
+    ]);
+    trailerConfiguration.wheelArchesFromModelCm.forEach((wheelArch) => {
+      expect(wheelArch.longitudinalEnd - wheelArch.longitudinalStart).toBe(75);
+      expect(wheelArch.depthEnd - wheelArch.depthStart).toBe(27);
+    });
+  });
+
   it("keeps the closed-wall equipment in the plan order", () => {
     expect(trailerConfiguration.planLayoutCm.closedWallRow.segments).toEqual([
       { id: "gas-cabinet", longitudinalStart: 0, longitudinalEnd: 71 },
