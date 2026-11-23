@@ -277,8 +277,8 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
       addPart(group, assets.contactGrill, [41, 20, 46], rotation, sidePlacement(side, 0.85, 0.41));
       break;
     case "electric-griddle":
-      addGriddleNiche(group, side, 0.66);
-      addPart(group, assets.electricGriddle, [66, 31, 58], rotation, sidePlacement(side, 0.571, 0.66));
+      addGriddleNiche(group, side, 0.6604);
+      addPart(group, assets.electricGriddle, [66, 31, 58], rotation, sidePlacement(side, 0.54, 0.6604));
       break;
     case "induction":
       addPart(group, assets.induction, [33, 10.5, 47], rotation, sidePlacement(side, 0.85, 0.33));

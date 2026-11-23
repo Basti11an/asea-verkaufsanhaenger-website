@@ -190,11 +190,11 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     minCenterCm: 33,
     maxCenterCm: 327,
     widthCm: 66,
-    countertopCutoutWidthCm: 66,
+    countertopCutoutWidthCm: 72.04,
     collisionChannels: ["floor", "counter"],
     blocksCountertop: true,
     avoidsWheelArch: false,
-    accessoryRules: { "sales-hatch": [optional("splash-guard")] },
+    accessoryRules: { "sales-hatch": [required("splash-guard")] },
   },
   induction: {
     productId: "induction",

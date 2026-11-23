@@ -337,6 +337,12 @@ describe("configurable equipment rules", () => {
 
   it("uses the same recessed installation data for electric and gas griddles", () => {
     expect(equipmentPlacementDefinitions["gas-griddle"].countertopCutoutWidthCm).toBeDefined();
-    expect(equipmentPlacementDefinitions["electric-griddle"]).toMatchObject({ countertopCutoutWidthCm: 66, blocksCountertop: true });
+    expect(equipmentPlacementDefinitions["electric-griddle"]).toMatchObject({
+      countertopCutoutWidthCm: 72.04,
+      blocksCountertop: true,
+      accessoryRules: {
+        "sales-hatch": [expect.objectContaining({ id: "splash-guard", requirement: "required" })],
+      },
+    });
   });
 });
