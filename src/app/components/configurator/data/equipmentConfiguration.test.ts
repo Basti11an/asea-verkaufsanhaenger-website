@@ -4,11 +4,14 @@ import {
   createDefaultEquipmentConfiguration,
   equipmentPlacementDefinitions,
   findConfigurationCollision,
+  getAccessoryRules,
   moveEquipment,
   moveEquipmentCorner,
   moveEquipmentSide,
   moveEquipmentToCrossPlacement,
   removeEquipment,
+  setEquipmentAccessoryEnabled,
+  setEquipmentAccessoryLength,
   synchronizeAutomaticAccessories,
   type EquipmentPlacement,
 } from "./equipmentConfiguration";
@@ -41,20 +44,19 @@ describe("configurable equipment rules", () => {
     ]);
   });
 
-  it("creates the required automatic accessories from one central product rule", () => {
-    expect(equipmentPlacementDefinitions.fryer.automaticAccessories).toEqual({ "closed-wall": ["extractor-hood"] });
-    expect(equipmentPlacementDefinitions["double-fryer"].automaticAccessories).toEqual({ "closed-wall": ["extractor-hood"] });
-    expect(equipmentPlacementDefinitions["gas-griddle"].automaticAccessories).toEqual({
-      "sales-hatch": ["splash-guard"],
-      "closed-wall": ["extractor-hood"],
-    });
-    expect(equipmentPlacementDefinitions["contact-grill"].automaticAccessories).toEqual({ "sales-hatch": ["splash-guard"] });
-    expect(equipmentPlacementDefinitions["electric-griddle"].automaticAccessories).toEqual({ "sales-hatch": ["splash-guard"] });
-    expect(equipmentPlacementDefinitions.induction.automaticAccessories).toEqual({
-      "sales-hatch": ["splash-guard"],
-      "closed-wall": ["extractor-hood"],
-    });
-    expect(equipmentPlacementDefinitions["kebab-spit"].automaticAccessories).toEqual({ "closed-wall": ["extractor-hood"] });
+  it("stores required and optional accessories in one central product rule", () => {
+    expect(equipmentPlacementDefinitions.fryer.accessoryRules?.["closed-wall"]).toEqual([
+      expect.objectContaining({ id: "extractor-hood", requirement: "optional" }),
+    ]);
+    expect(equipmentPlacementDefinitions["double-fryer"].accessoryRules?.["closed-wall"]).toEqual([
+      expect.objectContaining({ id: "extractor-hood", requirement: "required" }),
+    ]);
+    expect(equipmentPlacementDefinitions["gas-griddle"].accessoryRules?.["sales-hatch"]).toEqual([
+      expect.objectContaining({ id: "splash-guard", requirement: "required" }),
+    ]);
+    expect(equipmentPlacementDefinitions["contact-grill"].accessoryRules?.["sales-hatch"]).toEqual([
+      expect.objectContaining({ id: "splash-guard", requirement: "optional" }),
+    ]);
   });
 
   it("adds exactly one linked splash guard for each eligible front appliance", () => {
@@ -97,8 +99,8 @@ describe("configurable equipment rules", () => {
       { id: "left-fryer", productId: "fryer", side: "closed-wall", centerCm: 15 },
       { id: "right-fryer", productId: "fryer", side: "closed-wall", centerCm: 345 },
     ] });
-    expect(state.items.find((item) => item.parentEquipmentId === "left-fryer")?.centerCm).toBe(58);
-    expect(state.items.find((item) => item.parentEquipmentId === "right-fryer")?.centerCm).toBe(302);
+    expect(state.items.find((item) => item.parentEquipmentId === "left-fryer")?.centerCm).toBe(43);
+    expect(state.items.find((item) => item.parentEquipmentId === "right-fryer")?.centerCm).toBe(317);
 
     const standalone = addEquipment({ items: [] }, "extractor-hood", "closed-wall");
     expect(moveEquipment(standalone.state, standalone.item!.id, 0).state.items[0].centerCm).toBe(58);
@@ -112,7 +114,7 @@ describe("configurable equipment rules", () => {
       { id: "fryer", productId: "fryer", side: "closed-wall", centerCm: 155 },
       { id: "griddle", productId: "gas-griddle", side: "closed-wall", centerCm: 310 },
     ] });
-    expect(state.items.find((item) => item.parentEquipmentId === "fryer")).toMatchObject({ widthCm: 60, centerCm: 155 });
+    expect(state.items.find((item) => item.parentEquipmentId === "fryer")).toMatchObject({ widthCm: 30, centerCm: 155 });
     expect(state.items.find((item) => item.parentEquipmentId === "griddle")).toMatchObject({ widthCm: 100, centerCm: 282 });
   });
 
@@ -236,7 +238,7 @@ describe("configurable equipment rules", () => {
       allowedSides: ["sales-hatch"],
       widthCm: 40,
       displayWidthCm: 120,
-      crossPlacement: { id: "trailer-end", centerCm: 340, rotationDeg: -90 },
+      crossPlacement: { id: "trailer-end", centerCm: 35.5, rotationDeg: -90 },
     });
     expect(equipmentPlacementDefinitions["undercounter-fridge"]).toMatchObject({
       placementType: "corner",
@@ -256,7 +258,7 @@ describe("configurable equipment rules", () => {
     const cross = moveEquipmentToCrossPlacement(added.state, added.item!.id);
     expect(cross.state.items[0]).toMatchObject({
       side: "closed-wall",
-      centerCm: 340,
+      centerCm: 35.5,
       placementKey: "trailer-end",
     });
     expect(moveEquipment(cross.state, added.item!.id, 250).collisionWith).toBe("position-locked");
@@ -271,7 +273,70 @@ describe("configurable equipment rules", () => {
 
     const moved = moveEquipmentCorner(added.state, added.item!.id, "front-left");
     expect(moved.collisionWith).toBeNull();
-    expect(moved.state.items[0]).toMatchObject({ side: "sales-hatch", centerCm: 30, placementKey: "front-left" });
+    expect(moved.state.items[0]).toMatchObject({ side: "sales-hatch", centerCm: 31, placementKey: "front-left" });
     expect(moveEquipment(moved.state, added.item!.id, 100).collisionWith).toBe("position-locked");
+  });
+
+  it("uses the gas cabinet top only as support for suitable countertop appliances", () => {
+    const induction: EquipmentPlacement = { id: "induction", productId: "induction", side: "closed-wall", centerCm: 35.5 };
+    const grill: EquipmentPlacement = { id: "grill", productId: "contact-grill", side: "closed-wall", centerCm: 35.5 };
+    const kebab: EquipmentPlacement = { id: "kebab", productId: "kebab-spit", side: "closed-wall", centerCm: 35.5 };
+
+    expect(findConfigurationCollision({ items: [] }, induction)).toBeNull();
+    expect(findConfigurationCollision({ items: [] }, grill)).toBeNull();
+    expect(findConfigurationCollision({ items: [] }, kebab)).toBe("fixed-gas-cabinet");
+    expect(equipmentPlacementDefinitions.induction.canStandOnGasCabinet).toBe(true);
+    expect(equipmentPlacementDefinitions["kebab-spit"].canStandOnGasCabinet).toBe(false);
+  });
+
+  it("measures the fryer clearance from the real outer edges of the sink", () => {
+    const sink: EquipmentPlacement = { id: "sink", productId: "double-sink", side: "closed-wall", centerCm: 250 };
+    const fryer: EquipmentPlacement = { id: "fryer", productId: "fryer", side: "closed-wall", centerCm: 146 };
+    expect(findConfigurationCollision({ items: [sink] }, fryer, 146)).toBeNull();
+    expect(findConfigurationCollision({ items: [sink] }, fryer, 147)).toBeNull();
+    expect(findConfigurationCollision({ items: [sink] }, fryer, 150)).toBe("sink-clearance");
+    expect(moveEquipment({ items: [sink, fryer] }, fryer.id, 150).state.items.find((item) => item.id === fryer.id)?.centerCm).toBe(146);
+  });
+
+  it("allows optional accessories to be toggled but keeps required ones enabled", () => {
+    const optionalFryer = addEquipment({ items: [] }, "fryer", "closed-wall");
+    const disabled = setEquipmentAccessoryEnabled(optionalFryer.state, optionalFryer.item!.id, "extractor-hood", false);
+    expect(disabled.items.some((item) => item.automaticAccessory === "extractor-hood")).toBe(false);
+
+    const requiredFryer = addEquipment({ items: [] }, "double-fryer", "closed-wall");
+    const unchanged = setEquipmentAccessoryEnabled(requiredFryer.state, requiredFryer.item!.id, "extractor-hood", false);
+    expect(unchanged.items.some((item) => item.automaticAccessory === "extractor-hood")).toBe(true);
+    expect(getAccessoryRules(requiredFryer.item!)[0].requirement).toBe("required");
+  });
+
+  it("stores splash guards at 130 cm minimum and scales them from central accessory state", () => {
+    const added = addEquipment({ items: [] }, "contact-grill", "sales-hatch");
+    expect(added.state.items.find((item) => item.automaticAccessory === "splash-guard")?.widthCm).toBe(130);
+    const enlarged = setEquipmentAccessoryLength(added.state, added.item!.id, "splash-guard", 180);
+    expect(enlarged.items.find((item) => item.automaticAccessory === "splash-guard")?.widthCm).toBe(180);
+    const clamped = setEquipmentAccessoryLength(enlarged, added.item!.id, "splash-guard", 120);
+    expect(clamped.items.find((item) => item.automaticAccessory === "splash-guard")?.widthCm).toBe(130);
+  });
+
+  it("clips the hood before a wall cabinet without creating an overlap", () => {
+    const state = synchronizeAutomaticAccessories({ items: [
+      { id: "griddle", productId: "gas-griddle", side: "closed-wall", centerCm: 180 },
+      { id: "cabinet", productId: "wall-cabinet", side: "closed-wall", centerCm: 245 },
+    ] });
+    const hood = state.items.find((item) => item.parentEquipmentId === "griddle")!;
+    expect(hood).toMatchObject({ centerCm: 162.5, widthCm: 65 });
+    expect(hood.centerCm + hood.widthCm! / 2).toBeLessThanOrEqual(195);
+  });
+
+  it("applies the 28 cm end-wall rule to the real wall-cabinet edges", () => {
+    expect(equipmentPlacementDefinitions["wall-cabinet"]).toMatchObject({ minCenterCm: 78, maxCenterCm: 282, widthCm: 100 });
+    const cabinet = addEquipment({ items: [] }, "wall-cabinet", "closed-wall");
+    expect(moveEquipment(cabinet.state, cabinet.item!.id, 0).state.items[0].centerCm).toBe(78);
+    expect(moveEquipment(cabinet.state, cabinet.item!.id, 360).state.items[0].centerCm).toBe(282);
+  });
+
+  it("uses the same recessed installation data for electric and gas griddles", () => {
+    expect(equipmentPlacementDefinitions["gas-griddle"].countertopCutoutWidthCm).toBeDefined();
+    expect(equipmentPlacementDefinitions["electric-griddle"]).toMatchObject({ countertopCutoutWidthCm: 66, blocksCountertop: true });
   });
 });

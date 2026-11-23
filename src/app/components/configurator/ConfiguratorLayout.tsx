@@ -20,6 +20,9 @@ import {
   moveEquipmentSide,
   moveEquipmentToCrossPlacement,
   removeEquipment,
+  setEquipmentAccessoryEnabled,
+  setEquipmentAccessoryLength,
+  type AutomaticAccessoryId,
   type EquipmentConfigurationState,
   type EquipmentCorner,
 } from "./data/equipmentConfiguration";
@@ -71,7 +74,11 @@ export function ConfiguratorLayout() {
     if (result.collisionWith) {
       if (notifyCollision) {
         showNotice(
-          text(result.collisionWith === "wheel-arch" ? "wheelArchNotice" : "collisionNotice"),
+          text(result.collisionWith === "wheel-arch"
+            ? "wheelArchNotice"
+            : result.collisionWith === "sink-clearance"
+              ? "sinkClearanceNotice"
+              : "collisionNotice"),
           "placement-collision",
         );
       }
@@ -111,6 +118,18 @@ export function ConfiguratorLayout() {
       return;
     }
     setEquipmentState(result.state);
+  }
+
+  function handleAccessoryEnabledChange(
+    equipmentId: string,
+    accessoryId: AutomaticAccessoryId,
+    enabled: boolean,
+  ) {
+    setEquipmentState((state) => setEquipmentAccessoryEnabled(state, equipmentId, accessoryId, enabled));
+  }
+
+  function handleAccessoryLengthChange(equipmentId: string, lengthCm: number) {
+    setEquipmentState((state) => setEquipmentAccessoryLength(state, equipmentId, "splash-guard", lengthCm));
   }
 
   async function handleFinishSubmit(customer: ConfigurationCustomer) {
@@ -153,6 +172,8 @@ export function ConfiguratorLayout() {
               onEquipmentSideChange={handleEquipmentSideChange}
               onEquipmentCornerChange={handleEquipmentCornerChange}
               onEquipmentCrossPositionChange={handleEquipmentCrossPositionChange}
+              onAccessoryEnabledChange={handleAccessoryEnabledChange}
+              onAccessoryLengthChange={handleAccessoryLengthChange}
               onEquipmentRemove={handleEquipmentRemove}
               onCancel={() => setSelectedEquipmentId(null)}
               onConfirm={() => setSelectedEquipmentId(null)}

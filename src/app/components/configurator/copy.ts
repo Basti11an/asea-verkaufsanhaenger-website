@@ -96,6 +96,12 @@ const copy = {
     "An extractor hood is added automatically.",
     "Odsávač pár sa pridáva automaticky.",
   ],
+  accessories: ["Zusatzgeräte", "Accessories", "Príslušenstvo"],
+  splashGuard: ["Spritzschutz", "Splash guard", "Ochranné sklo"],
+  extractorHood: ["Dunstabzug", "Extractor hood", "Odsávač pár"],
+  requiredAccessory: ["Pflicht", "Required", "Povinné"],
+  optionalAccessory: ["Optional", "Optional", "Voliteľné"],
+  accessoryLength: ["Länge", "Length", "Dĺžka"],
   hygieneMoveHelp: [
     "Spüle und Wasserhahn bewegen sich gemeinsam.",
     "Sink and tap move together.",
@@ -136,6 +142,11 @@ const copy = {
     "Diese Position ist durch den Radkasten blockiert.",
     "This position is blocked by the wheel arch.",
     "Táto poloha je blokovaná podbehom kolesa.",
+  ],
+  sinkClearanceNotice: [
+    "Die Fritteuse muss mindestens 38 cm Abstand zum Waschbecken haben.",
+    "The fryer must remain at least 38 cm from the sink.",
+    "Fritéza musí byť od drezu vzdialená najmenej 38 cm.",
   ],
   removedNotice: [
     "Das Gerät wurde entfernt. Über die Ausstattung unten kann es wieder hinzugefügt werden.",

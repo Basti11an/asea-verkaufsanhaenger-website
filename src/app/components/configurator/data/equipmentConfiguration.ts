@@ -29,7 +29,18 @@ export type EquipmentPlacementAnchor = {
   rotationDeg: number;
 };
 
-type AutomaticAccessoryId = "splash-guard" | "extractor-hood";
+export type AutomaticAccessoryId = "splash-guard" | "extractor-hood";
+export type AccessoryRequirement = "required" | "optional";
+export type AccessoryRule = {
+  id: AutomaticAccessoryId;
+  requirement: AccessoryRequirement;
+  defaultEnabled: boolean;
+};
+
+export type AccessorySetting = {
+  enabled: boolean;
+  lengthCm?: number;
+};
 
 type CollisionChannel = "floor" | "counter" | "wall" | "wall-mounted" | "backsplash";
 
@@ -42,6 +53,7 @@ export type EquipmentPlacement = {
   placementKey?: EquipmentCorner | EquipmentSpecialPosition;
   parentEquipmentId?: string;
   automaticAccessory?: AutomaticAccessoryId;
+  accessorySettings?: Partial<Record<AutomaticAccessoryId, AccessorySetting>>;
   standard?: boolean;
 };
 
@@ -69,8 +81,11 @@ export type EquipmentPlacementDefinition = {
     topMinYCm?: number;
     minDistanceToSideWallsCm?: number;
   };
-  automaticAccessories?: Partial<Record<EquipmentSide, readonly AutomaticAccessoryId[]>>;
+  accessoryRules?: Partial<Record<EquipmentSide, readonly AccessoryRule[]>>;
   countertopCutoutWidthCm?: number;
+  canStandOnGasCabinet?: boolean;
+  canBridgeGasCabinet?: boolean;
+  minDistanceToSinkCm?: number;
   collisionChannels: readonly CollisionChannel[];
   blocksCountertop: boolean;
   avoidsWheelArch: boolean;
@@ -81,9 +96,12 @@ const rearOnly: readonly EquipmentSide[] = ["closed-wall"];
 const frontOnly: readonly EquipmentSide[] = ["sales-hatch"];
 const extractorHoodSideClearanceCm = 28;
 const extractorHoodWidthCm = 60;
+export const splashGuardMinimumLengthCm = 130;
+const required = (id: AutomaticAccessoryId): AccessoryRule => ({ id, requirement: "required", defaultEnabled: true });
+const optional = (id: AutomaticAccessoryId): AccessoryRule => ({ id, requirement: "optional", defaultEnabled: true });
 const undercounterCorners: Readonly<Record<EquipmentCorner, EquipmentPlacementAnchor>> = {
-  "front-left": { side: "sales-hatch", centerCm: 30, rotationDeg: 90 },
-  "front-right": { side: "sales-hatch", centerCm: 330, rotationDeg: 90 },
+  "front-left": { side: "sales-hatch", centerCm: 31, rotationDeg: 90 },
+  "front-right": { side: "sales-hatch", centerCm: 329, rotationDeg: 90 },
   "rear-right": { side: "closed-wall", centerCm: 330, rotationDeg: -90 },
 };
 
@@ -99,7 +117,8 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     collisionChannels: ["floor", "counter"],
     blocksCountertop: true,
     avoidsWheelArch: false,
-    automaticAccessories: { "closed-wall": ["extractor-hood"] },
+    minDistanceToSinkCm: 38,
+    accessoryRules: { "closed-wall": [optional("extractor-hood")] },
   },
   "double-fryer": {
     productId: "double-fryer",
@@ -112,7 +131,8 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     collisionChannels: ["floor", "counter"],
     blocksCountertop: true,
     avoidsWheelArch: false,
-    automaticAccessories: { "closed-wall": ["extractor-hood"] },
+    minDistanceToSinkCm: 38,
+    accessoryRules: { "closed-wall": [required("extractor-hood")] },
   },
   "extractor-hood": {
     productId: "extractor-hood",
@@ -143,9 +163,9 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     collisionChannels: ["floor", "counter", "backsplash"],
     blocksCountertop: true,
     avoidsWheelArch: false,
-    automaticAccessories: {
-      "sales-hatch": ["splash-guard"],
-      "closed-wall": ["extractor-hood"],
+    accessoryRules: {
+      "sales-hatch": [required("splash-guard")],
+      "closed-wall": [optional("extractor-hood")],
     },
   },
   "contact-grill": {
@@ -159,7 +179,8 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     collisionChannels: ["counter"],
     blocksCountertop: false,
     avoidsWheelArch: false,
-    automaticAccessories: { "sales-hatch": ["splash-guard"] },
+    canStandOnGasCabinet: true,
+    accessoryRules: { "sales-hatch": [optional("splash-guard")] },
   },
   "electric-griddle": {
     productId: "electric-griddle",
@@ -169,10 +190,11 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     minCenterCm: 33,
     maxCenterCm: 327,
     widthCm: 66,
-    collisionChannels: ["counter"],
-    blocksCountertop: false,
+    countertopCutoutWidthCm: 66,
+    collisionChannels: ["floor", "counter"],
+    blocksCountertop: true,
     avoidsWheelArch: false,
-    automaticAccessories: { "sales-hatch": ["splash-guard"] },
+    accessoryRules: { "sales-hatch": [optional("splash-guard")] },
   },
   induction: {
     productId: "induction",
@@ -185,9 +207,10 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     collisionChannels: ["counter"],
     blocksCountertop: false,
     avoidsWheelArch: false,
-    automaticAccessories: {
-      "sales-hatch": ["splash-guard"],
-      "closed-wall": ["extractor-hood"],
+    canStandOnGasCabinet: true,
+    accessoryRules: {
+      "sales-hatch": [optional("splash-guard")],
+      "closed-wall": [optional("extractor-hood")],
     },
   },
   "bottle-fridge": {
@@ -207,7 +230,7 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     productId: "cooling-top",
     placementType: "side",
     allowedSides: frontOnly,
-    crossPlacement: { id: "trailer-end", side: "closed-wall", centerCm: 340, rotationDeg: -90 },
+    crossPlacement: { id: "trailer-end", side: "closed-wall", centerCm: 35.5, rotationDeg: -90 },
     defaultCenterCm: { "closed-wall": 180, "sales-hatch": 180 },
     minCenterCm: 60,
     maxCenterCm: 300,
@@ -216,6 +239,7 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     collisionChannels: ["counter"],
     blocksCountertop: false,
     avoidsWheelArch: false,
+    canBridgeGasCabinet: true,
   },
   "undercounter-fridge": {
     productId: "undercounter-fridge",
@@ -225,8 +249,8 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     cornerPlacements: undercounterCorners,
     defaultCorner: "rear-right",
     defaultCenterCm: { "closed-wall": 330, "sales-hatch": 330 },
-    minCenterCm: 30,
-    maxCenterCm: 330,
+    minCenterCm: 31,
+    maxCenterCm: 329,
     widthCm: 60,
     collisionChannels: ["floor"],
     blocksCountertop: false,
@@ -273,8 +297,8 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     placementType: "side",
     allowedSides: rearOnly,
     defaultCenterCm: { "closed-wall": 245, "sales-hatch": 245 },
-    minCenterCm: 50,
-    maxCenterCm: 310,
+    minCenterCm: 78,
+    maxCenterCm: 282,
     widthCm: 100,
     collisionChannels: ["wall-mounted"],
     blocksCountertop: false,
@@ -285,9 +309,9 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     placementType: "side",
     allowedSides: frontOnly,
     defaultCenterCm: { "closed-wall": 180, "sales-hatch": 180 },
-    minCenterCm: 39,
-    maxCenterCm: 321,
-    widthCm: 77,
+    minCenterCm: 65,
+    maxCenterCm: 295,
+    widthCm: splashGuardMinimumLengthCm,
     collisionChannels: ["backsplash"],
     blocksCountertop: false,
     avoidsWheelArch: false,
@@ -303,7 +327,8 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     collisionChannels: ["counter"],
     blocksCountertop: false,
     avoidsWheelArch: false,
-    automaticAccessories: { "closed-wall": ["extractor-hood"] },
+    canStandOnGasCabinet: false,
+    accessoryRules: { "closed-wall": [optional("extractor-hood")] },
   },
 };
 
@@ -340,30 +365,133 @@ function automaticAccessoryId(parentId: string, productId: AutomaticAccessoryId)
   return `automatic-${parentId}-${productId}`;
 }
 
+export function getAccessoryRules(item: EquipmentPlacement) {
+  return equipmentPlacementDefinitions[item.productId].accessoryRules?.[item.side] ?? [];
+}
+
+function getAccessorySetting(item: EquipmentPlacement, rule: AccessoryRule): AccessorySetting {
+  const stored = item.accessorySettings?.[rule.id];
+  return {
+    enabled: rule.requirement === "required" ? true : stored?.enabled ?? rule.defaultEnabled,
+    ...(rule.id === "splash-guard"
+      ? { lengthCm: Math.max(splashGuardMinimumLengthCm, stored?.lengthCm ?? splashGuardMinimumLengthCm) }
+      : {}),
+  };
+}
+
+function availableHoodSegment(
+  desiredCenterCm: number,
+  desiredWidthCm: number,
+  wallCabinets: readonly EquipmentPlacement[],
+) {
+  const trailerLengthCm = trailerConfiguration.planReference.interiorLengthCm;
+  const clearStart = extractorHoodSideClearanceCm;
+  const clearEnd = trailerLengthCm - extractorHoodSideClearanceCm;
+  const clampedCenter = Math.min(clearEnd - desiredWidthCm / 2, Math.max(clearStart + desiredWidthCm / 2, desiredCenterCm));
+  const desired = interval(clampedCenter, desiredWidthCm);
+  let segments = [{ startCm: Math.max(clearStart, desired.startCm), endCm: Math.min(clearEnd, desired.endCm) }];
+
+  wallCabinets.forEach((cabinet) => {
+    const blocked = interval(cabinet.centerCm, cabinet.widthCm ?? equipmentPlacementDefinitions[cabinet.productId].widthCm);
+    segments = segments.flatMap((segment) => {
+      if (!intervalsOverlap(segment.startCm, segment.endCm, blocked.startCm, blocked.endCm)) return [segment];
+      return [
+        { startCm: segment.startCm, endCm: Math.min(segment.endCm, blocked.startCm) },
+        { startCm: Math.max(segment.startCm, blocked.endCm), endCm: segment.endCm },
+      ].filter((part) => part.endCm - part.startCm > 0.5);
+    });
+  });
+
+  if (segments.length === 0) return null;
+  const selected = [...segments].sort((a, b) => {
+    const aContainsParent = desiredCenterCm >= a.startCm && desiredCenterCm <= a.endCm ? 1 : 0;
+    const bContainsParent = desiredCenterCm >= b.startCm && desiredCenterCm <= b.endCm ? 1 : 0;
+    return bContainsParent - aContainsParent || (b.endCm - b.startCm) - (a.endCm - a.startCm);
+  })[0];
+  return {
+    centerCm: (selected.startCm + selected.endCm) / 2,
+    widthCm: selected.endCm - selected.startCm,
+  };
+}
+
 export function synchronizeAutomaticAccessories(state: EquipmentConfigurationState): EquipmentConfigurationState {
   const mainItems = state.items.filter((item) => !item.automaticAccessory);
+  const wallCabinets = mainItems.filter((item) => item.productId === "wall-cabinet" && item.side === "closed-wall");
   const accessories = mainItems.flatMap((item) => {
-    const requiredAccessories = equipmentPlacementDefinitions[item.productId].automaticAccessories?.[item.side] ?? [];
-    return requiredAccessories.map((productId) => {
-      const widthCm = productId === "extractor-hood"
-        ? Math.max(extractorHoodWidthCm, equipmentPlacementDefinitions[item.productId].widthCm)
-        : undefined;
-      const minCenterCm = extractorHoodSideClearanceCm + (widthCm ?? 0) / 2;
-      const maxCenterCm = trailerConfiguration.planReference.interiorLengthCm - minCenterCm;
+    return getAccessoryRules(item).flatMap((rule) => {
+      const setting = getAccessorySetting(item, rule);
+      if (!setting.enabled) return [];
+      const desiredWidthCm = rule.id === "extractor-hood"
+        ? equipmentPlacementDefinitions[item.productId].widthCm
+        : setting.lengthCm ?? splashGuardMinimumLengthCm;
+      const placement = rule.id === "extractor-hood"
+        ? availableHoodSegment(item.centerCm, desiredWidthCm, wallCabinets)
+        : {
+            centerCm: Math.min(
+              trailerConfiguration.planReference.interiorLengthCm - desiredWidthCm / 2,
+              Math.max(desiredWidthCm / 2, item.centerCm),
+            ),
+            widthCm: desiredWidthCm,
+          };
+      if (!placement) return [];
       return {
-        id: automaticAccessoryId(item.id, productId),
-        productId,
+        id: automaticAccessoryId(item.id, rule.id),
+        productId: rule.id,
         side: item.side,
-        centerCm: widthCm === undefined
-          ? item.centerCm
-          : Math.min(maxCenterCm, Math.max(minCenterCm, item.centerCm)),
-        ...(widthCm === undefined ? {} : { widthCm }),
+        centerCm: placement.centerCm,
+        widthCm: placement.widthCm,
         parentEquipmentId: item.id,
-        automaticAccessory: productId,
+        automaticAccessory: rule.id,
       } satisfies EquipmentPlacement;
     });
   });
   return { items: [...mainItems, ...accessories] };
+}
+
+export function setEquipmentAccessoryEnabled(
+  state: EquipmentConfigurationState,
+  id: string,
+  accessoryId: AutomaticAccessoryId,
+  enabled: boolean,
+) {
+  const items = state.items.map((item) => {
+    if (item.id !== id || item.automaticAccessory) return item;
+    const rule = getAccessoryRules(item).find((entry) => entry.id === accessoryId);
+    if (!rule || rule.requirement === "required") return item;
+    return {
+      ...item,
+      accessorySettings: {
+        ...item.accessorySettings,
+        [accessoryId]: { ...getAccessorySetting(item, rule), enabled },
+      },
+    };
+  });
+  return synchronizeAutomaticAccessories({ items });
+}
+
+export function setEquipmentAccessoryLength(
+  state: EquipmentConfigurationState,
+  id: string,
+  accessoryId: "splash-guard",
+  requestedLengthCm: number,
+) {
+  const lengthCm = Math.max(splashGuardMinimumLengthCm, Math.min(
+    trailerConfiguration.planReference.interiorLengthCm,
+    Number.isFinite(requestedLengthCm) ? Math.round(requestedLengthCm) : splashGuardMinimumLengthCm,
+  ));
+  const items = state.items.map((item) => {
+    if (item.id !== id || item.automaticAccessory) return item;
+    const rule = getAccessoryRules(item).find((entry) => entry.id === accessoryId);
+    if (!rule) return item;
+    return {
+      ...item,
+      accessorySettings: {
+        ...item.accessorySettings,
+        [accessoryId]: { ...getAccessorySetting(item, rule), lengthCm },
+      },
+    };
+  });
+  return synchronizeAutomaticAccessories({ items });
 }
 
 export function clampEquipmentCenter(productId: ConfigurableProductId, value: number) {
@@ -385,6 +513,11 @@ function interval(centerCm: number, widthCm: number) {
   return { startCm: centerCm - widthCm / 2, endCm: centerCm + widthCm / 2 };
 }
 
+function intervalDistanceCm(a: { startCm: number; endCm: number }, b: { startCm: number; endCm: number }) {
+  if (intervalsOverlap(a.startCm, a.endCm, b.startCm, b.endCm)) return 0;
+  return Math.max(b.startCm - a.endCm, a.startCm - b.endCm, 0);
+}
+
 function overlapsWheelArch(centerCm: number, widthCm: number) {
   const itemInterval = interval(centerCm, widthCm);
   return wheelArchIntervals.some((arch) => intervalsOverlap(itemInterval.startCm, itemInterval.endCm, arch.startCm, arch.endCm));
@@ -403,15 +536,28 @@ export function findConfigurationCollision(
   if (item.automaticAccessory) return null;
   const definition = equipmentPlacementDefinitions[item.productId];
   const centerCm = clampEquipmentCenter(item.productId, requestedCenterCm);
-  const itemInterval = interval(centerCm, definition.widthCm);
+  const itemInterval = interval(centerCm, item.widthCm ?? definition.widthCm);
   const requestedSides = occupiedSides(item, definition, requestedSide);
 
   if (definition.avoidsWheelArch && overlapsWheelArch(centerCm, definition.widthCm)) return "wheel-arch";
 
   if (requestedSides.includes(fixedGasCabinet.side)
     && channelsOverlap(definition.collisionChannels, fixedGasCabinet.collisionChannels)
+    && !definition.canStandOnGasCabinet
+    && !definition.canBridgeGasCabinet
     && intervalsOverlap(itemInterval.startCm, itemInterval.endCm, fixedGasCabinet.startCm, fixedGasCabinet.endCm)) {
     return "fixed-gas-cabinet";
+  }
+
+  const sinkDistance = definition.minDistanceToSinkCm;
+  if (sinkDistance !== undefined) {
+    const tooClose = state.items.some((other) => {
+      if (other.id === item.id || other.automaticAccessory || other.side !== requestedSide) return false;
+      if (other.productId !== "double-sink" && other.productId !== "hygiene-area") return false;
+      const otherDefinition = equipmentPlacementDefinitions[other.productId];
+      return intervalDistanceCm(itemInterval, interval(other.centerCm, other.widthCm ?? otherDefinition.widthCm)) < sinkDistance;
+    });
+    if (tooClose) return "sink-clearance";
   }
 
   return state.items.find((other) => {
@@ -420,7 +566,12 @@ export function findConfigurationCollision(
     const otherSides = occupiedSides(other, otherDefinition, other.side);
     if (!requestedSides.some((side) => otherSides.includes(side))) return false;
     if (!channelsOverlap(definition.collisionChannels, otherDefinition.collisionChannels)) return false;
-    const otherInterval = interval(other.centerCm, otherDefinition.widthCm);
+    if (otherDefinition.minDistanceToSinkCm !== undefined
+      && (item.productId === "double-sink" || item.productId === "hygiene-area")
+      && intervalDistanceCm(itemInterval, interval(other.centerCm, other.widthCm ?? otherDefinition.widthCm)) < otherDefinition.minDistanceToSinkCm) {
+      return true;
+    }
+    const otherInterval = interval(other.centerCm, other.widthCm ?? otherDefinition.widthCm);
     return intervalsOverlap(itemInterval.startCm, itemInterval.endCm, otherInterval.startCm, otherInterval.endCm);
   })?.id ?? null;
 }
@@ -604,7 +755,7 @@ export function removeEquipment(state: EquipmentConfigurationState, id: string) 
 }
 
 export function getEquipmentInterval(item: EquipmentPlacement) {
-  return interval(item.centerCm, equipmentPlacementDefinitions[item.productId].widthCm);
+  return interval(item.centerCm, item.widthCm ?? equipmentPlacementDefinitions[item.productId].widthCm);
 }
 
 export function getCountertopCutoutInterval(item: EquipmentPlacement) {

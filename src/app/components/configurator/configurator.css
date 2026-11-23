@@ -432,6 +432,77 @@
   font-weight: 650;
 }
 
+.asea-editor-accessories {
+  display: grid;
+  gap: 7px;
+}
+
+.asea-editor-accessory {
+  display: grid;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px solid #d5d8d1;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.asea-editor-accessory > label:first-child {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.asea-editor-accessory input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--bronze-dark);
+}
+
+.asea-editor-accessory small {
+  color: #777b74;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.asea-accessory-length {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #656a62;
+  font-size: 10px;
+}
+
+.asea-accessory-length > div {
+  display: flex;
+  align-items: center;
+  width: 92px;
+  height: 30px;
+  border: 1px solid #c9cdc4;
+  border-radius: 4px;
+}
+
+.asea-accessory-length input {
+  min-width: 0;
+  width: 100%;
+  height: 28px;
+  padding: 0 4px 0 7px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  text-align: right;
+}
+
+.asea-accessory-length > div span {
+  padding-right: 7px;
+}
+
 .asea-editor-slider {
   display: flex;
   flex-direction: column;
@@ -704,11 +775,12 @@
 .asea-configurator .asea-worktop-materials button {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 38px;
-  padding: 7px 14px;
-  border: 1px solid #d7dbd2;
-  border-radius: 5px;
+  gap: 10px;
+  min-width: 132px;
+  min-height: 44px;
+  padding: 7px 16px 7px 9px;
+  border: 1px solid #cfd3cb;
+  border-radius: 6px;
   color: #343832;
   background: #fff;
   font-size: 11px;
@@ -716,19 +788,25 @@
 }
 
 .asea-configurator .asea-worktop-materials button.is-selected {
-  border-color: var(--bronze);
-  box-shadow: inset 0 0 0 1px var(--bronze);
+  border-color: var(--bronze-dark);
+  background: #fbfaf7;
+  box-shadow: inset 0 0 0 1px var(--bronze-dark), 0 2px 8px rgb(38 41 36 / 8%);
 }
 
 .asea-worktop-swatch {
-  width: 18px;
-  height: 18px;
-  border: 1px solid #8d918c;
+  width: 27px;
+  height: 27px;
+  border: 1px solid #7d817b;
   border-radius: 50%;
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 75%), 0 1px 2px rgb(20 22 19 / 18%);
 }
 
-.asea-worktop-swatch.is-stainless { background: linear-gradient(135deg, #f1f2ef, #90958f); }
-.asea-worktop-swatch.is-gray { background: #777a75; }
+.asea-worktop-swatch.is-stainless {
+  background: linear-gradient(135deg, #f5f6f3 0%, #a9ada8 45%, #e5e7e3 53%, #858a84 100%);
+}
+.asea-worktop-swatch.is-gray {
+  background: radial-gradient(circle at 35% 30%, #969a94, #666a65 72%);
+}
 
 .asea-configurator .asea-product-card {
   position: relative;

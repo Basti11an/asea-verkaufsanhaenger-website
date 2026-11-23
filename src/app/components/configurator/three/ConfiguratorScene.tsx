@@ -77,8 +77,6 @@ const WHEEL_ARCH_START_CM = WHEEL_ARCH.longitudinalStart;
 const WHEEL_ARCH_END_CM = WHEEL_ARCH.longitudinalEnd;
 const WHEEL_ARCH_HEIGHT = WHEEL_ARCH.heightEnd / 100;
 const WHEEL_ARCH_DEPTH = (WHEEL_ARCH.depthEnd - WHEEL_ARCH.depthStart) / 100;
-const GAS_GRIDDLE_HALF_WIDTH = 0.33025;
-const GAS_GRIDDLE_NICHE_HALF_WIDTH = GAS_GRIDDLE_HALF_WIDTH + 0.03;
 const CLOSED_WALL_NAME = "ASEA_ClosedWall";
 const END_WALLS_NAME = "ASEA_EndWalls";
 type ModelAsset = { scene: Group };
@@ -121,15 +119,16 @@ function createGasCabinetBoardUnit() {
   return unit;
 }
 
-function addGasGriddleNiche(parent: Group, side: EquipmentSide) {
+function addGriddleNiche(parent: Group, side: EquipmentSide, applianceWidth: number) {
   const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.52, metalness: 0.55 });
-  const nicheWidth = GAS_GRIDDLE_NICHE_HALF_WIDTH * 2;
+  const nicheHalfWidth = applianceWidth / 2 + 0.03;
+  const nicheWidth = nicheHalfWidth * 2;
   const centerZ = side === "closed-wall" ? -0.7 : 0.7;
   const nicheDepth = side === "sales-hatch" ? 0.52 : 0.6;
   const nicheCenterZ = side === "sales-hatch" ? centerZ - 0.04 : centerZ;
   addBox(parent, [nicheWidth, 0.03, nicheDepth], [0, 0.585, nicheCenterZ], steel);
-  addBox(parent, [0.03, 0.33, nicheDepth], [-GAS_GRIDDLE_NICHE_HALF_WIDTH + 0.015, 0.685, nicheCenterZ], steel);
-  addBox(parent, [0.03, 0.33, nicheDepth], [GAS_GRIDDLE_NICHE_HALF_WIDTH - 0.015, 0.685, nicheCenterZ], steel);
+  addBox(parent, [0.03, 0.33, nicheDepth], [-nicheHalfWidth + 0.015, 0.685, nicheCenterZ], steel);
+  addBox(parent, [0.03, 0.33, nicheDepth], [nicheHalfWidth - 0.015, 0.685, nicheCenterZ], steel);
 }
 
 function centimetersToWorldX(valueCm: number) {
@@ -238,6 +237,7 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
   const group = new Group();
   group.name = item.id;
   group.userData.equipmentSide = item.side;
+  group.userData.visualKey = `${item.productId}:${item.side}:${item.placementKey ?? "side"}:${item.widthCm ?? "default"}`;
   const definition = equipmentPlacementDefinitions[item.productId];
   const configuredRotation = item.placementKey === "trailer-end"
     ? definition.crossPlacement?.rotationDeg
@@ -262,7 +262,7 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
       const hoodWidthCm = item.widthCm ?? definition.widthCm;
       addPart(
         group,
-        hoodWidthCm > 75 ? assets.wideHood : assets.hood,
+        assets.hood,
         [hoodWidthCm, 28, 70],
         rotation,
         sidePlacement(side, (definition.placementConstraints?.topMinYCm ?? 202) / 100, hoodWidthCm / 100),
@@ -270,14 +270,15 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
       break;
     }
     case "gas-griddle":
-      addGasGriddleNiche(group, side);
+      addGriddleNiche(group, side, 0.6605);
       addPart(group, assets.gasGriddle, [66, 27.9, 60], rotation, sidePlacement(side, 0.571, 0.6605));
       break;
     case "contact-grill":
       addPart(group, assets.contactGrill, [41, 20, 46], rotation, sidePlacement(side, 0.85, 0.41));
       break;
     case "electric-griddle":
-      addPart(group, assets.electricGriddle, [66, 31, 58], rotation, sidePlacement(side, 0.85, 0.66));
+      addGriddleNiche(group, side, 0.66);
+      addPart(group, assets.electricGriddle, [66, 31, 58], rotation, sidePlacement(side, 0.571, 0.66));
       break;
     case "induction":
       addPart(group, assets.induction, [33, 10.5, 47], rotation, sidePlacement(side, 0.85, 0.33));
@@ -325,7 +326,10 @@ function createEquipmentVisual(item: EquipmentPlacement, assets: ModelAssets) {
       });
       break;
     case "splash-guard":
-      addPart(group, assets.splashGuard, [77, 40, 7], rotation, sidePlacement(side, 0.85, 0.77));
+      {
+        const splashWidthCm = item.widthCm ?? definition.widthCm;
+        addPart(group, assets.splashGuard, [splashWidthCm, 40, 7], rotation, sidePlacement(side, 0.85, splashWidthCm / 100));
+      }
       break;
     case "kebab-spit":
       addPart(group, assets.kebabSpit, [61, 116, 70], rotation, sidePlacement(side, 0.85, 0.61));
@@ -546,7 +550,8 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
       });
       state.items.forEach((item) => {
         let group = equipmentGroups.get(item.id);
-        if (group && group.userData.equipmentSide !== item.side) {
+        const visualKey = `${item.productId}:${item.side}:${item.placementKey ?? "side"}:${item.widthCm ?? "default"}`;
+        if (group && group.userData.visualKey !== visualKey) {
           group.removeFromParent();
           disposeGroup(group);
           equipmentGroups.delete(item.id);
@@ -663,14 +668,13 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
 
     async function loadConfiguration() {
       try {
-        const [trailer, doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, wideHood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet, kebabSpit] = await Promise.all([
+        const [trailer, doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet, kebabSpit] = await Promise.all([
           loadConfiguratorModel(trailerConfiguration.modelPath),
           loadConfiguratorModel("/configurator-models/interieur/kochen/Doppelfriteuse.glb", "Fritteuse_IMBISS_II"),
           loadConfiguratorModel("/configurator-models/interieur/hygiene/Hygienebereich.glb"),
           loadConfiguratorModel("/configurator-models/interieur/kuehlung/Kuehlschrank_Unterbau.glb", "Kuehlschrank_Unterbau_600x600x850"),
           loadConfiguratorModel("/configurator-models/interieur/kochen/Gasbraeter.glb", "Gasbraeter_gross_3fl"),
           loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb", "Dunstabzug_Flachhaube_600x700x220"),
-          loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Dunstabzug_600.glb", "Dunstabzug_Flachhaube_1000x700x220"),
           loadConfiguratorModel("/configurator-models/interieur/lueftung-und-schutz/Spritzschutz_700.glb", "Spritzschutz_Glas_700x400"),
           loadConfiguratorModel("/configurator-models/interieur/arbeitsflaechen/Arbeitsplatten_Staender.glb", "Arbeitsplatten_Staender"),
           loadOptional("/configurator-models/interieur/kochen/Friteuse.glb", "Fritteuse_IMBISS_I"),
@@ -685,7 +689,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
           loadOptional("/configurator-models/interieur/kochen/Kebapspiess.glb"),
         ]);
         if (disposed) return;
-        assets = { doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, wideHood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet, kebabSpit };
+        assets = { doubleFryer, hygieneArea, undercounterFridge, gasGriddle, hood, splashGuard, countertopStand, fryer, contactGrill, electricGriddle, induction, bottleFridge, coolingTop, doubleSink, worktable, wallCabinet, kebabSpit };
         trailerModel = prepareTrailerModel(trailer.scene, trailer.animations);
         interiorShell = createInteriorShell();
         scene.add(trailerModel, interiorShell);

@@ -4,6 +4,9 @@ import { useConfiguratorCopy } from "./copy";
 import { productById } from "./data/products";
 import {
   equipmentPlacementDefinitions,
+  getAccessoryRules,
+  splashGuardMinimumLengthCm,
+  type AutomaticAccessoryId,
   type EquipmentCorner,
   type EquipmentConfigurationState,
 } from "./data/equipmentConfiguration";
@@ -16,6 +19,8 @@ type EquipmentEditorProps = {
   onEquipmentSideChange: (equipmentId: string, side: EquipmentSide) => void;
   onEquipmentCornerChange: (equipmentId: string, corner: EquipmentCorner) => void;
   onEquipmentCrossPositionChange: (equipmentId: string) => void;
+  onAccessoryEnabledChange: (equipmentId: string, accessoryId: AutomaticAccessoryId, enabled: boolean) => void;
+  onAccessoryLengthChange: (equipmentId: string, lengthCm: number) => void;
   onEquipmentRemove: (equipmentId: string) => void;
   onCancel: () => void;
   onConfirm: () => void;
@@ -34,6 +39,8 @@ export function EquipmentEditor({
   onEquipmentSideChange,
   onEquipmentCornerChange,
   onEquipmentCrossPositionChange,
+  onAccessoryEnabledChange,
+  onAccessoryLengthChange,
   onEquipmentRemove,
   onCancel,
   onConfirm,
@@ -58,7 +65,7 @@ export function EquipmentEditor({
   const fixedPositionLabel = definition.placementType === "cross"
     ? text("crossTrailerEnd")
     : text("rearRightCorner");
-  const automaticAccessories = definition.automaticAccessories?.[placement.side] ?? [];
+  const accessoryRules = getAccessoryRules(placement);
   const supportsCrossPlacement = Boolean(definition.crossPlacement);
   const isCrossPlacement = placement.placementKey === "trailer-end";
   const canMoveAlongSide = definition.placementType === "side" && !isCrossPlacement;
@@ -72,11 +79,46 @@ export function EquipmentEditor({
           <span>{help}</span>
         </div>
       </div>
-      {automaticAccessories.map((accessory) => (
-        <div key={accessory} className="asea-editor-readonly-value">
-          {text(accessory === "splash-guard" ? "automaticSplashGuard" : "automaticExtractorHood")}
+      {accessoryRules.length > 0 && (
+        <div className="asea-editor-accessories">
+          <div className="asea-editor-field-label">{text("accessories")}</div>
+          {accessoryRules.map((rule) => {
+            const setting = placement.accessorySettings?.[rule.id];
+            const enabled = rule.requirement === "required" ? true : setting?.enabled ?? rule.defaultEnabled;
+            const label = text(rule.id === "splash-guard" ? "splashGuard" : "extractorHood");
+            return (
+              <div key={rule.id} className="asea-editor-accessory">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={enabled}
+                    disabled={rule.requirement === "required"}
+                    onChange={(event) => onAccessoryEnabledChange(placement.id, rule.id, event.target.checked)}
+                  />
+                  <span>{label}</span>
+                  <small>{text(rule.requirement === "required" ? "requiredAccessory" : "optionalAccessory")}</small>
+                </label>
+                {rule.id === "splash-guard" && enabled && (
+                  <label className="asea-accessory-length">
+                    <span>{text("accessoryLength")}</span>
+                    <div>
+                      <input
+                        type="number"
+                        min={splashGuardMinimumLengthCm}
+                        max={360}
+                        step={1}
+                        value={Math.max(splashGuardMinimumLengthCm, setting?.lengthCm ?? splashGuardMinimumLengthCm)}
+                        onChange={(event) => onAccessoryLengthChange(placement.id, Number(event.target.value))}
+                      />
+                      <span>cm</span>
+                    </div>
+                  </label>
+                )}
+              </div>
+            );
+          })}
         </div>
-      ))}
+      )}
       {supportsCrossPlacement ? (
         <>
           <div className="asea-editor-field-label">{text("position")}</div>
@@ -186,7 +228,22 @@ export function EquipmentEditor({
             step={0.5}
             value={placement.centerCm}
             aria-label={text("centerFromLeft")}
-            onChange={(event) => onEquipmentCenterChange(placement.id, Number(event.target.value))}
+            onChange={(event) => {
+              const nextValue = Number(event.target.value);
+              pendingRangeValue.current = nextValue;
+              onEquipmentCenterChange(placement.id, nextValue, false);
+            }}
+            onBlur={() => {
+              if (pendingRangeValue.current === null) return;
+              onEquipmentCenterChange(placement.id, pendingRangeValue.current, true);
+              pendingRangeValue.current = null;
+            }}
+            onKeyDown={(event) => {
+              if (event.key !== "Enter" || pendingRangeValue.current === null) return;
+              onEquipmentCenterChange(placement.id, pendingRangeValue.current, true);
+              pendingRangeValue.current = null;
+              event.currentTarget.blur();
+            }}
           />
           <span>cm</span>
         </div>
