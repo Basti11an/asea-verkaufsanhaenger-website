@@ -19,7 +19,7 @@ export function EquipmentSidebar({
   const { text, name } = useConfiguratorCopy();
 
   return (
-    <aside className="asea-equipment-sidebar">
+    <aside className="asea-equipment-sidebar" data-tour="equipment-list">
       <div className="asea-sidebar-heading">
         <ClipboardCheck size={18} aria-hidden="true" />
         <h2>{text("equipment")}</h2>
@@ -52,7 +52,7 @@ export function EquipmentSidebar({
         })}
       </ul>
       <div className="asea-sidebar-finish">
-        <button type="button" className="asea-finish-button" onClick={onFinish}>
+        <button type="button" className="asea-finish-button" onClick={onFinish} data-tour="finish">
           <Check size={16} aria-hidden="true" />
           {text("finish")}
         </button>

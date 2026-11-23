@@ -24,7 +24,7 @@ export function ConfiguratorTopbar({ view, disabled, onViewChange }: Configurato
         <img src="/asea-logo.png" alt="ASEA" />
         <span>{text("title")}</span>
       </div>
-      <div className="asea-view-switcher" role="group" aria-label={text("viewSelector")}>
+      <div className="asea-view-switcher" role="group" aria-label={text("viewSelector")} data-tour="view-switcher">
         {views.map(({ id, icon: Icon }) => (
           <button
             key={id}

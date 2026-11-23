@@ -42,7 +42,7 @@ export function ProductBar({ onProductClick, editing, worktopMaterial, onWorktop
       <div className="asea-product-bar-heading">
         <h2>{text("products")}</h2>
       </div>
-      <div className="asea-product-categories" role="tablist" aria-label={text("products")}>
+      <div className="asea-product-categories" role="tablist" aria-label={text("products")} data-tour="categories">
         {categories.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -81,7 +81,7 @@ export function ProductBar({ onProductClick, editing, worktopMaterial, onWorktop
       ) : (
         <>
           <button type="button" className="asea-strip-arrow" onClick={() => scroll(-1)} aria-label={text("scrollProductsLeft")}><ChevronLeft size={17} /></button>
-          <div className="asea-product-strip" ref={stripRef}>
+          <div className="asea-product-strip" ref={stripRef} data-tour="product-list">
             {visibleProducts.map((product) => {
               const productName = name(product.name);
               return (

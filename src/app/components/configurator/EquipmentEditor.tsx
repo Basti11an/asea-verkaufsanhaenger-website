@@ -71,7 +71,7 @@ export function EquipmentEditor({
   const canMoveAlongSide = definition.placementType === "side" && !isCrossPlacement;
 
   return (
-    <section className="asea-equipment-editor" aria-label={text("editEquipment")}>
+    <section className="asea-equipment-editor" aria-label={text("editEquipment")} data-tour="product-editor">
       <div className="asea-editor-identity">
         <MoveHorizontal size={18} aria-hidden="true" />
         <div>

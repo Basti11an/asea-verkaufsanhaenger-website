@@ -8,6 +8,7 @@ import { ProductBar } from "./ProductBar";
 import { StartOverlay } from "./StartOverlay";
 import { ConfiguratorScene, type ConfiguratorSceneHandle } from "./three/ConfiguratorScene";
 import { ConfiguratorFinishModal } from "./finish/ConfiguratorFinishModal";
+import { ConfiguratorTutorial } from "./ConfiguratorTutorial";
 import { finishConfiguration } from "./finish/configurationFinish";
 import type { ConfigurationCustomer } from "./finish/finishValidation";
 import type { ConfiguratorView, ProductDefinition } from "./types";
@@ -38,6 +39,8 @@ export function ConfiguratorLayout() {
   const [equipmentState, setEquipmentState] = useState<EquipmentConfigurationState>(createDefaultEquipmentConfiguration);
   const [worktopMaterial, setWorktopMaterial] = useState<"stainless" | "gray">("stainless");
   const [finishModalOpen, setFinishModalOpen] = useState(false);
+  const [tutorialActive, setTutorialActive] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
 
   const showNotice = (message: string, id?: string) => toast(message, { duration: 3200, id });
 
@@ -154,7 +157,7 @@ export function ConfiguratorLayout() {
       <div className="asea-config-desktop">
         <ConfiguratorTopbar view={view} disabled={!started} onViewChange={setView} />
         <div className="asea-config-workspace">
-          <main className="asea-config-stage">
+          <main className="asea-config-stage" data-tour="viewport">
             <ConfiguratorScene
               ref={sceneRef}
               view={view}
@@ -162,7 +165,15 @@ export function ConfiguratorLayout() {
               equipmentState={equipmentState}
               selectedEquipmentId={selectedEquipmentId}
             />
-            <StartOverlay visible={!started} onStart={() => setStarted(true)} />
+            <StartOverlay
+              visible={!started}
+              onTutorialStart={() => {
+                setStarted(true);
+                setTutorialStep(0);
+                setTutorialActive(true);
+              }}
+              onDirectStart={() => setStarted(true)}
+            />
           </main>
           {selectedEquipmentId ? (
             <EquipmentEditor
@@ -195,6 +206,16 @@ export function ConfiguratorLayout() {
           editing={Boolean(selectedEquipmentId)}
           worktopMaterial={worktopMaterial}
           onWorktopMaterialChange={setWorktopMaterial}
+        />
+        <ConfiguratorTutorial
+          active={tutorialActive}
+          step={tutorialStep}
+          onStepChange={setTutorialStep}
+          onSkip={() => setTutorialActive(false)}
+          onComplete={() => {
+            setTutorialActive(false);
+            showNotice(text("tutorialComplete"), "tutorial-complete");
+          }}
         />
       </div>
       <ConfiguratorFinishModal
