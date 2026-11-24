@@ -346,7 +346,9 @@ export const fixedGasCabinet = {
 };
 
 function makeId(productId: ConfigurableProductId) {
-  return `${productId}-${crypto.randomUUID()}`;
+  const randomId = globalThis.crypto?.randomUUID?.()
+    ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+  return `${productId}-${randomId}`;
 }
 
 export function createDefaultEquipmentConfiguration(): EquipmentConfigurationState {
@@ -535,7 +537,9 @@ export function findConfigurationCollision(
 ) {
   if (item.automaticAccessory) return null;
   const definition = equipmentPlacementDefinitions[item.productId];
-  const centerCm = clampEquipmentCenter(item.productId, requestedCenterCm);
+  const centerCm = item.placementKey === "trailer-end"
+    ? requestedCenterCm
+    : clampEquipmentCenter(item.productId, requestedCenterCm);
   const itemInterval = interval(centerCm, item.widthCm ?? definition.widthCm);
   const requestedSides = occupiedSides(item, definition, requestedSide);
 

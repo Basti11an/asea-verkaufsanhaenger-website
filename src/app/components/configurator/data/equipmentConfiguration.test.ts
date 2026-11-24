@@ -267,6 +267,20 @@ describe("configurable equipment rules", () => {
     expect(front.state.items[0]).toMatchObject({ side: "sales-hatch", placementKey: undefined });
   });
 
+  it("moves the cooling top crosswise with the real standard equipment present", () => {
+    const initial = createDefaultEquipmentConfiguration();
+    const added = addEquipment(initial, "cooling-top", "sales-hatch");
+    expect(added.item).not.toBeNull();
+
+    const cross = moveEquipmentToCrossPlacement(added.state, added.item!.id);
+    expect(cross.collisionWith).toBeNull();
+    expect(cross.state.items.find((item) => item.id === added.item!.id)).toMatchObject({
+      side: "closed-wall",
+      centerCm: 35.5,
+      placementKey: "trailer-end",
+    });
+  });
+
   it("moves an undercounter fridge only between configured corners", () => {
     const added = addEquipment({ items: [] }, "undercounter-fridge");
     expect(added.item).toMatchObject({ side: "closed-wall", centerCm: 330, placementKey: "rear-right" });
