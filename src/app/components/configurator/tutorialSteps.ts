@@ -22,7 +22,7 @@ export const tutorialSteps: readonly TutorialStep[] = [
   { target: "categories", title: "tutorialStep3Title", text: "tutorialStep3Text" },
   { target: "product-list", title: "tutorialStep4Title", text: "tutorialStep4Text", hint: "tutorialStep4Hint" },
   { target: "product-editor", fallbackTarget: "equipment-list", title: "tutorialStep5Title", text: "tutorialStep5Text" },
-  { target: "viewport", title: "tutorialStep6Title", text: "tutorialStep6Text", hint: "tutorialStep6Hint" },
+  { target: "position-slider", title: "tutorialStep6Title", text: "tutorialStep6Text", hint: "tutorialStep6Hint" },
   { target: "equipment-list", title: "tutorialStep7Title", text: "tutorialStep7Text" },
   { target: "finish", title: "tutorialStep8Title", text: "tutorialStep8Text" },
 ] as const;

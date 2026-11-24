@@ -184,7 +184,7 @@ export function EquipmentEditor({
       {canMoveAlongSide && (
         <>
           <div className="asea-editor-field-label">{text("centerFromLeft")}</div>
-          <label className="asea-editor-slider" htmlFor="equipment-position">
+          <label className="asea-editor-slider" htmlFor="equipment-position" data-tour="position-slider">
         <span>{text("centerFromLeft")}</span>
         <input
           id="equipment-position"

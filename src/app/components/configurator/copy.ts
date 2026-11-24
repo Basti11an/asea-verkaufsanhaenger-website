@@ -77,11 +77,11 @@ const copy = {
     "Here you choose where the appliance should stand.",
     "Tu určíte, kde má zariadenie stáť.",
   ],
-  tutorialStep6Title: ["Gerät verschieben", "Move the appliance", "Presuňte zariadenie"],
+  tutorialStep6Title: ["Position verändern", "Change the position", "Zmeňte polohu"],
   tutorialStep6Text: [
-    "Ziehe das Gerät an die gewünschte Stelle.",
-    "Drag the appliance to the position you want.",
-    "Presuňte zariadenie na požadované miesto.",
+    "Mit diesem Schieberegler kannst du die Position des Geräts verändern.",
+    "Use this slider to change the position of the appliance.",
+    "Pomocou tohto posuvníka môžete zmeniť polohu zariadenia.",
   ],
   tutorialStep6Hint: [
     "Ungültige Positionen werden automatisch verhindert.",

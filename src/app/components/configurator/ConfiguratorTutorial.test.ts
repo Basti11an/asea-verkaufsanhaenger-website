@@ -10,7 +10,7 @@ describe("configurator tutorial", () => {
       "categories",
       "product-list",
       "product-editor",
-      "viewport",
+      "position-slider",
       "equipment-list",
       "finish",
     ]);

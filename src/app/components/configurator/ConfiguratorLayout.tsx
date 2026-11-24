@@ -44,6 +44,17 @@ export function ConfiguratorLayout() {
 
   const showNotice = (message: string, id?: string) => toast(message, { duration: 3200, id });
 
+  function handleTutorialStepChange(nextStep: number) {
+    setTutorialStep(nextStep);
+    // Only the editor view changes during these two steps; no equipment data is modified.
+    setSelectedEquipmentId(nextStep === 4 || nextStep === 5 ? "standard-double-fryer" : null);
+  }
+
+  function closeTutorial() {
+    setTutorialActive(false);
+    setSelectedEquipmentId(null);
+  }
+
   function selectEquipment(equipmentId: string) {
     if (!equipmentState.items.some((item) => item.id === equipmentId)) return;
     setStarted(true);
@@ -169,7 +180,7 @@ export function ConfiguratorLayout() {
               visible={!started}
               onTutorialStart={() => {
                 setStarted(true);
-                setTutorialStep(0);
+                handleTutorialStepChange(0);
                 setTutorialActive(true);
               }}
               onDirectStart={() => setStarted(true)}
@@ -210,10 +221,10 @@ export function ConfiguratorLayout() {
         <ConfiguratorTutorial
           active={tutorialActive}
           step={tutorialStep}
-          onStepChange={setTutorialStep}
-          onSkip={() => setTutorialActive(false)}
+          onStepChange={handleTutorialStepChange}
+          onSkip={closeTutorial}
           onComplete={() => {
-            setTutorialActive(false);
+            closeTutorial();
             showNotice(text("tutorialComplete"), "tutorial-complete");
           }}
         />
