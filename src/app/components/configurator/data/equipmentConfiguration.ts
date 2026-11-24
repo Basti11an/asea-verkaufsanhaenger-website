@@ -85,6 +85,7 @@ export type EquipmentPlacementDefinition = {
   countertopCutoutWidthCm?: number;
   canStandOnGasCabinet?: boolean;
   canBridgeGasCabinet?: boolean;
+  canBridgeGasCabinetAtTrailerEnd?: boolean;
   minDistanceToSinkCm?: number;
   collisionChannels: readonly CollisionChannel[];
   blocksCountertop: boolean;
@@ -230,7 +231,8 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     productId: "cooling-top",
     placementType: "side",
     allowedSides: frontOnly,
-    crossPlacement: { id: "trailer-end", side: "closed-wall", centerCm: 35.5, rotationDeg: -90 },
+    // Keep the refrigerated display facing into the trailer when it is mounted crosswise.
+    crossPlacement: { id: "trailer-end", side: "closed-wall", centerCm: 35.5, rotationDeg: 90 },
     defaultCenterCm: { "closed-wall": 180, "sales-hatch": 180 },
     minCenterCm: 60,
     maxCenterCm: 300,
@@ -239,7 +241,9 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     collisionChannels: ["counter"],
     blocksCountertop: false,
     avoidsWheelArch: false,
-    canBridgeGasCabinet: true,
+    // The crosswise end position rests on the fixed base. In the normal front
+    // position it must never be placed above the gas cabinet or another device.
+    canBridgeGasCabinetAtTrailerEnd: true,
   },
   "undercounter-fridge": {
     productId: "undercounter-fridge",
@@ -548,7 +552,7 @@ export function findConfigurationCollision(
   if (requestedSides.includes(fixedGasCabinet.side)
     && channelsOverlap(definition.collisionChannels, fixedGasCabinet.collisionChannels)
     && !definition.canStandOnGasCabinet
-    && !definition.canBridgeGasCabinet
+    && !(definition.canBridgeGasCabinet || (definition.canBridgeGasCabinetAtTrailerEnd && item.placementKey === "trailer-end"))
     && intervalsOverlap(itemInterval.startCm, itemInterval.endCm, fixedGasCabinet.startCm, fixedGasCabinet.endCm)) {
     return "fixed-gas-cabinet";
   }

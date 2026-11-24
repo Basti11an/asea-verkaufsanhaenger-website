@@ -238,7 +238,7 @@ describe("configurable equipment rules", () => {
       allowedSides: ["sales-hatch"],
       widthCm: 40,
       displayWidthCm: 120,
-      crossPlacement: { id: "trailer-end", centerCm: 35.5, rotationDeg: -90 },
+      crossPlacement: { id: "trailer-end", centerCm: 35.5, rotationDeg: 90 },
     });
     expect(equipmentPlacementDefinitions["undercounter-fridge"]).toMatchObject({
       placementType: "corner",
@@ -279,6 +279,31 @@ describe("configurable equipment rules", () => {
       centerCm: 35.5,
       placementKey: "trailer-end",
     });
+  });
+
+  it("prevents the cooling top from being placed over a gas appliance", () => {
+    const coolingTop = {
+      id: "cooling-top",
+      productId: "cooling-top" as const,
+      side: "sales-hatch" as const,
+      centerCm: 180,
+    };
+    const gasGriddle = {
+      id: "gas-griddle",
+      productId: "gas-griddle" as const,
+      side: "sales-hatch" as const,
+      centerCm: 180,
+    };
+
+    expect(findConfigurationCollision({ items: [gasGriddle] }, coolingTop)).toBe("gas-griddle");
+
+    const crosswiseCoolingTop = {
+      ...coolingTop,
+      side: "closed-wall" as const,
+      centerCm: 35.5,
+      placementKey: "trailer-end" as const,
+    };
+    expect(findConfigurationCollision({ items: [gasGriddle] }, crosswiseCoolingTop)).toBeNull();
   });
 
   it("moves an undercounter fridge only between configured corners", () => {
