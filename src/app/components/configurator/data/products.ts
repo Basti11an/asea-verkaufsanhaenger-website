@@ -19,7 +19,7 @@ type ProductEntry = Omit<
 const productEntries: readonly ProductEntry[] = [
   {
     id: "fryer",
-    name: ["Friteuse", "Fryer", "Fritéza"],
+    name: ["Fritteuse", "Fryer", "Fritéza"],
     category: "cooking",
     preferredView: "top",
     modelPath: "/configurator-models/interieur/kochen/Friteuse.glb",
@@ -63,9 +63,9 @@ const productEntries: readonly ProductEntry[] = [
   {
     id: "gas-griddle",
     name: [
-      "Gasbräter mit Spritzschutz",
-      "Gas griddles with splash guard",
-      "Plynové grily s ochranným sklom",
+      "Gasbräter",
+      "Gas griddle",
+      "Plynová grilovacia platňa",
     ],
     category: "cooking",
     preferredView: "top",
@@ -92,7 +92,7 @@ const productEntries: readonly ProductEntry[] = [
   },
   {
     id: "electric-griddle",
-    name: ["Griddleplatte Elektro", "Electric griddle", "Elektrická grilovacia platňa"],
+    name: ["Elektro-Grillplatte", "Electric griddle", "Elektrická grilovacia platňa"],
     category: "cooking",
     preferredView: "top",
     modelPath: "/configurator-models/interieur/kochen/Griddleplatte_Elektro.glb",
@@ -105,7 +105,7 @@ const productEntries: readonly ProductEntry[] = [
   },
   {
     id: "induction",
-    name: ["Induktionskocher", "Induction hob", "Indukčný varič"],
+    name: ["Induktionskochfeld", "Induction hob", "Indukčná varná doska"],
     category: "cooking",
     preferredView: "top",
     modelPath: "/configurator-models/interieur/kochen/Induktionskocher.glb",
@@ -144,7 +144,7 @@ const productEntries: readonly ProductEntry[] = [
   },
   {
     id: "undercounter-fridge",
-    name: ["Kühlschrank Unterbau", "Undercounter fridge", "Podpultová chladnička"],
+    name: ["Unterbaukühlschrank", "Undercounter fridge", "Podpultová chladnička"],
     category: "cooling",
     preferredView: "front",
     modelPath: "/configurator-models/interieur/kuehlung/Kuehlschrank_Unterbau.glb",
@@ -170,7 +170,7 @@ const productEntries: readonly ProductEntry[] = [
   },
   {
     id: "hygiene-area",
-    name: ["Hygienepaket", "Hygiene package", "Hygienický balík"],
+    name: ["Hygienebereich", "Hygiene area", "Hygienická zóna"],
     category: "hygiene",
     preferredView: "front",
     modelPath: "/configurator-models/interieur/hygiene/Hygienebereich.glb",
@@ -196,7 +196,7 @@ const productEntries: readonly ProductEntry[] = [
   },
   {
     id: "wall-cabinet",
-    name: ["Hängeschrank 1 m", "Wall cabinet 1 m", "Závesná skrinka 1 m"],
+    name: ["Hängeschrank", "Wall cabinet", "Závesná skrinka"],
     category: "cabinets",
     preferredView: "front",
     modelPath: "/configurator-models/interieur/moebel/Haengeschrank.glb",
@@ -222,7 +222,7 @@ const productEntries: readonly ProductEntry[] = [
   },
   {
     id: "kebab-spit",
-    name: ["Kebabspieß", "Kebab rotisserie", "Kebabový gril"],
+    name: ["Kebabgrill", "Kebab grill", "Kebabový gril"],
     category: "cooking",
     preferredView: "front",
     modelPath: "/configurator-models/interieur/kochen/Kebapspiess.glb",

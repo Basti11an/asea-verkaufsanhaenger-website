@@ -1,5 +1,9 @@
 import { ConfiguratorLayout } from "../configurator/ConfiguratorLayout";
 
-export function ConfiguratorPage() {
-  return <ConfiguratorLayout />;
+type ConfiguratorPageProps = {
+  onNavigate: (page: string) => void;
+};
+
+export function ConfiguratorPage({ onNavigate }: ConfiguratorPageProps) {
+  return <ConfiguratorLayout onBack={() => onNavigate("models")} />;
 }

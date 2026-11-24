@@ -2,6 +2,7 @@ import { useLanguage } from "../../context/LanguageContext";
 
 const copy = {
   title: ["Konfigurator", "Configurator", "Konfigurátor"],
+  backToModels: ["Zurück zu den Modellen", "Back to models", "Späť na modely"],
   viewSelector: ["Ansicht auswählen", "Select view", "Vybrať pohľad"],
   sceneLabel: [
     "Interaktives 3D-Modell des ASEA Verkaufsanhängers",

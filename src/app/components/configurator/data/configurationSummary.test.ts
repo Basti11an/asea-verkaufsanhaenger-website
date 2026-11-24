@@ -22,8 +22,8 @@ describe("configuration summary", () => {
     expect(rearRows).toEqual(expect.arrayContaining([
       expect.objectContaining({ name: "Gasschrank", widthCm: 71, centerCm: 35.5, note: "fix, hinten links" }),
       expect.objectContaining({ name: "Doppelfritteuse", widthCm: 60, centerCm: 100.5 }),
-      expect.objectContaining({ name: "Hygienepaket", widthCm: 100, centerCm: 245 }),
-      expect.objectContaining({ name: "Kühlschrank Unterbau", widthCm: 60, centerCm: 330 }),
+      expect.objectContaining({ name: "Hygienebereich", widthCm: 100, centerCm: 245 }),
+      expect.objectContaining({ name: "Unterbaukühlschrank", widthCm: 60, centerCm: 330 }),
     ]));
   });
 });

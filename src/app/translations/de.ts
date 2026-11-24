@@ -256,7 +256,7 @@ export const de = {
   equip_insulation_name: 'Isolierung',
   equip_insulation_desc: 'Hochwertige Wärmedämmung für alle Jahreszeiten',
   equip_cooking_name: 'Kochgeräte',
-  equip_cooking_desc: 'Gasherd, Grillplatte, Friteuse - nach Bedarf',
+  equip_cooking_desc: 'Gasherd, Grillplatte, Fritteuse - nach Bedarf',
   equip_coffee_name: 'Kaffeemaschine',
   equip_coffee_desc: 'Professionelle Espresso- und Kaffeemaschinen',
   equip_fridge_name: 'Kühlgeräte',

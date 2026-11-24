@@ -1,10 +1,11 @@
-import { Box, PanelTop, Store, Warehouse } from "lucide-react";
+import { ArrowLeft, Box, PanelTop, Store, Warehouse } from "lucide-react";
 import type { ConfiguratorView } from "./types";
 import { useConfiguratorCopy } from "./copy";
 
 type ConfiguratorTopbarProps = {
   view: ConfiguratorView;
   disabled: boolean;
+  onBack: () => void;
   onViewChange: (view: ConfiguratorView) => void;
 };
 
@@ -15,14 +16,20 @@ const views = [
   { id: "rear", icon: Warehouse },
 ] as const;
 
-export function ConfiguratorTopbar({ view, disabled, onViewChange }: ConfiguratorTopbarProps) {
+export function ConfiguratorTopbar({ view, disabled, onBack, onViewChange }: ConfiguratorTopbarProps) {
   const { text } = useConfiguratorCopy();
 
   return (
     <header className="asea-config-topbar">
-      <div className="asea-config-brand">
-        <img src="/asea-logo.png" alt="ASEA" />
-        <span>{text("title")}</span>
+      <div className="asea-config-topbar-left">
+        <button type="button" className="asea-config-back" onClick={onBack} aria-label={text("backToModels")}>
+          <ArrowLeft size={17} aria-hidden="true" />
+          <span>{text("backToModels")}</span>
+        </button>
+        <div className="asea-config-brand">
+          <img src="/asea-logo.png" alt="ASEA" />
+          <span>{text("title")}</span>
+        </div>
       </div>
       <div className="asea-view-switcher" role="group" aria-label={text("viewSelector")} data-tour="view-switcher">
         {views.map(({ id, icon: Icon }) => (

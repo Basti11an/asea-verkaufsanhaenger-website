@@ -51,15 +51,40 @@
 .asea-config-topbar {
   grid-column: 1 / -1;
   grid-row: 1;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 20px;
   min-width: 0;
   padding: 5px 16px;
   border-bottom: 1px solid #cfd3cb;
   background: #fbfbf8;
   z-index: 20;
+}
+
+.asea-config-topbar-left {
+  grid-column: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 14px;
+}
+
+.asea-configurator .asea-config-back {
+  flex: 0 0 auto;
+  min-height: 32px;
+  padding: 0 9px;
+  border: 1px solid #d6dad2;
+  border-radius: 5px;
+  color: #50554e;
+  background: #fff;
+  font-weight: 580;
+}
+
+.asea-configurator .asea-config-back:hover {
+  border-color: var(--bronze);
+  color: var(--bronze-dark);
+  background: #fbfaf7;
 }
 
 .asea-config-brand {
@@ -91,6 +116,8 @@
 }
 
 .asea-view-switcher {
+  grid-column: 2;
+  justify-self: center;
   display: flex;
   align-items: center;
   gap: 1px;
@@ -1295,6 +1322,15 @@
 
   .asea-config-topbar {
     padding-inline: 12px;
+  }
+
+  .asea-config-back span,
+  .asea-config-brand > span {
+    display: none;
+  }
+
+  .asea-config-topbar-left {
+    gap: 9px;
   }
 
   .asea-view-switcher button {

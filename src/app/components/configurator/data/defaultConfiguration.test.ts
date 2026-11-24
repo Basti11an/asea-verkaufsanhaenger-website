@@ -54,7 +54,7 @@ describe("default configurator configuration", () => {
     expect(gasGriddles?.positionCm?.depth).toBe(140);
     expect((gasGriddles?.positionCm?.height ?? 0) + (gasGriddles?.dimensionsCm?.height ?? 0)).toBe(85);
     expect(gasGriddles?.planFootprintCm).toMatchObject({ depthStart: 140, depthEnd: 200 });
-    expect(gasGriddles?.name[0]).toBe("Gasbräter mit Spritzschutz");
+    expect(gasGriddles?.name[0]).toBe("Gasbräter");
   });
 
   it("fits the undercounter fridge below the rear work surface", () => {
@@ -69,7 +69,7 @@ describe("default configurator configuration", () => {
 
     expect(cabinet).toMatchObject({
       productId: "wall-cabinet",
-      name: ["Hängeschrank 1 m", "Wall cabinet 1 m", "Závesná skrinka 1 m"],
+      name: ["Hängeschrank", "Wall cabinet", "Závesná skrinka"],
       positionCm: { longitudinal: 195, height: 145, depth: 0 },
       planFootprintCm: { longitudinalStart: 195, longitudinalEnd: 295, depthStart: 0, depthEnd: 40 },
     });

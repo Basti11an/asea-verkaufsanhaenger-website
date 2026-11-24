@@ -712,7 +712,7 @@ function AppInner() {
       case 'configurator':
         return (
           <Suspense fallback={<div className="h-dvh bg-[#eceeea]" />}>
-            <ConfiguratorPage />
+            <ConfiguratorPage onNavigate={handleNavigate} />
           </Suspense>
         );
       case 'models':

@@ -2,6 +2,17 @@ import { describe, expect, it } from "vitest";
 import { productById, products } from "./products";
 
 describe("configurator products", () => {
+  it("uses concise customer-facing names without dimensions or bundled accessories", () => {
+    expect(productById.get("fryer")?.name[0]).toBe("Fritteuse");
+    expect(productById.get("gas-griddle")?.name[0]).toBe("Gasbräter");
+    expect(productById.get("electric-griddle")?.name[0]).toBe("Elektro-Grillplatte");
+    expect(productById.get("induction")?.name[0]).toBe("Induktionskochfeld");
+    expect(productById.get("undercounter-fridge")?.name[0]).toBe("Unterbaukühlschrank");
+    expect(productById.get("hygiene-area")?.name[0]).toBe("Hygienebereich");
+    expect(productById.get("wall-cabinet")?.name[0]).toBe("Hängeschrank");
+    expect(productById.get("kebab-spit")?.name[0]).toBe("Kebabgrill");
+  });
+
   it("uses the measured bounds of the selected model variants", () => {
     expect(productById.get("gas-griddle")?.measuredGlbBoundsCm).toEqual({ width: 66.05, height: 27.9, depth: 62.5 });
     expect(productById.get("electric-griddle")?.measuredGlbBoundsCm).toEqual({ width: 66.04, height: 31, depth: 64 });

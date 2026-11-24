@@ -132,7 +132,7 @@ export const standardEquipment: readonly StandardEquipmentDefinition[] = [
   {
     id: "standard-hygiene",
     productId: "hygiene-area",
-    name: ["Hygienepaket", "Hygiene package", "Hygienický balík"],
+    name: ["Hygienebereich", "Hygiene area", "Hygienická zóna"],
     modelPath: "/configurator-models/interieur/hygiene/Hygienebereich.glb",
     sceneNodeName: null,
     dimensionsCm: { width: 100, height: 211, depth: 60 },
@@ -150,7 +150,7 @@ export const standardEquipment: readonly StandardEquipmentDefinition[] = [
   {
     id: "standard-wall-cabinet",
     productId: "wall-cabinet",
-    name: ["Hängeschrank 1 m", "Wall cabinet 1 m", "Závesná skrinka 1 m"],
+    name: ["Hängeschrank", "Wall cabinet", "Závesná skrinka"],
     modelPath: "/configurator-models/interieur/moebel/Haengeschrank.glb",
     sceneNodeName: "Haengeschrank_1000x400x660",
     dimensionsCm: { width: 100, height: 66, depth: 40 },
@@ -169,9 +169,9 @@ export const standardEquipment: readonly StandardEquipmentDefinition[] = [
     id: "standard-gas-griddles",
     productId: "gas-griddle",
     name: [
-      "Gasbräter mit Spritzschutz",
-      "Gas griddles with splash guard",
-      "Plynové grily s ochranným sklom",
+      "Gasbräter",
+      "Gas griddle",
+      "Plynová grilovacia platňa",
     ],
     modelPath: "/configurator-models/interieur/kochen/Gasbraeter.glb",
     sceneNodeName: null,
@@ -190,7 +190,7 @@ export const standardEquipment: readonly StandardEquipmentDefinition[] = [
   {
     id: "standard-undercounter-fridge",
     productId: "undercounter-fridge",
-    name: ["Kühlschrank Unterbau", "Undercounter fridge", "Podpultová chladnička"],
+    name: ["Unterbaukühlschrank", "Undercounter fridge", "Podpultová chladnička"],
     modelPath: "/configurator-models/interieur/kuehlung/Kuehlschrank_Unterbau.glb",
     sceneNodeName: null,
     dimensionsCm: { width: 60, height: 81, depth: 60 },

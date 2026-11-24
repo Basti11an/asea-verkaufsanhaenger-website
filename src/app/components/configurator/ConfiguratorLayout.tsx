@@ -30,7 +30,11 @@ import {
 import { isConfigurableProductId } from "./data/productPlacement";
 import "./configurator.css";
 
-export function ConfiguratorLayout() {
+type ConfiguratorLayoutProps = {
+  onBack: () => void;
+};
+
+export function ConfiguratorLayout({ onBack }: ConfiguratorLayoutProps) {
   const { text } = useConfiguratorCopy();
   const sceneRef = useRef<ConfiguratorSceneHandle>(null);
   const [view, setView] = useState<ConfiguratorView>("three");
@@ -166,7 +170,7 @@ export function ConfiguratorLayout() {
         <p>{text("device")}</p>
       </div>
       <div className="asea-config-desktop">
-        <ConfiguratorTopbar view={view} disabled={!started} onViewChange={setView} />
+        <ConfiguratorTopbar view={view} disabled={!started} onBack={onBack} onViewChange={setView} />
         <div className="asea-config-workspace">
           <main className="asea-config-stage" data-tour="viewport">
             <ConfiguratorScene
