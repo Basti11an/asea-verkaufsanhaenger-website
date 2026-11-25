@@ -31,6 +31,12 @@ import { prepareTrailerModel } from "./TrailerModel";
 import { createSalesHatchFrontPanel } from "./SalesHatchFrontPanel";
 import { removeHygieneWallCabinet } from "./hygieneArea";
 import {
+  applyWorktopMaterial,
+  createBrushedSteelRoughnessMap,
+  createWorktopSurfaceMaterial,
+  type WorktopMaterial,
+} from "./worktopMaterials";
+import {
   captureConfigurationScreenshots,
   type ConfigurationScreenshots,
 } from "./configurationScreenshots";
@@ -41,6 +47,7 @@ type ConfiguratorSceneProps = {
   started: boolean;
   equipmentState: EquipmentConfigurationState;
   selectedEquipmentId: string | null;
+  worktopMaterial: WorktopMaterial;
 };
 
 type SceneRuntime = {
@@ -49,6 +56,7 @@ type SceneRuntime = {
   requestRender: () => void;
   applyConfiguration: (state: EquipmentConfigurationState) => void;
   applyViewVisibility: (view: ConfiguratorView) => void;
+  applyWorktopMaterial: (material: WorktopMaterial) => void;
   highlightEquipment: (equipmentId: string | null) => void;
   captureConfigurationViews: () => ConfigurationScreenshots;
 };
@@ -96,13 +104,14 @@ function addBox(
 }
 
 function addCountertop(parent: Group, startX: number, endX: number, centerZ: number, depth = 0.6) {
-  const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.52, metalness: 0.55 });
+  const steel = createWorktopSurfaceMaterial();
   addBox(parent, [endX - startX, 0.04, depth], [(startX + endX) / 2, 0.83, centerZ], steel);
 }
 
 function createGasCabinetBoardUnit() {
   const unit = new Group();
   unit.name = "ASEA_GasCabinetBoardUnit";
+  const worktop = createWorktopSurfaceMaterial();
   const board = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.52, metalness: 0.55 });
   const startX = centimetersToWorldX(0);
   const endX = centimetersToWorldX(71);
@@ -111,16 +120,16 @@ function createGasCabinetBoardUnit() {
   const centerZ = -0.7;
   const frontZ = -0.415;
 
-  // Worktop construction in the former gas-cabinet area: top, closed front
-  // and right side panel, all using the same material as the worktops.
-  addBox(unit, [width, 0.04, 0.6], [centerX, 0.83, centerZ], board);
+  // Only the top participates in the material selection. The closed front and
+  // side panel retain their original gray finish.
+  addBox(unit, [width, 0.04, 0.6], [centerX, 0.83, centerZ], worktop);
   addBox(unit, [width, 0.81, 0.03], [centerX, 0.405, frontZ], board);
   addBox(unit, [0.03, 0.81, 0.57], [endX - 0.015, 0.405, centerZ - 0.015], board);
   return unit;
 }
 
 function addGriddleNiche(parent: Group, side: EquipmentSide, applianceWidth: number) {
-  const steel = new MeshStandardMaterial({ color: 0x777a75, roughness: 0.52, metalness: 0.55 });
+  const steel = createWorktopSurfaceMaterial();
   const nicheHalfWidth = applianceWidth / 2 + 0.03;
   const nicheWidth = nicheHalfWidth * 2;
   const centerZ = side === "closed-wall" ? -0.7 : 0.7;
@@ -436,7 +445,7 @@ async function loadOptional(path: string, sceneNodeName: string | null = null) {
 }
 
 export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, ConfiguratorSceneProps>(function ConfiguratorScene(
-  { view, started, equipmentState, selectedEquipmentId },
+  { view, started, equipmentState, selectedEquipmentId, worktopMaterial },
   ref,
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -444,6 +453,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
   const startedRef = useRef(started);
   const viewRef = useRef(view);
   const equipmentStateRef = useRef(equipmentState);
+  const worktopMaterialRef = useRef(worktopMaterial);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const { text } = useConfiguratorCopy();
   const sceneLabel = text("sceneLabel");
@@ -481,6 +491,11 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
   }, [equipmentState]);
 
   useEffect(() => {
+    worktopMaterialRef.current = worktopMaterial;
+    runtimeRef.current?.applyWorktopMaterial(worktopMaterial);
+  }, [worktopMaterial]);
+
+  useEffect(() => {
     runtimeRef.current?.highlightEquipment(selectedEquipmentId);
   }, [selectedEquipmentId]);
 
@@ -499,6 +514,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
     let closedFurnitureKey = "";
     let salesFurnitureKey = "";
     const equipmentGroups = new Map<string, Group>();
+    const brushedSteelRoughnessMap = createBrushedSteelRoughnessMap();
     let highlightedGroup: Group | null = null;
     let highlightStartedAt = 0;
     let assets: ModelAssets = {};
@@ -540,6 +556,11 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
       if (salesWallEquipment) salesWallEquipment.visible = !hideCustomerSide;
       if (closedFurniture) closedFurniture.visible = !hideSellerSide;
       if (salesFurniture) salesFurniture.visible = !hideCustomerSide;
+      requestRender();
+    };
+
+    const applySelectedWorktopMaterial = (material: WorktopMaterial) => {
+      if (standardModels) applyWorktopMaterial(standardModels, material, brushedSteelRoughnessMap);
       requestRender();
     };
 
@@ -587,6 +608,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
         salesWallEquipment.add(salesFurniture);
         salesFurnitureKey = nextSalesKey;
       }
+      applySelectedWorktopMaterial(worktopMaterialRef.current);
       applyViewVisibility(viewRef.current);
     };
     const clearHighlight = () => {
@@ -625,6 +647,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
       requestRender,
       applyConfiguration,
       applyViewVisibility,
+      applyWorktopMaterial: applySelectedWorktopMaterial,
       highlightEquipment,
       captureConfigurationViews,
     };
@@ -727,6 +750,7 @@ export const ConfiguratorScene = forwardRef<ConfiguratorSceneHandle, Configurato
       controls.removeEventListener("change", requestRender);
       controls.dispose();
       studioEnvironment.dispose();
+      brushedSteelRoughnessMap.dispose();
       if (trailerModel) disposeGroup(trailerModel);
       if (interiorShell) disposeGroup(interiorShell);
       if (standardModels) disposeGroup(standardModels);

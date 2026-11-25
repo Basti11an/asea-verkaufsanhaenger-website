@@ -41,7 +41,7 @@ export function ConfiguratorLayout({ onBack }: ConfiguratorLayoutProps) {
   const [started, setStarted] = useState(false);
   const [selectedEquipmentId, setSelectedEquipmentId] = useState<string | null>(null);
   const [equipmentState, setEquipmentState] = useState<EquipmentConfigurationState>(createDefaultEquipmentConfiguration);
-  const [worktopMaterial, setWorktopMaterial] = useState<"stainless" | "gray">("stainless");
+  const [worktopMaterial, setWorktopMaterial] = useState<"stainless" | "gray">("gray");
   const [finishModalOpen, setFinishModalOpen] = useState(false);
   const [tutorialActive, setTutorialActive] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
@@ -179,6 +179,7 @@ export function ConfiguratorLayout({ onBack }: ConfiguratorLayoutProps) {
               started={started}
               equipmentState={equipmentState}
               selectedEquipmentId={selectedEquipmentId}
+              worktopMaterial={worktopMaterial}
             />
             <StartOverlay
               visible={!started}
