@@ -70,6 +70,7 @@ export type EquipmentPlacementDefinition = {
   defaultCorner?: EquipmentCorner;
   fixedPlacement?: EquipmentPlacementAnchor & { id: EquipmentSpecialPosition };
   crossPlacement?: EquipmentPlacementAnchor & { id: EquipmentSpecialPosition };
+  crossPlacementWidthCm?: number;
   defaultCenterCm: Readonly<Record<EquipmentSide, number>>;
   minCenterCm: number;
   maxCenterCm: number;
@@ -101,8 +102,8 @@ export const splashGuardMinimumLengthCm = 130;
 const required = (id: AutomaticAccessoryId): AccessoryRule => ({ id, requirement: "required", defaultEnabled: true });
 const optional = (id: AutomaticAccessoryId): AccessoryRule => ({ id, requirement: "optional", defaultEnabled: true });
 const undercounterCorners: Readonly<Record<EquipmentCorner, EquipmentPlacementAnchor>> = {
-  "front-left": { side: "sales-hatch", centerCm: 31, rotationDeg: 90 },
-  "front-right": { side: "sales-hatch", centerCm: 329, rotationDeg: 90 },
+  "front-left": { side: "sales-hatch", centerCm: 35, rotationDeg: 90 },
+  "front-right": { side: "sales-hatch", centerCm: 325, rotationDeg: 90 },
   "rear-right": { side: "closed-wall", centerCm: 330, rotationDeg: -90 },
 };
 
@@ -231,12 +232,14 @@ export const equipmentPlacementDefinitions: Record<ConfigurableProductId, Equipm
     productId: "cooling-top",
     placementType: "side",
     allowedSides: frontOnly,
-    // Keep the refrigerated display facing into the trailer when it is mounted crosswise.
-    crossPlacement: { id: "trailer-end", side: "closed-wall", centerCm: 35.5, rotationDeg: 90 },
+    // The front-facing model uses 90 degrees. Rotating it by another quarter
+    // turn places it crosswise while its open display still faces the interior.
+    crossPlacement: { id: "trailer-end", side: "closed-wall", centerCm: 35.5, rotationDeg: 0 },
+    crossPlacementWidthCm: 40,
     defaultCenterCm: { "closed-wall": 180, "sales-hatch": 180 },
     minCenterCm: 60,
     maxCenterCm: 300,
-    widthCm: 40,
+    widthCm: 120,
     displayWidthCm: 120,
     collisionChannels: ["counter"],
     blocksCountertop: false,
@@ -519,6 +522,13 @@ function interval(centerCm: number, widthCm: number) {
   return { startCm: centerCm - widthCm / 2, endCm: centerCm + widthCm / 2 };
 }
 
+function collisionWidthCm(item: EquipmentPlacement, definition: EquipmentPlacementDefinition) {
+  if (item.placementKey === "trailer-end" && definition.crossPlacementWidthCm !== undefined) {
+    return definition.crossPlacementWidthCm;
+  }
+  return item.widthCm ?? definition.widthCm;
+}
+
 function intervalDistanceCm(a: { startCm: number; endCm: number }, b: { startCm: number; endCm: number }) {
   if (intervalsOverlap(a.startCm, a.endCm, b.startCm, b.endCm)) return 0;
   return Math.max(b.startCm - a.endCm, a.startCm - b.endCm, 0);
@@ -544,7 +554,7 @@ export function findConfigurationCollision(
   const centerCm = item.placementKey === "trailer-end"
     ? requestedCenterCm
     : clampEquipmentCenter(item.productId, requestedCenterCm);
-  const itemInterval = interval(centerCm, item.widthCm ?? definition.widthCm);
+  const itemInterval = interval(centerCm, collisionWidthCm(item, definition));
   const requestedSides = occupiedSides(item, definition, requestedSide);
 
   if (definition.avoidsWheelArch && overlapsWheelArch(centerCm, definition.widthCm)) return "wheel-arch";
@@ -579,7 +589,7 @@ export function findConfigurationCollision(
       && intervalDistanceCm(itemInterval, interval(other.centerCm, other.widthCm ?? otherDefinition.widthCm)) < otherDefinition.minDistanceToSinkCm) {
       return true;
     }
-    const otherInterval = interval(other.centerCm, other.widthCm ?? otherDefinition.widthCm);
+    const otherInterval = interval(other.centerCm, collisionWidthCm(other, otherDefinition));
     return intervalsOverlap(itemInterval.startCm, itemInterval.endCm, otherInterval.startCm, otherInterval.endCm);
   })?.id ?? null;
 }
@@ -763,7 +773,8 @@ export function removeEquipment(state: EquipmentConfigurationState, id: string) 
 }
 
 export function getEquipmentInterval(item: EquipmentPlacement) {
-  return interval(item.centerCm, item.widthCm ?? equipmentPlacementDefinitions[item.productId].widthCm);
+  const definition = equipmentPlacementDefinitions[item.productId];
+  return interval(item.centerCm, collisionWidthCm(item, definition));
 }
 
 export function getCountertopCutoutInterval(item: EquipmentPlacement) {

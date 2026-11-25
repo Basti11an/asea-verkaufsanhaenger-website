@@ -129,6 +129,10 @@ function addGriddleNiche(parent: Group, side: EquipmentSide, applianceWidth: num
   addBox(parent, [nicheWidth, 0.03, nicheDepth], [0, 0.585, nicheCenterZ], steel);
   addBox(parent, [0.03, 0.33, nicheDepth], [-nicheHalfWidth + 0.015, 0.685, nicheCenterZ], steel);
   addBox(parent, [0.03, 0.33, nicheDepth], [nicheHalfWidth - 0.015, 0.685, nicheCenterZ], steel);
+  if (side === "sales-hatch") {
+    // Keep the front edge of the worktop continuous around recessed griddles.
+    addBox(parent, [nicheWidth, 0.04, 0.08], [0, 0.83, 0.96], steel);
+  }
 }
 
 function centimetersToWorldX(valueCm: number) {

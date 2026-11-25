@@ -236,9 +236,10 @@ describe("configurable equipment rules", () => {
     expect(equipmentPlacementDefinitions["cooling-top"]).toMatchObject({
       placementType: "side",
       allowedSides: ["sales-hatch"],
-      widthCm: 40,
+      widthCm: 120,
       displayWidthCm: 120,
-      crossPlacement: { id: "trailer-end", centerCm: 35.5, rotationDeg: 90 },
+      crossPlacement: { id: "trailer-end", centerCm: 35.5, rotationDeg: 0 },
+      crossPlacementWidthCm: 40,
     });
     expect(equipmentPlacementDefinitions["undercounter-fridge"]).toMatchObject({
       placementType: "corner",
@@ -306,13 +307,26 @@ describe("configurable equipment rules", () => {
     expect(findConfigurationCollision({ items: [gasGriddle] }, crosswiseCoolingTop)).toBeNull();
   });
 
+  it("places the cooling top beside the standard gas griddle instead of above it", () => {
+    const initial = createDefaultEquipmentConfiguration();
+    const added = addEquipment(initial, "cooling-top", "sales-hatch");
+
+    expect(added.collisionWith).toBeNull();
+    expect(added.item).toMatchObject({ side: "sales-hatch", centerCm: 70 });
+    expect(findConfigurationCollision(initial, added.item!)).toBeNull();
+  });
+
   it("moves an undercounter fridge only between configured corners", () => {
     const added = addEquipment({ items: [] }, "undercounter-fridge");
     expect(added.item).toMatchObject({ side: "closed-wall", centerCm: 330, placementKey: "rear-right" });
 
     const moved = moveEquipmentCorner(added.state, added.item!.id, "front-left");
     expect(moved.collisionWith).toBeNull();
-    expect(moved.state.items[0]).toMatchObject({ side: "sales-hatch", centerCm: 31, placementKey: "front-left" });
+    expect(moved.state.items[0]).toMatchObject({ side: "sales-hatch", centerCm: 35, placementKey: "front-left" });
+
+    const movedRight = moveEquipmentCorner(moved.state, added.item!.id, "front-right");
+    expect(movedRight.collisionWith).toBeNull();
+    expect(movedRight.state.items[0]).toMatchObject({ side: "sales-hatch", centerCm: 325, placementKey: "front-right" });
     expect(moveEquipment(moved.state, added.item!.id, 100).collisionWith).toBe("position-locked");
   });
 
